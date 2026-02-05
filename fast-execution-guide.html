@@ -79,6 +79,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
 
         .logo {
@@ -124,6 +126,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            white-space: nowrap;
         }
 
         .meta-badge::before {
@@ -437,6 +440,7 @@
             border-radius: 12px;
             border: 1px solid var(--surface-light);
             transition: all 0.3s ease;
+            overflow: hidden;
         }
 
         .issue-card:hover {
@@ -472,6 +476,8 @@
             color: var(--text-dim);
             margin-bottom: 1rem;
             line-height: 1.6;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .solution {
@@ -491,6 +497,8 @@
         .solution-text {
             color: var(--text);
             font-size: 0.95rem;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         /* Checklist */
@@ -654,6 +662,23 @@
                 font-size: 2rem;
             }
 
+            .header-content {
+                padding: 0 1rem;
+            }
+
+            .logo-text h1 {
+                font-size: 1.2rem;
+            }
+
+            .logo-text p {
+                font-size: 0.65rem;
+            }
+
+            .meta-badge {
+                font-size: 0.7rem;
+                padding: 0.4rem 0.8rem;
+            }
+
             .timeline::before {
                 left: 20px;
             }
@@ -673,6 +698,28 @@
 
             .hero-meta {
                 flex-direction: column;
+            }
+
+            .issue-card {
+                padding: 1rem;
+            }
+
+            .issue-description {
+                font-size: 0.9rem;
+                line-height: 1.5;
+            }
+
+            .solution-text {
+                font-size: 0.85rem;
+                line-height: 1.5;
+            }
+
+            .issues-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .case-stats {
+                grid-template-columns: 1fr;
             }
         }
     </style>
