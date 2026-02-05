@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast Execution 협업 가이드 - 그립 프로덕트팀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #E67E50;
+            --primary-dark: #C86A3F;
+            --secondary: #5B9AA9;
+            --bg: #1A1D23;
+            --surface: #252930;
+            --surface-light: #2F3440;
+            --text: #E8E9ED;
+            --text-dim: #8B8D98;
+            --success: #6B9E78;
+            --warning: #D4A574;
+            --error: #D17B7B;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.08;
+        }
+
+        .bg-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--primary) 1px, transparent 1px),
+                linear-gradient(90deg, var(--primary) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--primary);
+            z-index: 1000;
+            padding: 1.5rem 0;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.5rem;
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .meta-badge {
+            background: var(--surface);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid var(--primary);
+            font-size: 0.85rem;
+            font-family: 'IBM Plex Mono', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .meta-badge::before {
+            content: "✨";
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            position: relative;
+        }
+
+        .hero h2 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .hero .highlight {
+            color: var(--primary);
+            position: relative;
+        }
+
+        .hero .highlight::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--primary);
+            animation: underlineGrow 0.8s ease-out 0.3s both;
+        }
+
+        @keyframes underlineGrow {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .hero-meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .metric {
+            background: var(--surface);
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--surface-light);
+            min-width: 200px;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--success), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Process Timeline */
+        .timeline {
+            position: relative;
+            padding: 4rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 4rem;
+            position: relative;
+            animation: fadeInScale 0.6s ease-out both;
+        }
+
+        .timeline-item:nth-child(1) { animation-delay: 0.1s; }
+        .timeline-item:nth-child(2) { animation-delay: 0.2s; }
+        .timeline-item:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .timeline-item:nth-child(odd) {
+            flex-direction: row-reverse;
+        }
+
+        .timeline-content {
+            width: 45%;
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 2px solid var(--surface-light);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-content:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(230, 126, 80, 0.15);
+        }
+
+        .timeline-badge {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            box-shadow: 0 5px 20px rgba(230, 126, 80, 0.25);
+        }
+
+        .phase-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .phase-duration {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--bg);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .phase-description {
+            color: var(--text-dim);
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .tool-list {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .tool-tag {
+            background: var(--bg);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+        }
+
+        /* Case Study Section */
+        .case-study {
+            background: linear-gradient(135deg, var(--surface), var(--surface-light));
+            border-radius: 24px;
+            padding: 3rem;
+            margin: 4rem 0;
+            border: 2px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .case-study::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(230, 126, 80, 0.06), transparent);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.1); opacity: 0.5; }
+        }
+
+        .case-study-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .case-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .case-study h3 {
+            font-size: 2rem;
+            font-weight: 900;
+        }
+
+        .case-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: var(--bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--success);
+        }
+
+        .stat-card.warning {
+            border-left-color: var(--warning);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--success);
+        }
+
+        .stat-card.warning .stat-value {
+            color: var(--warning);
+        }
+
+        /* Issues Section */
+        .issues-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .issue-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--surface-light);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .issue-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--secondary);
+        }
+
+        .issue-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .issue-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--error);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .issue-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--error);
+        }
+
+        .issue-description {
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .solution {
+            background: var(--bg);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 3px solid var(--success);
+        }
+
+        .solution-label {
+            font-size: 0.85rem;
+            color: var(--success);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .solution-text {
+            color: var(--text);
+            font-size: 0.95rem;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* Checklist */
+        .checklist {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 16px;
+            margin: 2rem 0;
+        }
+
+        .checklist h4 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            background: var(--bg);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .checklist-item:hover {
+            background: var(--surface-light);
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--primary);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .checklist-item.checked .checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .checklist-item.checked .checkbox::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+        }
+
+        .checklist-item.checked {
+            opacity: 0.6;
+        }
+
+        /* AI Prompts */
+        .prompts-section {
+            margin: 4rem 0;
+        }
+
+        .prompt-card {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            border: 2px solid var(--surface-light);
+        }
+
+        .prompt-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .ai-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+
+        .chatgpt { background: linear-gradient(135deg, #4A9B7F, #3D7F66); }
+        .gemini { background: linear-gradient(135deg, #5A7FAD, #7096B8); }
+        .claude { background: linear-gradient(135deg, #B8856C, #C99A7C); }
+
+        .prompt-content {
+            background: var(--bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 1rem;
+        }
+
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: var(--surface);
+            border-top: 2px solid var(--primary);
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .meta-note {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h2 {
+                font-size: 2rem;
+            }
+
+            .header-content {
+                padding: 0 1rem;
+            }
+
+            .logo-text h1 {
+                font-size: 1.2rem;
+            }
+
+            .logo-text p {
+                font-size: 0.65rem;
+            }
+
+            .meta-badge {
+                font-size: 0.7rem;
+                padding: 0.4rem 0.8rem;
+            }
+
+            .timeline::before {
+                left: 20px;
+            }
+
+            .timeline-item {
+                flex-direction: column !important;
+            }
+
+            .timeline-content {
+                width: 100%;
+                margin-left: 60px;
+            }
+
+            .timeline-badge {
+                left: 20px;
+            }
+
+            .hero-meta {
+                flex-direction: column;
+            }
+
+            .issue-card {
+                padding: 1rem;
+            }
+
+            .issue-description {
+                font-size: 0.9rem;
+                line-height: 1.5;
+            }
+
+            .solution-text {
+                font-size: 0.85rem;
+                line-height: 1.5;
+            }
+
+            .issues-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .case-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation">
+        <div class="bg-grid"></div>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">
+                    <h1>Fast Execution</h1>
+                    <p>GRIP PRODUCT TEAM</p>
+                </div>
+            </div>
+            <div class="meta-badge">
+                이 가이드도 AI로 4시간 만에 제작
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="hero">
+            <h2>완벽한 기획 → 개발 ❌<br><span class="highlight">프로토타입 → 병렬 진행 ⭕</span></h2>
+            <p class="hero-subtitle">
+                기획·디자인·개발이 동시에 움직이면서도<br>
+                품질 저하 없이 빠르게 제품을 만드는 협업 구조
+            </p>
+            <div class="hero-meta">
+                <div class="metric">
+                    <div class="metric-value">50%</div>
+                    <div class="metric-label">리드타임 단축</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">4시간</div>
+                    <div class="metric-label">Draft PRD 완성</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">3단계</div>
+                    <div class="metric-label">분산 QA 구조</div>
+                </div>
+            </div>
+        </section>
+
+        <h2 class="section-title">실행 프로세스</h2>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="phase-title">Phase 1: Fast Draft</div>
+                    <div class="phase-duration">반나절 ~ 1일</div>
+                    <p class="phase-description">
+                        AI를 활용해 빠르게 프로토타입과 Draft PRD를 작성합니다. 
+                        완벽함보다는 "결정해야 할 것들"을 명확히 하는 게 목표입니다.
+                    </p>
+                    <div class="tool-list">
+                        <span class="tool-tag">ChatGPT</span>
+                        <span class="tool-tag">Gemini</span>
+                        <span class="tool-tag">Claude</span>
+                    </div>
+                </div>
+                <div class="timeline-badge">1</div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="phase-title">Phase 2: Pre-check</div>
+                    <div class="phase-duration">1 ~ 2일</div>
+                    <p class="phase-description">
+                        프로토타입을 기반으로 디자인과 개발이 동시에 검토를 시작합니다. 
+                        기술적 제약사항과 디자인 방향성을 초기에 반영합니다.
+                    </p>
+                    <div class="tool-list">
+                        <span class="tool-tag">Figma</span>
+                        <span class="tool-tag">아키텍처 설계</span>
+                        <span class="tool-tag">공수 추정</span>
+                    </div>
+                </div>
+                <div class="timeline-badge">2</div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <div class="phase-title">Phase 3: 병렬 개발 + 분산 QA</div>
+                    <div class="phase-duration">2 ~ 4주</div>
+                    <p class="phase-description">
+                        디자인과 개발이 병렬로 진행되며, 중간중간 싱크 QA를 통해 
+                        이슈를 조기에 발견하고 빠르게 조정합니다.
+                    </p>
+                    <div class="tool-list">
+                        <span class="tool-tag">기획 자체 QA</span>
+                        <span class="tool-tag">싱크 QA (주 1-2회)</span>
+                        <span class="tool-tag">릴리즈 QA</span>
+                    </div>
+                </div>
+                <div class="timeline-badge">3</div>
+            </div>
+        </div>
+
+        <section class="case-study">
+            <div class="case-study-header">
+                <div class="case-icon">💬</div>
+                <div>
+                    <h3>실전 사례: 1:1 문의 게시판 개선</h3>
+                    <p style="color: var(--text-dim); margin-top: 0.5rem;">
+                        셀러의 문제 해결 속도를 단축하고 운영 효율을 개선한 프로젝트
+                    </p>
+                </div>
+            </div>
+
+            <div class="case-stats">
+                <div class="stat-card">
+                    <div class="stat-label">프로젝트 기간</div>
+                    <div class="stat-value">1개월</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-label">기존 예상 기간</div>
+                    <div class="stat-value">2개월</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Draft PRD 작성</div>
+                    <div class="stat-value">4시간</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">디자인 착수</div>
+                    <div class="stat-value">1-2일</div>
+                </div>
+            </div>
+
+            <h4 style="font-size: 1.5rem; margin: 2rem 0 1rem 0;">병렬 작업 중 발생한 이슈 & 해결</h4>
+
+            <div class="issues-grid">
+                <div class="issue-card">
+                    <div class="issue-header">
+                        <div class="issue-icon">⚠️</div>
+                        <div class="issue-title">좀비 스레드 정책 누락</div>
+                    </div>
+                    <p class="issue-description">
+                        "7일 경과된 문의에 고객이 답글을 달면?" 예외 케이스가 개발 Week 2에 발견됨
+                    </p>
+                    <div class="solution">
+                        <div class="solution-label">💡 해결 방법</div>
+                        <div class="solution-text">
+                            슬랙 채널에서 즉시 논의 (30분) → PM 정책 결정 → PRD 업데이트 → 개발 반영 (0.5일)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="issue-card">
+                    <div class="issue-header">
+                        <div class="issue-icon">🎨</div>
+                        <div class="issue-title">디자인-개발 화면 불일치</div>
+                    </div>
+                    <p class="issue-description">
+                        만족도 평가 버튼 위치가 Figma와 실제 구현이 다르게 나옴
+                    </p>
+                    <div class="solution">
+                        <div class="solution-label">💡 해결 방법</div>
+                        <div class="solution-text">
+                            싱크 QA 1차에서 발견 → 디자이너-개발자 즉석 조율 (15분) → 컴포넌트 재배치 (0.2일)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="issue-card">
+                    <div class="issue-header">
+                        <div class="issue-icon">🤖</div>
+                        <div class="issue-title">AI 자동응답 범위 조정</div>
+                    </div>
+                    <p class="issue-description">
+                        기획 단계에서 예상한 것보다 AI가 처리할 수 있는 케이스가 많음
+                    </p>
+                    <div class="solution">
+                        <div class="solution-label">💡 해결 방법</div>
+                        <div class="solution-text">
+                            개발-기획 싱크업에서 범위 확장 결정 → "배송 추적 가능한 경우"는 모두 AI 처리로 정책 변경
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <h2 class="section-title">체크리스트</h2>
+
+        <div class="checklist">
+            <h4>🚀 PM 시작 전 체크리스트</h4>
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <div class="checkbox"></div>
+                <div>BRD 확인 (비즈니스 목적이 명확한가?)</div>
+            </div>
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <div class="checkbox"></div>
+                <div>핵심 지표 정의 (성공 기준이 측정 가능한가?)</div>
+            </div>
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <div class="checkbox"></div>
+                <div>AI로 프로토타입 제작 (4시간 내 완성 가능)</div>
+            </div>
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <div class="checkbox"></div>
+                <div>Draft PRD 작성 (완벽하지 않아도 OK)</div>
+            </div>
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <div class="checkbox"></div>
+                <div>슬랙 채널 생성 (과제명_YYMMDD)</div>
+            </div>
+        </div>
+
+        <div class="checklist">
+            <h4>🎨 디자인/개발 착수 전 체크리스트</h4>
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <div class="checkbox"></div>
+                <div>프로토타입 리뷰 완료</div>
+            </div>
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <div class="checkbox"></div>
+                <div>주요 Trade-off 의사결정 완료</div>
+            </div>
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <div class="checkbox"></div>
+                <div>기술적 블로커 없음 확인</div>
+            </div>
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <div class="checkbox"></div>
+                <div>공수 추정 및 일정 합의</div>
+            </div>
+            <div class="checklist-item" onclick="toggleCheck(this)">
+                <div class="checkbox"></div>
+                <div>첫 싱크 QA 일정 잡기</div>
+            </div>
+        </div>
+
+        <h2 class="section-title">AI 활용 가이드</h2>
+
+        <div class="prompts-section">
+            <div class="prompt-card">
+                <div class="prompt-header">
+                    <div class="ai-logo chatgpt">GPT</div>
+                    <div>
+                        <h4 style="font-size: 1.3rem; font-weight: 700;">ChatGPT</h4>
+                        <p style="color: var(--text-dim); font-size: 0.9rem;">문제 정의 및 논리 완결성</p>
+                    </div>
+                </div>
+                <div class="prompt-content">
+"이커머스 1:1 문의 시스템 개선 PRD를 작성하려고 해. 
+어떤 섹션들이 필요할까?"
+
+"아래 기획에서 놓칠 수 있는 예외 상황들을 20개 나열해줘:
+[PRD 내용]"
+                </div>
+                <button class="copy-btn" onclick="copyPrompt(this)">프롬프트 복사</button>
+            </div>
+
+            <div class="prompt-card">
+                <div class="prompt-header">
+                    <div class="ai-logo gemini">✦</div>
+                    <div>
+                        <h4 style="font-size: 1.3rem; font-weight: 700;">Gemini</h4>
+                        <p style="color: var(--text-dim); font-size: 0.9rem;">인터랙티브 프로토타입 생성</p>
+                    </div>
+                </div>
+                <div class="prompt-content">
+"1:1 문의 채팅 UI를 만들어줘. 기능:
+- 메시지 입력/전송
+- 이미지 첨부
+- 상담 종료 버튼"
+
+"위 프로토타입에서 '자주 쓰는 답변' 버튼을 추가해줘.
+클릭하면 미리 설정한 문구가 입력창에 자동 입력되게"
+                </div>
+                <button class="copy-btn" onclick="copyPrompt(this)">프롬프트 복사</button>
+            </div>
+
+            <div class="prompt-card">
+                <div class="prompt-header">
+                    <div class="ai-logo claude">C</div>
+                    <div>
+                        <h4 style="font-size: 1.3rem; font-weight: 700;">Claude</h4>
+                        <p style="color: var(--text-dim); font-size: 0.9rem;">복잡한 플로우 & 문서화</p>
+                    </div>
+                </div>
+                <div class="prompt-content">
+"주문 상태에 따라 다른 문의 유형을 보여주는 플로우 만들어줘:
+- 배송 전: 주소 변경, 취소
+- 배송 중: 배송 조회
+- 배송 완료: 반품/교환"
+
+"이 기능을 구현하려면 어떤 DB 테이블이 필요할까?
+스키마 초안을 만들어줘"
+                </div>
+                <button class="copy-btn" onclick="copyPrompt(this)">프롬프트 복사</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="meta-note">
+                <strong>💡 메타 노트:</strong> 이 가이드 자체도 Fast Execution 방식으로 제작되었습니다. 
+                Claude가 문서를 읽고 → 4시간 만에 웹 프로토타입을 생성 → 
+                실제 사용 가능한 인터랙티브 가이드로 완성했습니다.
+            </div>
+            <p style="color: var(--text-dim);">
+                그립컴퍼니 프로덕트 기획 조직 • 2026.02<br>
+                <strong style="color: var(--primary);">완벽하지 않더라도 빠르게 시작하고, 함께 개선하는 문화</strong>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleCheck(element) {
+            element.classList.toggle('checked');
+        }
+
+        function copyPrompt(button) {
+            const promptContent = button.previousElementSibling.textContent;
+            navigator.clipboard.writeText(promptContent.trim());
+            
+            const originalText = button.textContent;
+            button.textContent = '✓ 복사됨!';
+            button.style.background = 'var(--success)';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = 'var(--primary)';
+            }, 2000);
+        }
+
+        // Scroll animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.timeline-item, .issue-card, .prompt-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
