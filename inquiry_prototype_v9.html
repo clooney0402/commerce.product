@@ -1,0 +1,2456 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1:1 문의 시스템 - 실시간 동기화 프로토타입</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .split-container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+
+        .view-panel {
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .view-panel.customer {
+            width: 30%;
+            border-right: 3px solid #e0e0e0;
+            flex-shrink: 0;
+        }
+
+        .view-panel.seller {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .resize-handle {
+            width: 5px;
+            background: #e0e0e0;
+            cursor: col-resize;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 30%;
+            z-index: 100;
+            transition: background 0.2s;
+        }
+
+        .resize-handle:hover {
+            background: #8b9db8;
+        }
+
+        .resize-handle::after {
+            content: '⋮';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #999;
+            font-size: 16px;
+        }
+
+        .panel-header {
+            background: #f8f9fa;
+            color: #495057;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .panel-header.seller {
+            background: #f8f9fa;
+        }
+
+        .panel-header-icon {
+            font-size: 20px;
+        }
+
+        .panel-header-text h2 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #343a40;
+        }
+
+        .panel-header-text p {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
+        .seller-console-header {
+            background: #5a6570;
+            color: white;
+            padding: 0;
+            display: flex;
+            align-items: stretch;
+            border-bottom: 1px solid #495057;
+            height: 80px;
+        }
+
+        .seller-console-header-left {
+            background: #6c7680;
+            padding: 20px 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 300px;
+        }
+
+        .seller-console-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .seller-console-subtitle {
+            font-size: 11px;
+            color: #e9ecef;
+            line-height: 1.4;
+        }
+
+        .screen-content {
+            height: calc(100% - 60px);
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* 고객 화면 스타일 */
+        .mobile-frame {
+            max-width: 375px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .mobile-status {
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .mobile-header {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .mobile-header .back-btn {
+            font-size: 20px;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .mobile-header h3 {
+            font-size: 17px;
+            font-weight: 600;
+            flex: 1;
+            text-align: center;
+        }
+
+        .mobile-header .menu-btn {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .inquiry-list {
+            padding: 20px;
+        }
+
+        .info-box {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .inquiry-card {
+            background: white;
+            border: 1px solid #e8e8e8;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+
+        .inquiry-card-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .inquiry-type {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+
+        .type-badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .type-badge.shipping {
+            background: #fff0f0;
+            color: #ff4d4d;
+        }
+
+        .type-badge.exchange {
+            background: #f0f8ff;
+            color: #4d94ff;
+        }
+
+        .inquiry-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .inquiry-seller {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .seller-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .seller-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .inquiry-message {
+            font-size: 13px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .new-inquiry-btn {
+            background: #dc6b6b;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            width: calc(100% - 40px);
+            margin: 0 20px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .new-inquiry-btn:hover {
+            background: #c75b5b;
+            transform: translateY(-2px);
+        }
+
+        /* 문의 유형 선택 화면 */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: flex-end;
+            z-index: 100;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-height: 90%;
+            border-radius: 20px 20px 0 0;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .modal-title {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .ai-notice {
+            display: flex;
+            gap: 10px;
+            background: #fff5f5;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .ai-notice-icon {
+            font-size: 18px;
+        }
+
+        .ai-notice-text {
+            flex: 1;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #666;
+        }
+
+        .inquiry-type-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .type-btn {
+            background: white;
+            border: 1.5px solid #e0e0e0;
+            padding: 20px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .type-btn:hover {
+            border-color: #dc6b6b;
+            background: #fef5f5;
+        }
+
+        .type-btn.selected {
+            border-color: #dc6b6b;
+            background: #fef5f5;
+        }
+
+        .type-btn-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .type-btn-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .order-list {
+            margin-top: 20px;
+        }
+
+        .order-item {
+            display: flex;
+            gap: 12px;
+            padding: 15px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .order-item:hover {
+            border-color: #dc6b6b;
+            background: #fef5f5;
+        }
+
+        .order-item.selected {
+            border-color: #dc6b6b;
+            background: #fef5f5;
+        }
+
+        .order-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 5px;
+        }
+
+        .order-item.selected .order-checkbox {
+            background: #dc6b6b;
+            border-color: #dc6b6b;
+            color: white;
+        }
+
+        .order-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            background: #f0f0f0;
+        }
+
+        .order-info {
+            flex: 1;
+        }
+
+        .order-status {
+            font-size: 11px;
+            color: #dc6b6b;
+            margin-bottom: 4px;
+        }
+
+        .order-number {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .order-name {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .order-price {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .order-date {
+            font-size: 11px;
+            color: #999;
+            text-align: right;
+        }
+
+        .start-inquiry-btn {
+            background: #dc6b6b;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .start-inquiry-btn:disabled {
+            background: #e9c4c4;
+            cursor: not-allowed;
+        }
+
+        /* 채팅 화면 */
+        .chat-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message.system {
+            align-items: center;
+        }
+
+        .message.customer {
+            align-items: flex-end;
+        }
+
+        .message.seller {
+            align-items: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .message.system .message-bubble {
+            background: #e8eaed;
+            color: #666;
+            font-size: 12px;
+            padding: 8px 12px;
+        }
+
+        .message.customer .message-bubble {
+            background: #8b9db8;
+            color: white;
+        }
+
+        .message.seller .message-bubble {
+            background: white;
+            border: 1px solid #e0e0e0;
+        }
+
+        .order-card-in-chat {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 10px 0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .quick-replies {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .quick-reply-title {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .quick-reply-btn {
+            display: block;
+            width: 100%;
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 12px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            text-align: left;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-reply-btn:hover {
+            background: #f8f9fa;
+            border-color: #dc6b6b;
+        }
+
+        .chat-input-container {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .image-btn {
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 1px solid #e0e0e0;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .send-btn {
+            width: 36px;
+            height: 36px;
+            background: #dc6b6b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 만족도 평가 */
+        .rating-modal {
+            background: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .rating-message {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .rating-submessage {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .rating-stars {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .star {
+            font-size: 36px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #e0e0e0;
+        }
+
+        .star.active {
+            color: #dc6b6b;
+        }
+
+        .rating-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .rating-button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .rating-button.later {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .rating-button.submit {
+            background: #dc6b6b;
+            color: white;
+        }
+
+        /* 셀러 콘솔 스타일 */
+        .seller-console {
+            height: 100%;
+            display: flex;
+            width: 100%;
+        }
+
+        .console-sidebar {
+            width: 320px;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            background: #fafafa;
+            flex-shrink: 0;
+        }
+
+        .console-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background: white;
+        }
+
+        .console-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .console-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .stat-badge.waiting {
+            background: #fff5f5;
+            color: #dc6b6b;
+        }
+
+        .stat-badge.progress {
+            background: #f0f8ff;
+            color: #4d94ff;
+        }
+
+        .console-tabs {
+            display: flex;
+            padding: 0 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background: white;
+        }
+
+        .console-tab {
+            padding: 15px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .console-tab.active {
+            color: #8b9db8;
+            border-bottom-color: #8b9db8;
+        }
+
+        .status-tab {
+            transition: all 0.2s;
+            color: #666;
+        }
+
+        .status-tab:hover {
+            background: #f8f9fa !important;
+        }
+
+        .status-tab.active {
+            background: #8b9db8 !important;
+            color: white !important;
+        }
+
+        .inquiry-list-console {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .inquiry-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .inquiry-item:hover {
+            border-color: #8b9db8;
+            box-shadow: 0 2px 8px rgba(139,157,184,0.15);
+        }
+
+        .inquiry-item.active {
+            border-color: #8b9db8;
+            background: #f8f9fa;
+        }
+
+        .inquiry-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .customer-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .customer-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .customer-badge {
+            background: #fff5f5;
+            color: #dc6b6b;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .inquiry-item-badge {
+            background: #dc6b6b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .inquiry-item-message {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .inquiry-item-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .inquiry-item-type {
+            color: #999;
+        }
+
+        .inquiry-item-time {
+            color: #999;
+        }
+
+        .console-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .console-chat-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+        }
+
+        .console-chat-customer {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .console-customer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .console-customer-info h3 {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .console-customer-info p {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .console-chat-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .console-action-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .console-action-btn:hover {
+            background: #f8f9fa;
+        }
+
+        .console-action-btn.end {
+            background: #dc6b6b;
+            color: white;
+            border: none;
+        }
+
+        .console-empty {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .customer-detail-panel {
+            width: 320px;
+            border-left: 1px solid #e0e0e0;
+            background: white;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .detail-section {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background: white;
+        }
+
+        .detail-section:last-child {
+            border-bottom: none;
+        }
+
+        .detail-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .detail-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .detail-label {
+            color: #666;
+        }
+
+        .detail-value {
+            font-weight: 500;
+        }
+
+        .order-detail-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .order-detail-name {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .order-detail-status {
+            font-size: 12px;
+            color: #4d94ff;
+        }
+
+        .history-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .history-date {
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .history-text {
+            color: #666;
+        }
+
+        .new-badge {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* 반응형 */
+        @media (max-width: 1200px) {
+            .customer-detail-panel {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="split-container">
+        <!-- 고객 화면 -->
+        <div class="view-panel customer">
+            <div class="panel-header">
+                <div class="panel-header-icon">👤</div>
+                <div class="panel-header-text">
+                    <h2>고객 화면</h2>
+                    <p>User Service</p>
+                </div>
+            </div>
+            <div class="screen-content" id="customerScreen">
+                <!-- 화면 1: 문의 목록 -->
+                <div id="screen-inquiry-list" class="mobile-frame">
+                    <div class="mobile-status">
+                        <span>8:06</span>
+                        <span>📶 📶 🔋</span>
+                    </div>
+                    <div class="mobile-header">
+                        <div class="back-btn">‹</div>
+                        <h3>내 1:1 문의 내역</h3>
+                        <div class="menu-btn"></div>
+                    </div>
+                    
+                    <div class="inquiry-list">
+                        <div class="info-box">
+                            채팅형 문의 서비스가 시작되었습니다.<br>
+                            이전 문의 내역도 아래에서 확인할 수 있습니다.
+                        </div>
+
+                        <div class="section-title">진행 중인 문의</div>
+                        
+                        <div class="inquiry-card">
+                            <div class="inquiry-card-header">
+                                <div class="inquiry-type">
+                                    <span>주문/배송</span>
+                                    <span class="type-badge shipping">답변대기</span>
+                                </div>
+                                <div class="inquiry-time">2026.01.27 16:45</div>
+                            </div>
+                            <div class="inquiry-seller">
+                                <div class="seller-avatar"></div>
+                                <div class="seller-name">킬리유나</div>
+                            </div>
+                            <div class="inquiry-message">현재 배송 준비중입니다. 잠시만 기다려주세요.</div>
+                        </div>
+
+                        <div class="inquiry-card">
+                            <div class="inquiry-card-header">
+                                <div class="inquiry-type">
+                                    <span>주문/배송</span>
+                                    <span class="type-badge exchange">상담중</span>
+                                </div>
+                                <div class="inquiry-time">2026.01.27 16:45</div>
+                            </div>
+                            <div class="inquiry-seller">
+                                <div class="seller-avatar"></div>
+                                <div class="seller-name">민주의 사심소평 SASIM</div>
+                            </div>
+                            <div class="inquiry-message">결제진행에 괜찮아요~ 일찍주시면 감사합니다 잠시만 기다려 주세요.</div>
+                        </div>
+
+                        <div class="section-title">이전 문의 내역</div>
+                        
+                        <div class="inquiry-card">
+                            <div class="inquiry-card-header">
+                                <div class="inquiry-type">
+                                    <span>상품상세</span>
+                                </div>
+                                <div class="inquiry-time">2026.01.27 16:45</div>
+                            </div>
+                            <div class="inquiry-seller">
+                                <div class="seller-avatar"></div>
+                                <div class="seller-name">킬리유나</div>
+                            </div>
+                            <div class="inquiry-message">발송나갔어요!</div>
+                        </div>
+                    </div>
+
+                    <button class="new-inquiry-btn" onclick="showInquiryType()">새 문의하기</button>
+                </div>
+
+                <!-- 모달: 문의 유형 선택 -->
+                <div id="modal-inquiry-type" class="modal-overlay">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3 class="modal-title">문의작성</h3>
+                            <div class="close-btn" onclick="closeModal('modal-inquiry-type')">✕</div>
+                        </div>
+                        <div class="modal-body">
+                            <div class="ai-notice">
+                                <div class="ai-notice-icon">🤖</div>
+                                <div class="ai-notice-text">
+                                    <strong>AI 상담 운영안내</strong><br>
+                                    빠른 상담을 위해 AI가 먼저 응답합니다.<br>
+                                    욕설이나 개인정보 입력 시 답변이 제한됩니다.
+                                </div>
+                            </div>
+
+                            <h4 style="font-size: 15px; font-weight: 600; margin-bottom: 15px;">무엇에 대한 문의인가요?</h4>
+                            <div class="inquiry-type-grid">
+                                <div class="type-btn" onclick="selectType('delivery')">
+                                    <div class="type-btn-icon">🚚</div>
+                                    <div class="type-btn-text">주문/배송</div>
+                                </div>
+                                <div class="type-btn" onclick="selectType('product')">
+                                    <div class="type-btn-icon">📦</div>
+                                    <div class="type-btn-text">상품 상세</div>
+                                </div>
+                                <div class="type-btn" onclick="selectType('cancel')">
+                                    <div class="type-btn-icon">🔄</div>
+                                    <div class="type-btn-text">취소/반품</div>
+                                </div>
+                                <div class="type-btn" onclick="selectType('etc')">
+                                    <div class="type-btn-icon">💬</div>
+                                    <div class="type-btn-text">기타 문의</div>
+                                </div>
+                            </div>
+
+                            <div id="delivery-options" style="display: none;">
+                                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 10px; color: #dc6b6b;">배송 위치가 궁금하신가요?</h4>
+                                <p style="font-size: 12px; color: #666; margin-bottom: 15px;">상담원 연결보다 더 빠릅니다!</p>
+                                <button class="type-btn" style="width: 100%; text-align: left; padding: 12px 15px; margin-bottom: 30px;" onclick="alert('배송 조회 기능으로 이동')">
+                                    <span style="margin-right: 8px;">🚚</span>
+                                    <span style="font-weight: 600;">배송조회 바로가기 ›</span>
+                                </button>
+
+                                <h4 style="font-size: 15px; font-weight: 600; margin-bottom: 15px;">어떤 상품인가요?</h4>
+                                <div class="order-list">
+                                    <div class="order-item" onclick="selectOrder(this)">
+                                        <div class="order-checkbox">✓</div>
+                                        <div class="order-image"></div>
+                                        <div class="order-info">
+                                            <div class="order-status">배송중</div>
+                                            <div class="order-number">1594488014</div>
+                                            <div class="order-name">[진짜] 직장인이 신기좋은 플랫슈즈 다양...</div>
+                                            <div class="order-price">12,000원</div>
+                                        </div>
+                                        <div class="order-date">2026.01.27</div>
+                                    </div>
+
+                                    <div class="order-item" onclick="selectOrder(this)">
+                                        <div class="order-checkbox">✓</div>
+                                        <div class="order-image"></div>
+                                        <div class="order-info">
+                                            <div class="order-status">배송완료</div>
+                                            <div class="order-number">1594488014</div>
+                                            <div class="order-name">[진짜] 직장인이 신기좋은 플랫슈즈 다양...</div>
+                                            <div class="order-price">12,000원</div>
+                                        </div>
+                                        <div class="order-date">2026.01.27</div>
+                                    </div>
+                                </div>
+
+                                <button class="start-inquiry-btn" id="start-btn" disabled onclick="startChat()">1:1 문의 시작하기</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 화면 2: 채팅 -->
+                <div id="screen-chat" class="mobile-frame" style="display: none;">
+                    <div class="mobile-status">
+                        <span>8:06</span>
+                        <span>📶 📶 🔋</span>
+                    </div>
+                    <div class="mobile-header">
+                        <div class="back-btn" onclick="backToList()">‹</div>
+                        <h3>1:1 문의</h3>
+                        <div class="menu-btn">⋮</div>
+                    </div>
+
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message system">
+                                <div class="message-bubble">AI 상담사가 연결되었습니다.</div>
+                            </div>
+                        </div>
+
+                        <div class="quick-replies" id="quickReplies">
+                            <div class="quick-reply-title">무엇을 도와드릴까요?<br>아래 버튼을 누르면 바로 확인에 드려요.</div>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('📦 배송 언제 와요?')">📦 배송 언제 와요?</button>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('🙏 반품 절차 알려요')">🙏 반품 절차 알려요</button>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('📍주소 변경해요')">📍주소 변경해요</button>
+                        </div>
+
+                        <div class="chat-input-container">
+                            <div class="image-btn">📷</div>
+                            <input type="text" class="chat-input" placeholder="새 문의를 작성 하세요..." id="chatInput" onkeypress="handleEnter(event)">
+                            <button class="send-btn" onclick="sendMessage()">↑</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 만족도 평가 -->
+                <div id="modal-rating" class="modal-overlay">
+                    <div class="modal-content">
+                        <div class="rating-modal">
+                            <div class="rating-message">상담에 만족하셨나요?</div>
+                            <div class="rating-submessage">더 나은 서비스를 위해 평가해주세요.</div>
+                            <div class="rating-stars" id="ratingStars">
+                                <span class="star" onclick="setRating(1)">★</span>
+                                <span class="star" onclick="setRating(2)">★</span>
+                                <span class="star" onclick="setRating(3)">★</span>
+                                <span class="star" onclick="setRating(4)">★</span>
+                                <span class="star" onclick="setRating(5)">★</span>
+                            </div>
+                            <div class="rating-buttons">
+                                <button class="rating-button later" onclick="closeModal('modal-rating')">다음에</button>
+                                <button class="rating-button submit" onclick="submitRating()">평가하기</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 셀러 콘솔 -->
+        <div class="view-panel seller">
+            <div class="screen-content" style="height: 100%;">
+                <div class="seller-console">
+                    <!-- 사이드바: 문의 목록 -->
+                    <div class="console-sidebar">
+                        <div class="console-header" style="padding: 20px; border-bottom: 1px solid #e0e0e0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h2 style="font-size: 20px; font-weight: 700; margin: 0;">1:1 문의 관리</h2>
+                                <div style="display: flex; gap: 8px;">
+                                    <button style="background: white; color: #666; border: 1px solid #e0e0e0; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">편집</button>
+                                    <button style="background: #8b9db8; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;" onclick="showNewMessageModal()">+ 새 메시지</button>
+                                </div>
+                            </div>
+
+                            <!-- 상태 탭 -->
+                            <div style="display: flex; gap: 0; margin-bottom: 15px; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                                <div class="status-tab active" onclick="changeStatusTab(this, 'all')" style="flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; background: white; border-right: 1px solid #e0e0e0;">전체</div>
+                                <div class="status-tab" onclick="changeStatusTab(this, 'waiting')" style="flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; background: white; border-right: 1px solid #e0e0e0;">대기</div>
+                                <div class="status-tab" onclick="changeStatusTab(this, 'progress')" style="flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; background: white; border-right: 1px solid #e0e0e0;">진행</div>
+                                <div class="status-tab" onclick="changeStatusTab(this, 'done')" style="flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; background: white;">완료</div>
+                            </div>
+
+                            <!-- 필터 영역 -->
+                            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                <select style="flex: 1; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: white; cursor: pointer; outline: none;">
+                                    <option>모든 유형</option>
+                                    <option>주문/배송</option>
+                                    <option>상품 상세</option>
+                                    <option>취소/반품</option>
+                                    <option>기타 문의</option>
+                                </select>
+                                <select style="flex: 1; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; background: white; cursor: pointer; outline: none;">
+                                    <option>최신순</option>
+                                    <option>오래된순</option>
+                                </select>
+                            </div>
+
+                            <!-- 일자 선택 -->
+                            <div style="margin-bottom: 15px;">
+                                <input type="date" style="width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; outline: none; cursor: pointer; color: #999;">
+                            </div>
+
+                            <!-- 검색 -->
+                            <div style="display: flex; gap: 8px;">
+                                <div style="flex: 1; position: relative;">
+                                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; font-size: 16px;">🔍</span>
+                                    <input type="text" placeholder="닉네임, 주문번호, 상품명 검색" style="width: 100%; padding: 10px 12px 10px 36px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; outline: none; color: #999;">
+                                </div>
+                                <button style="background: #2c3e50; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">검색</button>
+                            </div>
+                        </div>
+
+                        <div class="inquiry-list-console" id="sellerInquiryList" style="padding: 15px;">
+                            <!-- 문의 카드 1 -->
+                            <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='#8b9db8'; this.style.boxShadow='0 2px 8px rgba(233,30,99,0.1)'" onmouseout="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-weight: 600; font-size: 14px;">김그린</span>
+                                        <span style="background: #fff5f5; color: #8b9db8; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">슈퍼스타</span>
+                                    </div>
+                                    <span style="font-size: 12px; color: #999;">방금 전</span>
+                                </div>
+                                <div style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 8px;">배송 언제 와요?</div>
+                                <div style="font-size: 13px; color: #666; margin-bottom: 12px; line-height: 1.4;">현재 배송 준비중입니다. 잠시만 기다려주세요.</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 12px; color: #999;">주문/배송</span>
+                                    <span style="background: #fff0f0; color: #ff4d4d; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">답변 대기</span>
+                                </div>
+                            </div>
+
+                            <!-- 문의 카드 2 (선택된 상태) -->
+                            <div style="background: #fff5f7; border: 2px solid #8b9db8; border-radius: 8px; padding: 16px; margin-bottom: 12px; cursor: pointer;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-weight: 600; font-size: 14px;">쇼핑대마왕</span>
+                                        <span style="background: #fff0e6; color: #ff9800; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">슈퍼스타</span>
+                                    </div>
+                                    <span style="font-size: 12px; color: #999;">4분 전</span>
+                                </div>
+                                <div style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 8px;">배송 언제 와요?</div>
+                                <div style="font-size: 13px; color: #666; margin-bottom: 12px; line-height: 1.4;">현재 배송 준비중입니다. 잠시만 기다려주세요.</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 12px; color: #999;">주문/배송</span>
+                                    <span style="color: #8b9db8; font-size: 12px; font-weight: 600;">답변 대기</span>
+                                </div>
+                            </div>
+
+                            <!-- 문의 카드 3 -->
+                            <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='#8b9db8'; this.style.boxShadow='0 2px 8px rgba(233,30,99,0.1)'" onmouseout="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-weight: 600; font-size: 14px;">김그린</span>
+                                        <span style="background: #e8f5e9; color: #4caf50; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">스타</span>
+                                    </div>
+                                    <span style="font-size: 12px; color: #999;">8분 전</span>
+                                </div>
+                                <div style="font-size: 15px; font-weight: 600; color: #333; margin-bottom: 8px;">배송 언제 와요?</div>
+                                <div style="font-size: 13px; color: #666; margin-bottom: 12px; line-height: 1.4;">현재 배송 준비중입니다. 잠시만 기다려주세요.</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 12px; color: #999;">주문/배송</span>
+                                    <span style="color: #4caf50; font-size: 12px; font-weight: 600;">상담중</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 메인: 채팅 영역 -->
+                    <div class="console-main" id="consoleMain">
+                        <!-- 채팅 헤더 -->
+                        <div style="padding: 20px 30px; border-bottom: 1px solid #e0e0e0; background: white; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                                    <h3 style="font-size: 18px; font-weight: 700; margin: 0;">쇼핑대마왕</h3>
+                                    <span style="font-size: 13px; color: #999;">주문/배송</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button style="background: white; border: 1px solid #e0e0e0; padding: 8px 16px; border-radius: 6px; font-size: 13px; color: #666; cursor: pointer; font-weight: 500;">초기화</button>
+                                <button style="background: #8b9db8; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 600;">상담 종료</button>
+                            </div>
+                        </div>
+
+                        <!-- 채팅 메시지 영역 -->
+                        <div style="flex: 1; overflow-y: auto; padding: 20px 30px; background: #f8f9fa;">
+                            <!-- AI 시스템 메시지 -->
+                            <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                                <div style="background: #5a6268; color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px;">
+                                    AI 스마트 시스템에 연결되었습니다.
+                                </div>
+                            </div>
+
+                            <!-- 주문 정보 카드 -->
+                            <div style="background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 15px; margin-bottom: 20px; max-width: 450px;">
+                                <div style="display: flex; gap: 12px;">
+                                    <div style="width: 70px; height: 70px; background: #f0f0f0; border-radius: 8px; flex-shrink: 0;"></div>
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                            <span style="color: #8b9db8; font-size: 12px; font-weight: 600;">배송중</span>
+                                            <span style="font-size: 12px; color: #999;">2026.01.27</span>
+                                        </div>
+                                        <div style="font-size: 11px; color: #999; margin-bottom: 4px;">1594488014</div>
+                                        <div style="font-size: 13px; font-weight: 500; margin-bottom: 6px; color: #333;">[진짜] 직장인이 신기좋은 플랫슈즈 다양...</div>
+                                        <div style="font-size: 14px; font-weight: 700;">12,000원</div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 12px; text-align: right;">
+                                    <button style="background: #2c3e50; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">문의 상품 자동 진입</button>
+                                </div>
+                            </div>
+
+                            <!-- 고객 메시지 1 -->
+                            <div style="margin-bottom: 20px;">
+                                <div style="display: inline-block; background: white; border: 1px solid #e0e0e0; padding: 12px 16px; border-radius: 12px; max-width: 70%; font-size: 14px; line-height: 1.5;">
+                                    안녕하세요! 무엇을 도와드릴까요?<br>
+                                    아래 버튼을 누르면 바로 확인에 드려요.
+                                </div>
+                            </div>
+
+                            <!-- 빠른 답변 버튼들 -->
+                            <div style="margin-bottom: 20px; max-width: 70%;">
+                                <button style="display: block; width: 100%; background: white; border: 1px solid #e0e0e0; padding: 10px 15px; border-radius: 20px; font-size: 13px; text-align: left; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
+                                    📦 배송 언제 와요?
+                                </button>
+                                <button style="display: block; width: 100%; background: white; border: 1px solid #e0e0e0; padding: 10px 15px; border-radius: 20px; font-size: 13px; text-align: left; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
+                                    🙏 반품 절차 알려요
+                                </button>
+                                <button style="display: block; width: 100%; background: white; border: 1px solid #e0e0e0; padding: 10px 15px; border-radius: 20px; font-size: 13px; text-align: left; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
+                                    📍주소 변경해요
+                                </button>
+                            </div>
+
+                            <!-- 시스템 메시지 -->
+                            <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                                <div style="background: #5a6268; color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px;">
+                                    궁금한 것이 있어요.
+                                </div>
+                            </div>
+
+                            <!-- 고객 메시지 2 -->
+                            <div style="margin-bottom: 20px;">
+                                <div style="display: inline-block; background: white; border: 1px solid #e0e0e0; padding: 12px 16px; border-radius: 12px; max-width: 70%; font-size: 14px; line-height: 1.5;">
+                                    확인해 드리겠습니다.
+                                </div>
+                            </div>
+
+                            <!-- 빠른 답변 버튼들 2 -->
+                            <div style="margin-bottom: 20px; max-width: 70%;">
+                                <button style="display: block; width: 100%; background: white; border: 1px solid #e0e0e0; padding: 10px 15px; border-radius: 20px; font-size: 13px; text-align: left; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
+                                    ✅ 확인됨
+                                </button>
+                                <button style="display: block; width: 100%; background: white; border: 1px solid #e0e0e0; padding: 10px 15px; border-radius: 20px; font-size: 13px; text-align: left; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
+                                    😊 부족해요
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 프리셋 문구 영역 -->
+                        <div style="background: white; border-top: 1px solid #e0e0e0; padding: 12px 30px;">
+                            <div style="display: flex; gap: 8px; align-items: center; overflow-x: auto; white-space: nowrap;">
+                                <button style="background: #fff5e6; border: 1px solid #ffe0b2; padding: 6px 12px; border-radius: 16px; font-size: 12px; cursor: pointer; flex-shrink: 0;">😊 안녕하세요! 무엇을 도와드릴까요?</button>
+                                <button style="background: #f0f8ff; border: 1px solid #b3d9ff; padding: 6px 12px; border-radius: 16px; font-size: 12px; cursor: pointer; flex-shrink: 0;">📦 배송 발송 기준 7일 입니다</button>
+                                <button style="background: #f0f0f0; border: 1px solid #d0d0d0; padding: 6px 12px; border-radius: 16px; font-size: 12px; cursor: pointer; flex-shrink: 0;">🙏 잠시만 기다려주세요</button>
+                                <button style="background: #fff5f5; border: 1px solid #ffcdd2; padding: 6px 12px; border-radius: 16px; font-size: 12px; cursor: pointer; flex-shrink: 0;">🙏 최송</button>
+                            </div>
+                        </div>
+
+                        <!-- 메시지 입력 영역 -->
+                        <div style="background: white; border-top: 1px solid #e0e0e0; padding: 15px 30px; display: flex; align-items: center; gap: 12px;">
+                            <button style="background: none; border: none; cursor: pointer; font-size: 24px; color: #999; padding: 0; display: flex; align-items: center; justify-content: center;">📷</button>
+                            <input type="text" placeholder="새 문의를 작성 하세요..." style="flex: 1; border: 1px solid #e0e0e0; padding: 12px 16px; border-radius: 24px; font-size: 14px; outline: none; color: #999;">
+                            <button style="background: #2c3e50; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold;">↑</button>
+                        </div>
+                    </div>
+
+                    <!-- 고객 정보 패널 -->
+                    <div class="customer-detail-panel" id="customerDetailPanel" style="display: block; width: 300px; border-left: 1px solid #e0e0e0; background: white; overflow-y: auto;">
+                        <!-- 고객정보 헤더 -->
+                        <div style="padding: 20px; border-bottom: 1px solid #f0f0f0;">
+                            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 15px;">고객정보</h3>
+                            
+                            <!-- 프로필 -->
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                                <div style="width: 48px; height: 48px; border-radius: 50%; background: #e0e0e0; display: flex; align-items: center; justify-content: center; color: #999; font-size: 24px;">👤</div>
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                        <span style="font-weight: 600; font-size: 15px;">쇼핑대마왕</span>
+                                        <span style="background: #fff0e6; color: #ff9800; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">슈퍼스타</span>
+                                    </div>
+                                    <div style="font-size: 13px; color: #666;">010-12**-56**</div>
+                                </div>
+                            </div>
+
+                            <!-- 통계 카드 -->
+                            <div style="display: flex; gap: 10px; text-align: center;">
+                                <div style="flex: 1; cursor: pointer;" onclick="showOrderList('purchase')">
+                                    <div style="font-size: 18px; font-weight: 700; color: #333; margin-bottom: 4px;">12</div>
+                                    <div style="font-size: 12px; color: #666;">구매 건수</div>
+                                </div>
+                                <div style="flex: 1; cursor: pointer;" onclick="showOrderList('cancel')">
+                                    <div style="font-size: 18px; font-weight: 700; color: #333; margin-bottom: 4px;">0</div>
+                                    <div style="font-size: 12px; color: #666;">취소 건수</div>
+                                </div>
+                                <div style="flex: 1; cursor: pointer;" onclick="showOrderList('return')">
+                                    <div style="font-size: 18px; font-weight: 700; color: #8b9db8; margin-bottom: 4px;">0</div>
+                                    <div style="font-size: 12px; color: #666;">반품 건수</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 주문 리스트 모달 (숨김) -->
+                        <div id="orderListModal" style="display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: white; z-index: 10; overflow-y: auto;">
+                            <div style="padding: 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
+                                <h3 style="font-size: 16px; font-weight: 700; margin: 0;" id="orderListTitle">구매 목록</h3>
+                                <button onclick="closeOrderList()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">×</button>
+                            </div>
+                            <div id="orderListContent" style="padding: 15px;">
+                                <!-- 동적으로 채워질 영역 -->
+                            </div>
+                            <div style="padding: 15px; display: flex; justify-content: center; gap: 8px;" id="orderListPagination">
+                                <!-- 페이지네이션 -->
+                            </div>
+                        </div>
+
+                        <!-- 관련 주문 상품 -->
+                        <div style="padding: 20px; border-bottom: 1px solid #f0f0f0;">
+                            <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px;">관련 주문 상품</h3>
+                            
+                            <div style="background: #f8f9fa; border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                    <div style="width: 50px; height: 50px; background: #e0e0e0; border-radius: 6px; flex-shrink: 0;"></div>
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                            <span style="background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600;">방송상품</span>
+                                        </div>
+                                        <div style="font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px;">[진짜] 직장인이 신기좋은 플랫슈즈 다양한 컬러 테.....</div>
+                                        <div style="font-size: 12px; color: #666; margin-bottom: 2px;">품목: [블랙] 면트</div>
+                                        <div style="font-size: 14px; font-weight: 700; color: #333;">23,000원</div>
+                                    </div>
+                                </div>
+                                <div style="font-size: 12px; color: #666; margin-bottom: 2px;">
+                                    <span style="color: #999;">주문번호</span>
+                                    <span style="float: right;">1594488014</span>
+                                </div>
+                                <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
+                                    <span style="color: #999;">주문일자</span>
+                                    <span style="float: right;">2026.01.27</span>
+                                </div>
+                                <div style="font-size: 12px; margin-bottom: 8px;">
+                                    <span style="color: #999;">상태</span>
+                                    <span style="float: right; color: #8b9db8; font-weight: 600;">배송 완료 (C나 대림물류)</span>
+                                </div>
+                                <div style="text-align: center;">
+                                    <button style="background: white; border: 1px solid #e0e0e0; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; width: 100%;">주문 상세보기 ›</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 지난 상담 이력 -->
+                        <div style="padding: 20px; border-bottom: 1px solid #f0f0f0;">
+                            <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px;">지난 상담 이력</h3>
+                            
+                            <div id="chatHistoryList" style="max-height: 300px; overflow-y: auto;">
+                                <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                        <span style="font-size: 11px; color: #999;">주문/배송</span>
+                                        <span style="font-size: 11px; color: #999;">2026.01.27 16:45</span>
+                                    </div>
+                                    <div style="font-size: 13px; color: #333; font-weight: 500;">배송 언제 와요?</div>
+                                    <div style="text-align: right; margin-top: 4px;">
+                                        <span style="color: #4caf50; font-size: 11px; font-weight: 600;">상담중</span>
+                                    </div>
+                                </div>
+
+                                <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                        <span style="font-size: 11px; color: #999;">주문/배송</span>
+                                        <span style="font-size: 11px; color: #999;">2026.01.27 16:45</span>
+                                    </div>
+                                    <div style="font-size: 13px; color: #333; font-weight: 500;">반제에 이것이 있는거 같아요.</div>
+                                    <div style="text-align: right; margin-top: 4px;">
+                                        <span style="color: #4caf50; font-size: 11px; font-weight: 600;">상담중</span>
+                                    </div>
+                                </div>
+
+                                <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                        <span style="font-size: 11px; color: #999;">상품 상세</span>
+                                        <span style="font-size: 11px; color: #999;">2026.01.27 16:45</span>
+                                    </div>
+                                    <div style="font-size: 13px; color: #333; font-weight: 500;">배송 언제 와요?</div>
+                                    <div style="text-align: right; margin-top: 4px;">
+                                        <span style="color: #999; font-size: 11px; font-weight: 600;">답변 대기</span>
+                                    </div>
+                                </div>
+
+                                <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                        <span style="font-size: 11px; color: #999;">기타 문의</span>
+                                        <span style="font-size: 11px; color: #999;">2026.01.27 16:45</span>
+                                    </div>
+                                    <div style="font-size: 13px; color: #333; font-weight: 500;">배송 언제 와요?</div>
+                                    <div style="text-align: right; margin-top: 4px;">
+                                        <span style="color: #4caf50; font-size: 11px; font-weight: 600;">상담중</span>
+                                    </div>
+                                </div>
+
+                                <div style="padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='#f8f9fa'">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                        <span style="font-size: 11px; color: #999;">주문/배송</span>
+                                        <span style="font-size: 11px; color: #999;">2026.01.27 16:45</span>
+                                    </div>
+                                    <div style="font-size: 13px; color: #333; font-weight: 500;">퍼이미 발송 신청은 집에는 안일되네 구매결제 취이...</div>
+                                    <div style="text-align: right; margin-top: 4px;">
+                                        <span style="color: #2196f3; font-size: 11px; font-weight: 600;">상담 종료</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 판매자 메모 -->
+                        <div style="padding: 20px;">
+                            <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px;">판매자 메모 (비공개)</h3>
+                            
+                            <!-- 저장된 메모 표시 영역 -->
+                            <div id="savedMemoDisplay" style="display: none; background: #fff9e6; border: 1px solid #ffe0b2; border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                                <div style="font-size: 13px; color: #333; line-height: 1.5; margin-bottom: 8px;" id="savedMemoText"></div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 11px; color: #999;" id="savedMemoTime"></span>
+                                    <button onclick="editMemo()" style="background: none; border: none; color: #666; font-size: 12px; cursor: pointer; text-decoration: underline;">수정</button>
+                                </div>
+                            </div>
+
+                            <!-- 메모 입력 영역 -->
+                            <div id="memoInputArea">
+                                <textarea id="sellerMemoInput" placeholder="재입고 시 구매 희망, 친절한고객 등" style="width: 100%; min-height: 80px; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; font-size: 13px; resize: vertical; outline: none; font-family: inherit; line-height: 1.5;"></textarea>
+                                <button onclick="saveMemo()" style="width: 100%; background: #8b9db8; color: white; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 8px;">메모 저장</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 셀러 새 메시지 모달 -->
+    <div id="modal-seller-new-message" class="modal-overlay" style="position: fixed; z-index: 1000;">
+        <div class="modal-content" style="max-width: 600px; margin: 0 auto; margin-top: 10vh;">
+            <div class="modal-header" style="background: #2c3e50; color: white;">
+                <h3 class="modal-title">👤 새로운 대화 시작</h3>
+                <div class="close-btn" onclick="closeModal('modal-seller-new-message')" style="color: white;">✕</div>
+            </div>
+            <div class="modal-body" style="padding: 30px;">
+                <div style="margin-bottom: 20px;">
+                    <input type="text" id="customerSearchInput" placeholder="닉네임, 이용자 코드 검색" style="width: 100%; padding: 15px; border: 2px solid #dc6b6b; border-radius: 12px; font-size: 15px; outline: none;" oninput="searchCustomer(this.value)">
+                </div>
+                
+                <div id="customerSearchResult" style="min-height: 200px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 14px;">
+                    닉네임 또는 이용자코드를 입력하여 검색하세요.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedOrder = null;
+        let selectedRating = 0;
+        let currentInquiryId = null;
+        let hasNewSellerMessage = false;
+        let currentMemo = '';
+        let currentOrderListType = '';
+        let currentPage = 1;
+
+        // 더미 주문 데이터
+        const mockOrders = {
+            purchase: [
+                { id: 1, name: '[진짜] 직장인이 신기좋은 플랫슈즈', price: '23,000원', date: '2026.01.27', status: '배송완료' },
+                { id: 2, name: '겨울 패딩 코트', price: '89,000원', date: '2026.01.20', status: '배송완료' },
+                { id: 3, name: '스마트워치 실리콘 밴드', price: '15,000원', date: '2026.01.15', status: '배송완료' },
+                { id: 4, name: '무선 이어폰', price: '45,000원', date: '2026.01.10', status: '배송완료' },
+                { id: 5, name: '노트북 파우치', price: '25,000원', date: '2026.01.05', status: '배송완료' },
+            ],
+            cancel: [],
+            return: []
+        };
+
+        function showOrderList(type) {
+            const modal = document.getElementById('orderListModal');
+            const title = document.getElementById('orderListTitle');
+            const content = document.getElementById('orderListContent');
+            
+            currentOrderListType = type;
+            currentPage = 1;
+
+            // 타이틀 설정
+            const titles = {
+                purchase: '구매 목록',
+                cancel: '취소 목록',
+                return: '반품 목록'
+            };
+            title.textContent = titles[type];
+
+            // 리스트 렌더링
+            renderOrderList();
+
+            modal.style.display = 'block';
+        }
+
+        function renderOrderList() {
+            const content = document.getElementById('orderListContent');
+            const pagination = document.getElementById('orderListPagination');
+            const orders = mockOrders[currentOrderListType];
+            
+            if (orders.length === 0) {
+                content.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">내역이 없습니다.</div>';
+                pagination.innerHTML = '';
+                return;
+            }
+
+            // 페이지네이션 (한 페이지에 3개)
+            const itemsPerPage = 3;
+            const totalPages = Math.ceil(orders.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const currentOrders = orders.slice(startIndex, endIndex);
+
+            // 주문 리스트 HTML
+            let html = '';
+            currentOrders.forEach(order => {
+                html += `
+                    <div style="background: #f8f9fa; border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                        <div style="font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px;">${order.name}</div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 4px;">
+                            <span>가격</span>
+                            <span style="font-weight: 600; color: #333;">${order.price}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 4px;">
+                            <span>주문일</span>
+                            <span>${order.date}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #666;">
+                            <span>상태</span>
+                            <span style="color: #4caf50; font-weight: 600;">${order.status}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            content.innerHTML = html;
+
+            // 페이지네이션 버튼
+            if (totalPages > 1) {
+                let paginationHtml = '';
+                for (let i = 1; i <= totalPages; i++) {
+                    const isActive = i === currentPage;
+                    paginationHtml += `
+                        <button onclick="changePage(${i})" style="
+                            width: 32px;
+                            height: 32px;
+                            border: 1px solid ${isActive ? '#8b9db8' : '#e0e0e0'};
+                            background: ${isActive ? '#8b9db8' : 'white'};
+                            color: ${isActive ? 'white' : '#666'};
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-weight: ${isActive ? '600' : '400'};
+                        ">${i}</button>
+                    `;
+                }
+                pagination.innerHTML = paginationHtml;
+            } else {
+                pagination.innerHTML = '';
+            }
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderOrderList();
+        }
+
+        function closeOrderList() {
+            document.getElementById('orderListModal').style.display = 'none';
+        }
+
+        function saveMemo() {
+            const input = document.getElementById('sellerMemoInput');
+            const memo = input.value.trim();
+            
+            if (!memo) {
+                alert('메모 내용을 입력해주세요.');
+                return;
+            }
+
+            currentMemo = memo;
+            
+            // 저장된 메모 표시
+            const savedDisplay = document.getElementById('savedMemoDisplay');
+            const savedText = document.getElementById('savedMemoText');
+            const savedTime = document.getElementById('savedMemoTime');
+            
+            savedText.textContent = memo;
+            const now = new Date();
+            savedTime.textContent = `저장: ${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            savedDisplay.style.display = 'block';
+            document.getElementById('memoInputArea').style.display = 'none';
+            
+            alert('메모가 저장되었습니다.');
+        }
+
+        function editMemo() {
+            const input = document.getElementById('sellerMemoInput');
+            input.value = currentMemo;
+            
+            document.getElementById('savedMemoDisplay').style.display = 'none';
+            document.getElementById('memoInputArea').style.display = 'block';
+            
+            input.focus();
+        }
+
+        function changeStatusTab(element, status) {
+            // 모든 탭에서 active 제거
+            document.querySelectorAll('.status-tab').forEach(tab => {
+                tab.classList.remove('active');
+                tab.style.background = 'white';
+                tab.style.color = '#666';
+            });
+            
+            // 클릭된 탭에 active 추가
+            element.classList.add('active');
+            element.style.background = '#8b9db8';
+            element.style.color = 'white';
+
+            // 여기에 필터링 로직 추가 가능
+            console.log('Status changed to:', status);
+        }
+
+        function showNewMessageModal() {
+            document.getElementById('modal-seller-new-message').classList.add('active');
+        }
+
+        function searchCustomer(keyword) {
+            const resultDiv = document.getElementById('customerSearchResult');
+            
+            if (!keyword || keyword.trim().length < 2) {
+                resultDiv.innerHTML = '<div style="text-align: center; color: #999;">닉네임 또는 이용자코드를 입력하여 검색하세요.</div>';
+                return;
+            }
+
+            // 검색 결과 시뮬레이션
+            if (keyword.includes('그린') || keyword.includes('클레') || keyword === '클레') {
+                resultDiv.innerHTML = `
+                    <div style="background: white; border: 2px solid #dc6b6b; border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#fff5f7'" onmouseout="this.style.background='white'" onclick="selectCustomerForMessage()">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 18px;">그</div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">그린메니아</div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="background: #fff5e6; color: #ff9800; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">슈퍼스타</span>
+                                    <span style="font-size: 13px; color: #999;">ID: user_103</span>
+                                </div>
+                            </div>
+                            <button style="background: #dc6b6b; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">대화하기</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = '<div style="text-align: center; color: #999; padding: 40px;">검색 결과가 없습니다.</div>';
+            }
+        }
+
+        function selectCustomerForMessage() {
+            closeModal('modal-seller-new-message');
+            
+            // 셀러 목록에 새 대화 추가
+            const list = document.getElementById('sellerInquiryList');
+            const newItem = document.createElement('div');
+            newItem.className = 'inquiry-item active';
+            newItem.innerHTML = `
+                <div class="inquiry-item-header">
+                    <div class="customer-info">
+                        <span class="customer-name">그린메니아</span>
+                        <span style="background: #fff5e6; color: #ff9800; padding: 2px 6px; border-radius: 4px; font-size: 11px;">슈퍼스타</span>
+                    </div>
+                    <span class="inquiry-item-time">방금 전</span>
+                </div>
+                <div class="inquiry-item-message" style="color: #999; font-style: italic;">대화를 시작했습니다.</div>
+                <div class="inquiry-item-footer">
+                    <span style="color: #dc6b6b; font-weight: 600;">판매자 선문의</span>
+                    <span style="color: #dc6b6b;">새 대화</span>
+                </div>
+            `;
+            
+            list.insertBefore(newItem, list.firstChild);
+
+            // 채팅 화면 열기
+            openSellerOutboundChat();
+        }
+
+        function openSellerOutboundChat() {
+            const consoleMain = document.getElementById('consoleMain');
+            consoleMain.innerHTML = `
+                <div class="console-chat-header">
+                    <div class="console-chat-customer">
+                        <div class="console-customer-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">그</div>
+                        <div class="console-customer-info">
+                            <h3>그린메니아</h3>
+                            <p>판매자 선문의 • 슈퍼스타</p>
+                        </div>
+                    </div>
+                    <div class="console-chat-actions">
+                        <button class="console-action-btn">🔄</button>
+                    </div>
+                </div>
+                <div class="chat-messages" id="sellerOutboundMessages" style="flex: 1; overflow-y: auto; padding: 20px; background: #f8f9fa;">
+                    <div class="message system">
+                        <div class="message-bubble">대화를 시작했습니다. 고객님께 첫 메시지를 보내보세요.</div>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" placeholder="메시지를 입력하세요..." id="sellerOutboundInput" onkeypress="handleSellerOutboundEnter(event)">
+                    <button class="send-btn" onclick="sendSellerOutboundMessage()">↑</button>
+                </div>
+            `;
+
+            // 고객 정보 패널 표시
+            document.getElementById('customerDetailPanel').innerHTML = `
+                <div class="detail-section">
+                    <h3 class="detail-title">고객 정보</h3>
+                    <div class="detail-info-row">
+                        <span class="detail-label">닉네임</span>
+                        <span class="detail-value">그린메니아</span>
+                    </div>
+                    <div class="detail-info-row">
+                        <span class="detail-label">연락처</span>
+                        <span class="detail-value">010-****-1234</span>
+                    </div>
+                    <div class="detail-info-row">
+                        <span class="detail-label">등급</span>
+                        <span class="detail-value" style="color: #ff9800; font-weight: 600;">슈퍼스타</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 class="detail-title">요약 정보</h3>
+                    <div class="detail-info-row">
+                        <span class="detail-label">구매건수</span>
+                        <span class="detail-value">28건</span>
+                    </div>
+                    <div class="detail-info-row">
+                        <span class="detail-label">취소건수</span>
+                        <span class="detail-value">0건</span>
+                    </div>
+                    <div class="detail-info-row">
+                        <span class="detail-label">반품건수</span>
+                        <span class="detail-value">1건</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 class="detail-title">최근 주문</h3>
+                    <div class="order-detail-card">
+                        <div class="order-detail-name">[타임세일] 겨울 패딩 코트</div>
+                        <div class="order-detail-status">배송완료</div>
+                    </div>
+                    <div class="order-detail-card">
+                        <div class="order-detail-name">스마트워치 실리콘 밴드</div>
+                        <div class="order-detail-status">배송중</div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 class="detail-title">지난 상담 이력</h3>
+                    <div class="history-item">
+                        <div class="history-date">2026.01.20</div>
+                        <div class="history-text">배송 관련 문의 - 해결완료</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('customerDetailPanel').style.display = 'block';
+        }
+
+        function sendSellerOutboundMessage() {
+            const input = document.getElementById('sellerOutboundInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // 셀러 메시지 추가
+            const messages = document.getElementById('sellerOutboundMessages');
+            const msg = document.createElement('div');
+            msg.className = 'message seller';
+            msg.innerHTML = `<div class="message-bubble">${message}</div>`;
+            messages.appendChild(msg);
+            messages.scrollTop = messages.scrollHeight;
+
+            input.value = '';
+
+            // 고객 측에 알림 표시
+            setTimeout(() => {
+                notifyCustomerNewMessage(message);
+            }, 500);
+        }
+
+        function handleSellerOutboundEnter(event) {
+            if (event.key === 'Enter') {
+                sendSellerOutboundMessage();
+            }
+        }
+
+        function notifyCustomerNewMessage(message) {
+            hasNewSellerMessage = true;
+
+            // 고객 문의 목록에 새 카드 추가 (최상단)
+            const inquiryList = document.querySelector('#screen-inquiry-list .inquiry-list');
+            const firstSection = inquiryList.querySelector('.section-title');
+            
+            const newCard = document.createElement('div');
+            newCard.className = 'inquiry-card';
+            newCard.style.border = '2px solid #dc6b6b';
+            newCard.style.background = '#fff5f7';
+            newCard.style.position = 'relative';
+            newCard.innerHTML = `
+                <div style="position: absolute; top: -8px; right: -8px; width: 16px; height: 16px; background: #dc6b6b; border-radius: 50%; border: 2px solid white; animation: pulse 2s infinite;"></div>
+                <div class="inquiry-card-header">
+                    <div class="inquiry-type">
+                        <span style="background: #dc6b6b; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">판매자 선문의</span>
+                        <span style="color: #dc6b6b; font-weight: 600; font-size: 12px;">🔴 새 메시지</span>
+                    </div>
+                    <div class="inquiry-time">방금 전</div>
+                </div>
+                <div class="inquiry-seller">
+                    <div class="seller-avatar"></div>
+                    <div class="seller-name">킬리유나</div>
+                </div>
+                <div class="inquiry-message">${message}</div>
+            `;
+            
+            firstSection.insertAdjacentElement('afterend', newCard);
+
+            // 넛징 메시지 표시
+            showCustomerNotification();
+
+            // 카드 클릭 시 채팅 화면으로 이동
+            newCard.onclick = function() {
+                openCustomerChatFromSeller(message);
+            };
+        }
+
+        function showCustomerNotification() {
+            // 화면 상단에 넛징 표시
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                left: 50%;
+                transform: translateX(-50%) translateY(-20px);
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+                z-index: 9999;
+                font-size: 14px;
+                font-weight: 600;
+                opacity: 0;
+                animation: slideDown 0.5s ease forwards;
+            `;
+            notification.innerHTML = '💬 판매자에게 메시지가 도착했어요!';
+            
+            // 애니메이션 추가
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideDown {
+                    to {
+                        transform: translateX(-50%) translateY(0);
+                        opacity: 1;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(notification);
+
+            // 3초 후 제거
+            setTimeout(() => {
+                notification.style.animation = 'slideDown 0.5s ease reverse';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+
+        function openCustomerChatFromSeller(message) {
+            document.getElementById('screen-inquiry-list').style.display = 'none';
+            document.getElementById('screen-chat').style.display = 'block';
+
+            const messages = document.getElementById('chatMessages');
+            messages.innerHTML = `
+                <div class="message system">
+                    <div class="message-bubble">판매자가 대화를 시작했습니다.</div>
+                </div>
+                <div class="message seller">
+                    <div class="message-bubble">${message}</div>
+                </div>
+            `;
+
+            // 퀵 리플라이 숨기기
+            document.getElementById('quickReplies').style.display = 'none';
+        }
+
+        function showInquiryType() {
+            document.getElementById('modal-inquiry-type').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function selectType(type) {
+            // 모든 버튼에서 selected 제거
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // 클릭된 버튼에 selected 추가
+            event.target.closest('.type-btn').classList.add('selected');
+
+            // 배송 옵션 표시
+            if (type === 'delivery') {
+                document.getElementById('delivery-options').style.display = 'block';
+            }
+        }
+
+        function selectOrder(element) {
+            // 기존 선택 해제
+            document.querySelectorAll('.order-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // 새로 선택
+            element.classList.add('selected');
+            selectedOrder = element;
+            
+            // 버튼 활성화
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('start-btn').style.background = '#dc6b6b';
+        }
+
+        function startChat() {
+            if (!selectedOrder) return;
+
+            // 모달 닫기
+            closeModal('modal-inquiry-type');
+
+            // 채팅 화면 표시
+            document.getElementById('screen-inquiry-list').style.display = 'none';
+            document.getElementById('screen-chat').style.display = 'block';
+
+            // 주문 정보 카드 추가
+            const orderCard = `
+                <div class="order-card-in-chat">
+                    <div class="order-image"></div>
+                    <div class="order-info">
+                        <div class="order-status">배송중</div>
+                        <div class="order-number">주문번호: 1594488014</div>
+                        <div class="order-name">[진짜] 직장인이 신기좋은 플랫슈즈 다양...</div>
+                        <div class="order-price">12,000원</div>
+                    </div>
+                </div>
+            `;
+
+            const messages = document.getElementById('chatMessages');
+            const systemMsg = document.createElement('div');
+            systemMsg.className = 'message system';
+            systemMsg.innerHTML = `<div class="message-bubble">${orderCard}<div style="margin-top: 10px; text-align: center; color: #666; font-size: 12px;">문의 상품 자동 진입</div></div>`;
+            messages.appendChild(systemMsg);
+
+            // 셀러 측에 새 문의 알림
+            notifySellerNewInquiry();
+        }
+
+        function notifySellerNewInquiry() {
+            const list = document.getElementById('sellerInquiryList');
+            const newItem = document.createElement('div');
+            newItem.className = 'inquiry-item active new-badge';
+            newItem.innerHTML = `
+                <div class="inquiry-item-header">
+                    <div class="customer-info">
+                        <span class="customer-name">제이린</span>
+                        <span class="customer-badge">VIP</span>
+                    </div>
+                    <span class="inquiry-item-badge">NEW</span>
+                </div>
+                <div class="inquiry-item-message">새로운 문의가 도착했습니다</div>
+                <div class="inquiry-item-footer">
+                    <span class="inquiry-item-type">주문/배송</span>
+                    <span style="color: #dc6b6b;">대기</span>
+                </div>
+            `;
+            
+            list.insertBefore(newItem, list.firstChild);
+
+            // 대기 건수 증가
+            const waitingCount = document.getElementById('waitingCount');
+            waitingCount.textContent = '1';
+
+            // 클릭 이벤트
+            newItem.onclick = function() {
+                openSellerChat(this);
+            };
+
+            // 자동으로 열기
+            setTimeout(() => {
+                openSellerChat(newItem);
+            }, 1000);
+        }
+
+        function openSellerChat(item) {
+            // 모든 항목 비활성화
+            document.querySelectorAll('.inquiry-item').forEach(i => {
+                i.classList.remove('active');
+            });
+            item.classList.add('active');
+            item.classList.remove('new-badge');
+
+            // 채팅 영역 표시
+            const consoleMain = document.getElementById('consoleMain');
+            consoleMain.innerHTML = `
+                <div class="console-chat-header">
+                    <div class="console-chat-customer">
+                        <div class="console-customer-avatar">제</div>
+                        <div class="console-customer-info">
+                            <h3>제이린</h3>
+                            <p>주문/배송 • VIP</p>
+                        </div>
+                    </div>
+                    <div class="console-chat-actions">
+                        <button class="console-action-btn">🔄</button>
+                        <button class="console-action-btn end" onclick="endConsultation()">상담 종료</button>
+                    </div>
+                </div>
+                <div class="chat-messages" id="sellerChatMessages" style="flex: 1; overflow-y: auto; padding: 20px; background: #f8f9fa;">
+                    <div class="message system">
+                        <div class="message-bubble">AI 상담이 연결되었습니다.</div>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" placeholder="답변을 입력하세요..." id="sellerChatInput" onkeypress="handleSellerEnter(event)">
+                    <button class="send-btn" onclick="sendSellerMessage()">↑</button>
+                </div>
+            `;
+
+            // 고객 정보 패널 표시
+            document.getElementById('customerDetailPanel').style.display = 'block';
+
+            // 대기 건수 감소
+            const waitingCount = document.getElementById('waitingCount');
+            waitingCount.textContent = '0';
+        }
+
+        function sendQuickReply(text) {
+            sendMessage(text);
+            // 퀵 리플라이 숨기기
+            document.getElementById('quickReplies').style.display = 'none';
+        }
+
+        function sendMessage(text) {
+            const input = document.getElementById('chatInput');
+            const message = text || input.value.trim();
+            
+            if (!message) return;
+
+            // 고객 메시지 추가
+            const messages = document.getElementById('chatMessages');
+            const msg = document.createElement('div');
+            msg.className = 'message customer';
+            msg.innerHTML = `<div class="message-bubble">${message}</div>`;
+            messages.appendChild(msg);
+            messages.scrollTop = messages.scrollHeight;
+
+            input.value = '';
+
+            // 셀러 측에도 메시지 표시
+            const sellerMessages = document.getElementById('sellerChatMessages');
+            if (sellerMessages) {
+                const sellerMsg = document.createElement('div');
+                sellerMsg.className = 'message customer';
+                sellerMsg.innerHTML = `<div class="message-bubble">${message}</div>`;
+                sellerMessages.appendChild(sellerMsg);
+                sellerMessages.scrollTop = sellerMessages.scrollHeight;
+            }
+
+            // AI 자동 응답 시뮬레이션
+            setTimeout(() => {
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'message seller';
+                aiMsg.innerHTML = `<div class="message-bubble">고객님의 주문 상품은 현재 배송 중이며, 내일 오전 중 도착 예정입니다. 추가로 궁금하신 점이 있으시면 말씀해주세요!</div>`;
+                messages.appendChild(aiMsg);
+                messages.scrollTop = messages.scrollHeight;
+
+                // 셀러 측에도 표시
+                if (sellerMessages) {
+                    const sellerAiMsg = document.createElement('div');
+                    sellerAiMsg.className = 'message seller';
+                    sellerAiMsg.innerHTML = `<div class="message-bubble">고객님의 주문 상품은 현재 배송 중이며, 내일 오전 중 도착 예정입니다. 추가로 궁금하신 점이 있으시면 말씀해주세요!</div>`;
+                    sellerMessages.appendChild(sellerAiMsg);
+                    sellerMessages.scrollTop = sellerMessages.scrollHeight;
+                }
+            }, 1500);
+        }
+
+        function sendSellerMessage() {
+            const input = document.getElementById('sellerChatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // 셀러 메시지 추가
+            const sellerMessages = document.getElementById('sellerChatMessages');
+            const msg = document.createElement('div');
+            msg.className = 'message seller';
+            msg.innerHTML = `<div class="message-bubble">${message}</div>`;
+            sellerMessages.appendChild(msg);
+            sellerMessages.scrollTop = sellerMessages.scrollHeight;
+
+            input.value = '';
+
+            // 고객 측에도 메시지 표시
+            const customerMessages = document.getElementById('chatMessages');
+            const customerMsg = document.createElement('div');
+            customerMsg.className = 'message seller';
+            customerMsg.innerHTML = `<div class="message-bubble">${message}</div>`;
+            customerMessages.appendChild(customerMsg);
+            customerMessages.scrollTop = customerMessages.scrollHeight;
+        }
+
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function handleSellerEnter(event) {
+            if (event.key === 'Enter') {
+                sendSellerMessage();
+            }
+        }
+
+        function endConsultation() {
+            // 고객 측에 종료 알림
+            const messages = document.getElementById('chatMessages');
+            const endMsg = document.createElement('div');
+            endMsg.className = 'message system';
+            endMsg.innerHTML = `
+                <div class="message-bubble">
+                    감사합니다. 🙏<br>
+                    더 궁금하신점이 언제든 문의해주세요.
+                </div>
+            `;
+            messages.appendChild(endMsg);
+
+            const aiEndMsg = document.createElement('div');
+            aiEndMsg.className = 'message system';
+            aiEndMsg.innerHTML = `<div class="message-bubble">AI 상담이 종료되었습니다.</div>`;
+            messages.appendChild(aiEndMsg);
+            messages.scrollTop = messages.scrollHeight;
+
+            // 입력창 비활성화
+            document.getElementById('chatInput').disabled = true;
+            document.getElementById('chatInput').placeholder = '메세지를 입력하세요...';
+
+            // 만족도 평가 표시
+            setTimeout(() => {
+                document.getElementById('modal-rating').classList.add('active');
+            }, 1000);
+        }
+
+        function setRating(rating) {
+            selectedRating = rating;
+            const stars = document.querySelectorAll('.star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        function submitRating() {
+            if (selectedRating === 0) {
+                alert('별점을 선택해주세요');
+                return;
+            }
+
+            closeModal('modal-rating');
+            
+            // 채팅에 평가 완료 메시지 추가
+            const messages = document.getElementById('chatMessages');
+            const ratingMsg = document.createElement('div');
+            ratingMsg.className = 'message system';
+            ratingMsg.innerHTML = `<div class="message-bubble">평가해주셔서 감사합니다! (${selectedRating}점)</div>`;
+            messages.appendChild(ratingMsg);
+
+            alert('평가가 완료되었습니다. 감사합니다!');
+        }
+
+        function backToList() {
+            document.getElementById('screen-chat').style.display = 'none';
+            document.getElementById('screen-inquiry-list').style.display = 'block';
+        }
+
+        // 패널 리사이즈 기능
+        let isResizing = false;
+        let startX = 0;
+        let startWidth = 0;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.split-container');
+            const customerPanel = document.querySelector('.view-panel.customer');
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'resize-handle';
+            container.appendChild(resizeHandle);
+
+            resizeHandle.addEventListener('mousedown', function(e) {
+                isResizing = true;
+                startX = e.clientX;
+                startWidth = customerPanel.offsetWidth;
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (!isResizing) return;
+
+                const diff = e.clientX - startX;
+                const newWidth = startWidth + diff;
+                const minWidth = 300;
+                const maxWidth = window.innerWidth * 0.5;
+
+                if (newWidth >= minWidth && newWidth <= maxWidth) {
+                    const percentage = (newWidth / window.innerWidth) * 100;
+                    customerPanel.style.width = percentage + '%';
+                    resizeHandle.style.left = percentage + '%';
+                }
+            });
+
+            document.addEventListener('mouseup', function() {
+                if (isResizing) {
+                    isResizing = false;
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
