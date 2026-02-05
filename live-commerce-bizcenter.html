@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>라이브 커머스 - 비즈센터</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #F5F7FA;
+        }
+        ::-webkit-scrollbar { 
+            width: 8px; 
+            height: 8px; 
+        }
+        ::-webkit-scrollbar-track { 
+            background: #f1f1f1; 
+            border-radius: 10px; 
+        }
+        ::-webkit-scrollbar-thumb { 
+            background: #ccc; 
+            border-radius: 10px; 
+        }
+        ::-webkit-scrollbar-thumb:hover { 
+            background: #bbb; 
+        }
+        .animate-in { 
+            animation: animateIn 0.3s ease-out forwards; 
+        }
+        @keyframes animateIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useCallback } = React;
+
+        // Lucide 아이콘 맵
+        const iconMap = {
+            Heart: () => <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+            Gift: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v-1m0 0H8m4 0h4m-4 0v8m0-8l-4 4m8 0l4 4M5 12a7 7 0 1014 0 7 7 0 01-14 0z" /></svg>,
+            Ticket: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16m10-16v16M5 8h14m-7 4h7m-7 4h7" /></svg>,
+            Share2: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16v-4m8 4v-4m-6 4h4m0 0H6m6 0h6" /></svg>,
+            X: () => <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+            ChevronRight: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>,
+            Plus: () => <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 5v14m7-7H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+            Minus: () => <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+            Check: () => <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>,
+            AlertCircle: () => <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>,
+            Store: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" /></svg>,
+            Info: () => <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>,
+            Share: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.469 9 12c0-1.657-.895-3.095-2.236-3.88L5.07 6.323a7.972 7.972 0 011.5-.866m9.286 0c.72.398 1.378.89 1.95 1.467l-2.694 2.797A4.956 4.956 0 0115 12c0 .469.114.938.316 1.342m2.82 6.674A7.972 7.972 0 1012 2c3.879 0 7.26 2.014 9.372 5.03" /></svg>,
+            RotateCcw: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
+            Download: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
+            ChevronDown: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>,
+            Filter: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>,
+            Search: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
+            Trash2: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>,
+            HelpCircle: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+            CheckCircle2: () => <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z" /><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/></svg>,
+        };
+
+        const Icon = ({ name, ...props }) => {
+            const Component = iconMap[name];
+            return Component ? <Component {...props} /> : null;
+        };
+
+        // MobileFrame 컴포넌트
+        const MobileFrame = ({ title, children, onShare, overlayBanner }) => (
+            <div className="flex flex-col items-center gap-4 flex-shrink-0">
+                <div className="flex items-center justify-between w-full max-w-[380px] px-2">
+                    <h2 className="text-white font-bold text-xs bg-gray-800 px-4 py-1 rounded-full tracking-tight">{title}</h2>
+                    <button onClick={onShare} className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] px-3 py-1.5 rounded-full font-bold transition-all shadow-lg active:scale-95">
+                        <Icon name="Share" className="w-3 h-3" /> 공유
+                    </button>
+                </div>
+                <div className="relative w-[380px] h-[760px] bg-black overflow-hidden shadow-2xl rounded-[3.5rem] border-[10px] border-gray-900 flex-shrink-0 transition-all duration-300">
+                    {children}
+                    {overlayBanner && (
+                        <div className="absolute inset-0 z-[300] flex items-center justify-center p-6 animate-in fade-in zoom-in duration-300">
+                            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+                            <div className="relative bg-white rounded-2xl p-8 shadow-2xl border border-gray-100 w-full max-w-[300px]">
+                                <p className="text-[15px] font-bold text-gray-900 leading-relaxed whitespace-pre-wrap">{String(overlayBanner)}</p>
+                                <button 
+                                    className="mt-6 w-full bg-[#f05090] text-white py-2.5 rounded-xl text-xs font-black active:scale-95 transition-transform shadow-md" 
+                                    onClick={() => window.dispatchEvent(new CustomEvent('closeManual'))}
+                                >
+                                    확인
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-24 h-1.5 bg-white/30 rounded-full z-[200]" />
+                </div>
+            </div>
+        );
+
+        // App 메인 컴포넌트
+        const App = () => {
+            const [user, setUser] = useState(true);
+            const [roomId, setRoomId] = useState('demo-room');
+            const [inventory, setInventory] = useState([
+                { id: 1001, name: "합배송상품", fullName: "합배송 상품 (기본 배송비)", option: "기본 배송비 결제", code: "qe7r1g78", price: 1500, livePrice: 1500, img: "https://images.unsplash.com/photo-1594223274512-ad4803739b7c?q=80&w=400&auto=format&fit=crop", stats: { total: 1000, reserved: 0, ordered: 0, expected: 1000, real: 1000 }, period: "2025.11.01 16:00 - 23:59" },
+                { id: 1002, name: "테스트1", fullName: "테스트 상품 01", option: "옵션 선택 없음", code: "5wwjp967", price: 1000, livePrice: 1000, img: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=400&auto=format&fit=crop", stats: { total: 1000, reserved: 0, ordered: 0, expected: 1000, real: 1000 }, period: "2025.11.01 16:00 - 23:59" },
+                { id: 1003, name: "배송비상품", fullName: "기본 배송비 상품", option: "단일 옵션", code: "5j6kj96e", price: 4000, livePrice: 4000, img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=400&auto=format&fit=crop", stats: { total: 99999, reserved: 0, ordered: 0, expected: 99999, real: 99999 }, period: "2025.11.01 16:00 - 23:59" }
+            ]);
+            const [upProductId, setUpProductId] = useState(null);
+            const [storeStatus, setStoreStatus] = useState({});
+            const [productStatuses, setProductStatuses] = useState({});
+            const [orderedItems, setOrderedItems] = useState([]);
+            const [selectedIds, setSelectedIds] = useState([]);
+            const [isStoreOpen, setIsStoreOpen] = useState(false);
+            const [storeActiveTab, setStoreActiveTab] = useState('판매상품');
+            const [isOptionOpen, setIsOptionOpen] = useState(false);
+            const [selectingProduct, setSelectingProduct] = useState(null);
+            const [selectQuantity, setSelectQuantity] = useState(1);
+            const [showOrderToast, setShowOrderToast] = useState(false);
+            const [alertMsg, setAlertMsg] = useState(null);
+            const [bizAlert, setBizAlert] = useState(null);
+            const [activeManualBanner, setActiveManualBanner] = useState(null);
+            const [editingCell, setEditingCell] = useState(null);
+            const [editValue, setEditValue] = useState("");
+            const [searchTerm, setSearchTerm] = useState("");
+            const [quickRegName, setQuickRegName] = useState("");
+            const [quickRegPrice, setQuickRegPrice] = useState("");
+            const [quickRegQty, setQuickRegQty] = useState("");
+
+            const manualItems = [
+                { title: "화면 설명", banner: "한정판매 비즈센터 방송상품 설정과 라이브 시청자 샘플 화면입니다." },
+                { title: "한정판매 상품 UP", banner: "UP 버튼을 통해 선착순 판매상품을 노출하세요.\n\n판매예정인 경우 가격 없이 '판매예정' 상태로 고객에게 안내됩니다." },
+                { title: "스토어 노출하기", banner: "스토어 ON 버튼 클릭 시\n상품 리스트에 해당 상품이 노출됩니다." },
+                { title: "판매가능 재고 확인", banner: "주문 버튼을 통해 점유된 재고는 '점유수량'에 카운트되며,\n실시간으로 '판매가능수량'에서 차감됩니다." },
+                { title: "플래시 등록 가이드", banner: "플래시 상품 간편 등록을 통해\n방송 중인 상품을 즉시 리스트에 추가하고 판매할 수 있습니다." },
+                { title: "상품 검색하기", banner: "상품명은 텍스트 입력 즉시 검색됩니다. 상품코드는 전체 코드를 입력하여주세요." }
+            ];
+
+            const showBizAlert = useCallback((msg) => {
+                setBizAlert(msg);
+                setTimeout(() => setBizAlert(null), 3500);
+            }, []);
+
+            const openOrderPopup = useCallback((product) => {
+                setSelectingProduct(product);
+                setSelectQuantity(1);
+                setIsOptionOpen(true);
+            }, []);
+
+            const handleAddToCart = useCallback(() => {
+                if (!selectingProduct) return;
+                const qty = selectQuantity;
+                const nextInventory = inventory.map(p => {
+                    if (p.id === selectingProduct.id) {
+                        const currentTotal = p.stats.total || 0;
+                        const currentReserved = p.stats.reserved || 0;
+                        return {
+                            ...p,
+                            stats: {
+                                ...p.stats,
+                                total: Math.max(0, currentTotal - qty),
+                                reserved: currentReserved + qty,
+                                real: Math.max(0, currentTotal - qty)
+                            }
+                        };
+                    }
+                    return p;
+                });
+                setOrderedItems(prev => {
+                    const existingIdx = prev.findIndex(item => item.id === selectingProduct.id);
+                    if (existingIdx > -1) {
+                        const newItems = [...prev];
+                        newItems[existingIdx].quantity += qty;
+                        return newItems;
+                    }
+                    return [...prev, { ...selectingProduct, quantity: qty, orderId: Date.now() }];
+                });
+                setInventory(nextInventory);
+                setIsOptionOpen(false);
+                setShowOrderToast(true);
+                setTimeout(() => setShowOrderToast(false), 3000);
+            }, [selectingProduct, selectQuantity, inventory]);
+
+            const toggleUp = (id) => {
+                if (storeStatus[id]) {
+                    showBizAlert("스토어 노출 중인 상품은 한정판매 UP 설정이 불가능합니다.");
+                    return;
+                }
+                const nextUp = upProductId === id ? null : id;
+                setUpProductId(nextUp);
+            };
+
+            const changeStatus = (id, newStatus) => {
+                const nextStatuses = { ...productStatuses, [id]: newStatus };
+                setProductStatuses(nextStatuses);
+            };
+
+            const toggleExposure = (id) => {
+                if (id === upProductId) {
+                    showBizAlert("한정판매 UP 상품은 스토어 노출 설정이 불가능합니다.");
+                    return;
+                }
+                const nextEx = { ...storeStatus, [id]: !storeStatus[id] };
+                setStoreStatus(nextEx);
+            };
+
+            const handleQuickRegister = () => {
+                const newId = Date.now();
+                const newProduct = {
+                    id: newId,
+                    name: quickRegName,
+                    fullName: quickRegName,
+                    option: "단일 옵션",
+                    code: "REG-" + Math.random().toString(36).substring(2, 6).toUpperCase(),
+                    price: parseInt(quickRegPrice.replace(/,/g, "")) || 0,
+                    livePrice: parseInt(quickRegPrice.replace(/,/g, "")) || 0,
+                    img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=400&auto=format&fit=crop",
+                    stats: { total: parseInt(quickRegQty) || 0, reserved: 0, ordered: 0, expected: parseInt(quickRegQty) || 0, real: parseInt(quickRegQty) || 0 },
+                    period: "2026.02.04 16:00 - 23:59"
+                };
+                const nextInventory = [...inventory, newProduct];
+                const nextStoreStatus = { ...storeStatus, [newId]: false };
+                const nextProductStatuses = { ...productStatuses, [newId]: '판매예정' };
+                setInventory(nextInventory);
+                setStoreStatus(nextStoreStatus);
+                setProductStatuses(nextProductStatuses);
+                showBizAlert("새 상품이 '판매예정' 상태로 등록되었습니다.");
+                setQuickRegName("");
+                setQuickRegPrice("");
+                setQuickRegQty("");
+            };
+
+            const handleDeleteSelected = () => {
+                if (selectedIds.length === 0) return;
+                if (selectedIds.includes(upProductId)) {
+                    showBizAlert("한정판매 UP 중인 상품은 삭제할 수 없습니다.");
+                    return;
+                }
+                const nextInventory = inventory.filter(p => !selectedIds.includes(p.id));
+                setInventory(nextInventory);
+                setSelectedIds([]);
+                showBizAlert("선택한 상품이 목록에서 삭제되었습니다.");
+            };
+
+            const handleBatchStoreExposure = () => {
+                const nextStoreStatus = { ...storeStatus };
+                inventory.forEach(p => {
+                    if (p.id !== upProductId) {
+                        nextStoreStatus[p.id] = true;
+                    }
+                });
+                setStoreStatus(nextStoreStatus);
+                showBizAlert("한정판매 UP 상품을 제외한 모든 상품이 스토어에 일괄 노출되었습니다.");
+            };
+
+            const toggleSelect = (id) => setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+            const toggleSelectAll = () => {
+                if (selectedIds.length === sortedInventory.length) setSelectedIds([]);
+                else setSelectedIds(sortedInventory.map(p => p.id));
+            };
+
+            const handleShare = useCallback(() => {
+                const shareUrl = `${window.location.href}`;
+                const textArea = document.createElement("textarea");
+                textArea.value = shareUrl;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                setAlertMsg("공유 링크가 클립보드에 복사되었습니다.");
+                setTimeout(() => setAlertMsg(null), 3000);
+            }, []);
+
+            const filteredInventory = useMemo(() => {
+                return inventory.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+            }, [inventory, searchTerm]);
+
+            const sortedInventory = useMemo(() => {
+                return [...filteredInventory].sort((a, b) => {
+                    if (a.id === upProductId) return -1;
+                    if (b.id === upProductId) return 1;
+                    return b.id - a.id;
+                });
+            }, [filteredInventory, upProductId]);
+
+            const currentUpProduct = useMemo(() =>
+                upProductId ? inventory.find(p => p.id === upProductId) : null,
+            [inventory, upProductId]);
+
+            const upStatus = useMemo(() =>
+                upProductId ? (productStatuses[upProductId] || '판매예정') : null,
+            [upProductId, productStatuses]);
+
+            const exposedProducts = useMemo(() =>
+                inventory.filter(p => storeStatus[p.id]),
+            [inventory, storeStatus]);
+
+            const isQuickRegValid = quickRegName && quickRegPrice && quickRegQty;
+
+            useEffect(() => {
+                const handleCloseManual = () => setActiveManualBanner(null);
+                window.addEventListener('closeManual', handleCloseManual);
+                return () => window.removeEventListener('closeManual', handleCloseManual);
+            }, []);
+
+            return (
+                <div className="min-h-screen bg-[#F5F7FA] p-8 flex flex-col items-center gap-12 font-sans overflow-y-auto">
+                    {alertMsg && (
+                        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-[1000] bg-gray-900/95 backdrop-blur-md text-white px-8 py-4 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4 animate-in">
+                            <Icon name="CheckCircle2" className="text-emerald-400 w-6 h-6" />
+                            <span className="text-sm font-bold">{String(alertMsg)}</span>
+                        </div>
+                    )}
+
+                    {/* 상단 섹션: 미리보기 & 메뉴얼 */}
+                    <div className="flex flex-row items-start justify-center gap-16 w-full max-w-[1500px]">
+                        <MobileFrame title="고객 뷰 실시간 미리보기" onShare={handleShare} overlayBanner={activeManualBanner}>
+                            <div className="relative h-full w-full overflow-hidden bg-black">
+                                <img src="https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?q=80&w=1000&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover opacity-90" alt="live" />
+                                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/90" />
+                                <div className="relative z-20 flex items-center justify-between p-6 pt-10 text-white">
+                                    <div className="flex items-center gap-3 bg-black/20 backdrop-blur-md rounded-full pl-1.5 pr-4 py-1.5 border border-white/10">
+                                        <div className="w-9 h-9 rounded-full bg-pink-500 overflow-hidden border border-white/30">
+                                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lucky" alt="avatar" />
+                                        </div>
+                                        <div>
+                                            <div className="text-[11px] font-bold">쓰리백초특가 💎</div>
+                                            <div className="text-[9px] opacity-80">❤️ 5만 👁️ 723</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-4 text-white">
+                                        <Icon name="Share2" className="w-5 h-5" />
+                                        <Icon name="X" className="w-5 h-5" />
+                                    </div>
+                                </div>
+
+                                {currentUpProduct && (
+                                    <div className="absolute bottom-[130px] left-5 right-5 z-20 bg-white rounded-2xl p-4 flex items-center gap-4 shadow-2xl animate-in">
+                                        <img src={currentUpProduct.img} className="w-16 h-16 rounded-xl object-cover flex-shrink-0 border" alt="up" />
+                                        <div className="flex-1 overflow-hidden">
+                                            <div className="text-[13px] font-black truncate text-gray-900 mb-1">{currentUpProduct.name}</div>
+                                            <div className="text-[15px] font-black text-[#f05090]">
+                                                {upStatus === '판매예정' ? '' : `${currentUpProduct.livePrice.toLocaleString()}원`}
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => { if(upStatus === '판매시작') { openOrderPopup(currentUpProduct); } }}
+                                            className={`px-5 py-2.5 rounded-xl text-[12px] font-black text-white shadow-sm ${upStatus === '판매시작' ? 'bg-[#f05090] active:scale-95' : 'bg-gray-400'}`}
+                                        >
+                                            {upStatus === '판매예정' ? '예정' : upStatus === '품절' ? '품절' : '주문'}
+                                        </button>
+                                    </div>
+                                )}
+
+                                <div className="absolute bottom-12 left-5 right-5 z-10 flex items-center gap-3">
+                                    <button
+                                        onClick={() => { setStoreActiveTab('판매상품'); setIsStoreOpen(true); }}
+                                        className="w-14 h-14 rounded-2xl flex items-center justify-center border border-white/40 overflow-hidden active:scale-90 bg-black/40 relative"
+                                    >
+                                        {exposedProducts.length > 0 && exposedProducts[0] ? (
+                                            <img src={exposedProducts[0].img} className="w-full h-full object-cover" alt="p-icon" />
+                                        ) : (
+                                            <Icon name="Store" className="text-white w-6 h-6" />
+                                        )}
+                                        {exposedProducts.length > 0 && <span className="absolute -top-1.5 -right-1.5 bg-pink-500 text-white text-[10px] w-5.5 h-5.5 rounded-full flex items-center justify-center font-black border-2 border-white">{exposedProducts.length}</span>}
+                                    </button>
+                                    <div className="flex-1">
+                                        <input type="text" placeholder="메시지 입력..." className="w-full bg-black/40 text-white rounded-full py-3.5 px-6 text-[12px] outline-none border border-white/20 placeholder:text-white/40" />
+                                    </div>
+                                    <div className="flex gap-4 text-white">
+                                        <Icon name="Gift" className="w-6 h-6 active:scale-90" />
+                                        <div className="relative">
+                                            <Icon name="Ticket" className="w-6 h-6 active:scale-90" />
+                                            <span className="absolute -top-2 -right-2 bg-[#f05090] text-white text-[9px] w-4.5 h-4.5 flex items-center justify-center rounded-full font-black border-2 border-white">2</span>
+                                        </div>
+                                        <Icon name="Heart" className="w-6 h-6 fill-[#f05090] stroke-[#f05090] active:scale-90" />
+                                    </div>
+                                </div>
+
+                                {/* 판매상품 & 주문서 */}
+                                <div className={`absolute inset-0 z-40 transition-all duration-400 ${isStoreOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+                                    <div className="absolute inset-0 bg-black/60" onClick={() => setIsStoreOpen(false)} />
+                                    <div className={`absolute bottom-0 inset-x-0 bg-white rounded-t-[3rem] h-[78%] transition-transform duration-400 flex flex-col shadow-2xl ${isStoreOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+                                        <div className="flex flex-col items-center p-6 flex-shrink-0 relative">
+                                            <div className="w-14 h-1.5 bg-gray-100 rounded-full mb-6" />
+                                            <div className="flex w-full px-2 pr-14">
+                                                <button onClick={() => setStoreActiveTab('판매상품')} className={`flex-1 pb-4 text-[15px] font-black border-b-[3.5px] transition-all truncate px-2 text-center ${storeActiveTab === '판매상품' ? 'text-[#f05090] border-[#f05090]' : 'text-gray-400 border-transparent'}`}>판매상품 {exposedProducts.length}</button>
+                                                <button onClick={() => setStoreActiveTab('라이브 주문서')} className={`flex-1 pb-4 text-[15px] font-black border-b-[3.5px] transition-all truncate px-2 text-center ${storeActiveTab === '라이브 주문서' ? 'text-[#f05090] border-[#f05090]' : 'text-gray-300 border-transparent'}`}>라이브 주문서 {orderedItems.length}</button>
+                                            </div>
+                                            <button onClick={() => setIsStoreOpen(false)} className="absolute right-6 top-8 text-gray-300 hover:text-gray-600"><Icon name="X" className="w-7 h-7" /></button>
+                                        </div>
+                                        <div className="flex-1 overflow-y-auto px-6 pt-4">
+                                            {storeActiveTab === '판매상품' ? (
+                                                <div className="space-y-4">
+                                                    {exposedProducts.map(p => (
+                                                        <div key={p.id} className="flex items-center gap-4 p-3 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                                                            <img src={p.img} className="w-16 h-16 rounded-xl object-cover border border-gray-50 shadow-sm" alt="p" />
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="text-[13px] font-black text-gray-900 truncate mb-1">{p.name}</div>
+                                                                <div className="flex items-center gap-2 mt-0.5"><span className="text-[15px] font-black text-gray-900">{p.livePrice.toLocaleString()}원</span><span className="bg-[#fdf0f5] text-[#f05090] text-[9px] px-2 py-0.5 rounded-sm font-black">라이브가</span></div>
+                                                            </div>
+                                                            <button onClick={() => openOrderPopup(p)} className="bg-white border-2 border-[#f05090] text-[#f05090] px-5 py-2 rounded-full text-[12px] font-black active:bg-[#fdf0f5]">구매</button>
+                                                        </div>
+                                                    ))}
+                                                    {exposedProducts.length === 0 && <div className="py-24 text-center text-gray-300 text-sm font-medium">현재 판매 중인 상품이 없습니다.</div>}
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-5 pt-2">
+                                                    {orderedItems.length > 0 ? orderedItems.map((item) => (
+                                                        <div key={item.orderId} className="relative flex gap-4 pb-5 border-b border-gray-50 last:border-0">
+                                                            <img src={item.img} className="w-20 h-20 rounded-2xl border border-gray-50" alt="item" />
+                                                            <div className="flex-1 min-w-0 pr-2">
+                                                                <div className="flex justify-between items-start"><div className="text-[12px] font-black text-gray-900 truncate leading-tight pr-6">{item.name}</div><button onClick={() => setOrderedItems(prev => prev.filter(i => i.id !== item.id))} className="text-gray-300 hover:text-gray-500"><Icon name="X" className="w-5 h-5" /></button></div>
+                                                                <div className="text-[11px] text-gray-400 font-bold mt-1.5">{item.option}</div>
+                                                                <div className="flex items-center justify-between mt-4">
+                                                                    <span className="text-[18px] font-black text-gray-900">{item.livePrice.toLocaleString()}원</span>
+                                                                    <div className="flex items-center border-2 border-gray-100 rounded-xl overflow-hidden bg-white">
+                                                                        <button onClick={() => setOrderedItems(prev => prev.map(i => i.id === item.id ? {...i, quantity: Math.max(1, i.quantity - 1)} : i))} className="p-2 px-4 text-gray-300 hover:bg-gray-50 transition-colors border-r border-gray-100"><Icon name="Minus" className="w-4 h-4" /></button>
+                                                                        <span className="px-5 font-black text-[14px] text-gray-900 min-w-[35px] text-center">{item.quantity}</span>
+                                                                        <button onClick={() => setOrderedItems(prev => prev.map(i => i.id === item.id ? {...i, quantity: i.quantity + 1} : i))} className="p-2 px-4 text-gray-400 hover:bg-gray-50 transition-colors border-l border-gray-100"><Icon name="Plus" className="w-4 h-4" /></button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )) : <div className="py-32 text-center text-gray-300 text-base font-medium">주문 내역이 비어있습니다.</div>}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 옵션/수량 선택 */}
+                                <div className={`absolute inset-0 z-[60] transition-all duration-400 ${isOptionOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+                                    <div className="absolute inset-0 bg-black/70" onClick={() => setIsOptionOpen(false)} />
+                                    <div className={`absolute bottom-0 inset-x-0 bg-white rounded-t-[3rem] p-8 transition-transform duration-400 flex flex-col shadow-2xl ${isOptionOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+                                        <div className="flex justify-between items-start mb-8">
+                                            <div className="flex gap-6 items-center">
+                                                <img src={selectingProduct?.img} className="w-24 h-24 rounded-2xl object-cover border border-gray-100 shadow-sm" alt="sel" />
+                                                <div>
+                                                    <div className="text-[12px] font-bold text-gray-400 mb-1.5">옵션 선택</div>
+                                                    <div className="text-[18px] font-black leading-tight text-gray-900 mb-2">{selectingProduct?.name}</div>
+                                                    <div className="text-[20px] font-black text-[#f05090]">{selectingProduct?.livePrice.toLocaleString()}원</div>
+                                                </div>
+                                            </div>
+                                            <button onClick={() => setIsOptionOpen(false)} className="text-gray-300 hover:text-gray-600"><Icon name="X" className="w-8 h-8" /></button>
+                                        </div>
+                                        <div className="mb-6"><div className="w-full border border-gray-100 rounded-2xl p-5 flex justify-between items-center text-[14px] text-gray-700 font-bold bg-[#f8f9fa] shadow-sm"><span>{selectingProduct?.option || '옵션: 단일 선택'}</span><Icon name="ChevronRight" className="w-4 h-4 text-gray-300" /></div></div>
+                                        <div className="flex items-center justify-between py-6 border-y border-gray-100 mb-8">
+                                            <span className="font-bold text-[16px]">수량</span>
+                                            <div className="flex items-center border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-inner">
+                                                <button onClick={() => setSelectQuantity(Math.max(1, selectQuantity-1))} className="p-3 px-5 text-gray-400 hover:bg-gray-50"><Icon name="Minus" className="w-4 h-4" /></button>
+                                                <span className="px-8 font-black text-[18px] text-gray-900 min-w-[55px] text-center">{selectQuantity}</span>
+                                                <button onClick={() => setSelectQuantity(selectQuantity+1)} className="p-3 px-5 text-gray-400 hover:bg-gray-50"><Icon name="Plus" className="w-4 h-4" /></button>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-end gap-5 mb-8">
+                                            <span className="text-[13px] text-gray-400 font-bold uppercase">Total Price</span>
+                                            <span className="text-[28px] font-black text-gray-900 tracking-tighter">{(selectingProduct?.livePrice * selectQuantity || 0).toLocaleString()}원</span>
+                                        </div>
+                                        <button onClick={handleAddToCart} className="w-full bg-[#f05090] text-white py-5 rounded-[1.5rem] font-black text-[18px] shadow-2xl active:scale-95 transition-all">주문서 담기</button>
+                                    </div>
+                                </div>
+
+                                {/* 담기 완료 토스트 */}
+                                <div className={`absolute inset-x-5 bottom-28 z-[100] transition-all duration-300 ${showOrderToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
+                                    <div className="bg-white rounded-2xl shadow-2xl px-5 py-4 border border-pink-50 flex items-center justify-between gap-4">
+                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <img src={selectingProduct?.img} className="w-10 h-10 rounded-lg overflow-hidden border shadow-sm flex-shrink-0" alt="sel" />
+                                            <div className="text-[13px] font-bold text-gray-800 truncate">주문서에 상품이 담겼습니다.</div>
+                                        </div>
+                                        <button onClick={() => { setShowOrderToast(false); setStoreActiveTab('라이브 주문서'); setIsStoreOpen(true); }} className="text-[#f05090] text-[13px] font-black whitespace-nowrap active:scale-95 transition-transform">주문서 가기 {'>'}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </MobileFrame>
+
+                        {/* 메뉴얼 */}
+                        <div className="bg-white rounded-[3rem] p-8 space-y-6 shadow-xl w-full max-w-[420px] border border-gray-100">
+                            <div className="flex items-center gap-3 px-2 mb-6">
+                                <div className="bg-indigo-500/10 p-2.5 rounded-2xl"><Icon name="HelpCircle" className="w-6 h-6 text-indigo-600" /></div>
+                                <div>
+                                    <h2 className="text-gray-900 font-black text-[18px] tracking-tight">서비스 메뉴얼</h2>
+                                    <p className="text-[11px] text-gray-400 font-bold">주요 기능 가이드</p>
+                                </div>
+                            </div>
+                            <div className="space-y-3.5">
+                                {manualItems.map((item, idx) => (
+                                    <button key={idx} onClick={() => setActiveManualBanner(activeManualBanner === item.banner ? null : item.banner)} className={`w-full text-left p-5 rounded-3xl border-2 transition-all duration-300 flex items-center justify-between group overflow-hidden relative ${activeManualBanner === item.banner ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg' : 'bg-gray-50 border-gray-100 text-gray-600 hover:bg-indigo-50 hover:border-indigo-100'}`}>
+                                        <div className="flex flex-col gap-1">
+                                            <span className={`text-[10px] font-black tracking-widest uppercase ${activeManualBanner === item.banner ? 'text-indigo-200' : 'text-indigo-400'}`}>Step 0{idx+1}</span>
+                                            <span className="text-[15px] font-black tracking-tight">{item.title}</span>
+                                        </div>
+                                        <Icon name="ChevronRight" className={`relative z-10 transition-transform ${activeManualBanner === item.banner ? 'rotate-90 text-white' : 'text-gray-300 group-hover:text-indigo-400'}`} />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 비즈센터 */}
+                    <div className="flex flex-col gap-6 w-full max-w-[1600px]">
+                        <div className="flex items-center justify-start w-full px-2">
+                            <h2 className="text-white font-bold text-xs bg-gray-800 px-5 py-2 rounded-full tracking-tight shadow-lg">비즈센터</h2>
+                        </div>
+                        <div className="relative min-h-[900px] bg-white rounded-[3.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden border border-gray-100 mb-40">
+                            {bizAlert && (
+                                <div className="absolute top-28 left-1/2 -translate-x-1/2 z-[40] w-[90%] bg-gray-900/90 backdrop-blur-md text-white px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3 animate-in">
+                                    <Icon name="AlertCircle" className="text-[#f05090] w-5 h-5 flex-shrink-0" />
+                                    <span className="text-[13px] font-bold tracking-tight">{bizAlert}</span>
+                                </div>
+                            )}
+
+                            <header className="px-10 py-8 border-b flex justify-between items-center bg-white sticky top-0 z-30">
+                                <div className="flex items-center gap-4">
+                                    <span className="text-[#D14F5F] font-black text-2xl cursor-pointer hover:scale-110 transition-transform">〈</span>
+                                    <div className="flex items-center gap-3">
+                                        <h1 className="text-[22px] font-black text-gray-900 tracking-tighter">라이브 방송 상품 설정</h1>
+                                        <span className="bg-[#fdf0f5] text-[#f05090] text-[11px] px-3 py-1.5 border border-[#f05090]/20 rounded-full font-black">한정판매중</span>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button className="bg-white border border-gray-200 text-gray-600 px-6 py-2.5 rounded-lg font-black text-[13px] hover:bg-gray-50 transition-all">실시간 메모</button>
+                                    <button className="bg-[#D14F5F] text-white px-6 py-2.5 rounded-lg font-black flex items-center gap-2 hover:brightness-110 shadow-lg active:scale-95 transition-all"><Icon name="Plus" className="w-4 h-4" /> 상품 추가</button>
+                                </div>
+                            </header>
+
+                            <div className="flex-1 p-10 space-y-10 bg-white overflow-y-auto">
+                                {/* 플래시 상품 간편 등록 */}
+                                <section className="bg-[#F9FAFB] p-8 rounded-[1.5rem] border border-gray-100 space-y-6">
+                                    <h3 className="text-[15px] font-black text-gray-800">플래시 상품 간편 등록</h3>
+                                    <div className="flex items-center gap-10 text-[13px] font-bold">
+                                        <div className="flex items-center gap-4 w-24"><span className="text-gray-900">카테고리</span></div>
+                                        <label className="flex items-center gap-2.5 cursor-pointer">
+                                            <input type="radio" checked readOnly className="accent-[#f05090] w-4 h-4" />
+                                            <span className="text-gray-700">패션잡화 {'>'} 남성신발 (의류)</span>
+                                        </label>
+                                    </div>
+                                    <div className="flex items-center gap-6">
+                                        <span className="text-gray-900 font-bold w-24 flex-shrink-0">상품정보</span>
+                                        <div className="relative flex-1">
+                                            <input type="text" placeholder="상품명을 입력하세요 (최대 40자)" maxLength={40} value={quickRegName} onChange={(e) => setQuickRegName(e.target.value)} className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-xl outline-none focus:border-[#f05090] text-[14px] font-bold shadow-sm" />
+                                            <span className="absolute right-5 top-4 text-[11px] text-gray-300 font-bold">{quickRegName.length}/40</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-10">
+                                        <div className="w-24 flex-shrink-0"></div>
+                                        <div className="flex items-center gap-8">
+                                            <div className="flex items-center gap-4">
+                                                <span className="text-gray-900 font-bold">라이브가</span>
+                                                <div className="flex items-center bg-white border border-gray-200 rounded-xl px-5 py-3.5 shadow-sm">
+                                                    <input type="text" value={quickRegPrice} onChange={(e) => setQuickRegPrice(e.target.value.replace(/[^0-9,]/g, ""))} className="w-28 text-right outline-none text-[15px] font-black" /><span className="ml-2 text-gray-400">원</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                                <span className="text-gray-900 font-bold">상품 수량</span>
+                                                <div className="flex items-center bg-white border border-gray-200 rounded-xl px-5 py-3.5 shadow-sm">
+                                                    <input type="text" value={quickRegQty} onChange={(e) => setQuickRegQty(e.target.value.replace(/[^0-9]/g, ""))} className="w-24 text-right outline-none text-[15px] font-black" /><span className="ml-2 text-gray-400">개</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button disabled={!isQuickRegValid} onClick={handleQuickRegister} className={`px-12 py-3.5 rounded-xl font-black text-[15px] transition-all shadow-lg ${isQuickRegValid ? 'bg-[#f05090] text-white hover:brightness-110 active:scale-95' : 'bg-[#E5E7EB] text-gray-400 cursor-not-allowed'}`}>상품등록</button>
+                                    </div>
+                                </section>
+
+                                {/* 상품 테이블 */}
+                                <section className="space-y-6 pt-4">
+                                    <div className="flex items-center gap-6 text-[13px] font-bold text-gray-700">
+                                        <span className="w-16">상세조건</span>
+                                        <div className="relative flex-1">
+                                            <Icon name="Search" className="absolute left-4 top-3.5 text-gray-400 w-4 h-4" />
+                                            <input type="text" placeholder="검색어를 입력해 주세요" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-12 pr-6 py-3 border border-gray-200 rounded-lg outline-none focus:border-[#f05090]" />
+                                        </div>
+                                        <button className="bg-[#D14F5F] text-white px-8 py-3 rounded-lg font-black text-[14px] hover:brightness-110">검색하기</button>
+                                        <button className="bg-white border border-gray-200 text-gray-600 px-6 py-3 rounded-lg font-black text-[14px] flex items-center gap-2" onClick={() => setSearchTerm("")}><Icon name="RotateCcw" className="w-4 h-4" /> 초기화</button>
+                                    </div>
+
+                                    <div className="flex flex-col gap-4 pt-6 border-t border-gray-100">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[14px] font-black text-gray-900">목록 <span className="text-[#f05090]">{sortedInventory.length}</span></span>
+                                            <div className="flex gap-2">
+                                                <button onClick={handleDeleteSelected} className="bg-white border border-gray-200 text-gray-800 px-6 py-2.5 rounded-lg font-black text-[13px] hover:bg-gray-50">선택 삭제</button>
+                                                <button onClick={handleBatchStoreExposure} className="bg-white border border-gray-200 text-gray-800 px-6 py-2.5 rounded-lg font-black text-[13px] hover:bg-gray-50">스토어 일괄 노출</button>
+                                                <button className="bg-white border border-gray-200 text-gray-800 px-6 py-2.5 rounded-lg font-black text-[13px] hover:bg-gray-50">다운로드</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* 테이블 */}
+                                    <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+                                        <table className="w-full text-left border-collapse text-[12px] min-w-[1800px] bg-white">
+                                            <thead className="bg-[#f9fafb] border-b text-gray-500 font-black text-[11px] uppercase tracking-wider">
+                                                <tr className="h-14">
+                                                    <th className="w-14 text-center px-4"><input type="checkbox" onChange={toggleSelectAll} checked={selectedIds.length === sortedInventory.length && sortedInventory.length > 0} className="accent-[#f05090] w-4 h-4 rounded" /></th>
+                                                    <th className="w-32 text-center">대표이미지</th>
+                                                    <th className="w-32 text-left pl-6">상품명</th>
+                                                    <th className="w-32 text-center">상품코드</th>
+                                                    <th className="w-24 text-center">한정판매</th>
+                                                    <th className="w-64 text-center">한정판매 상태</th>
+                                                    <th className="w-24 text-center">스토어 노출</th>
+                                                    <th className="w-24 text-center">상품상태</th>
+                                                    <th className="w-32 text-right pr-6">판매가</th>
+                                                    <th className="w-32 text-right pr-6">상시 할인가</th>
+                                                    <th className="w-32 text-right pr-6 text-[#f05090]">라이브가</th>
+                                                    <th className="w-28 text-right pr-6">재고수량</th>
+                                                    <th className="w-28 text-right pr-6 text-[#f05090]">점유수량</th>
+                                                    <th className="w-28 text-right pr-6 text-indigo-600">실주문수량</th>
+                                                    <th className="w-32 text-right pr-6">판매가능수량</th>
+                                                    <th className="w-40 text-center">판매기간</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100">
+                                                {sortedInventory.map((p) => {
+                                                    const isUp = upProductId === p.id;
+                                                    const status = productStatuses[p.id] || '판매예정';
+                                                    return (
+                                                        <tr key={p.id} className={`h-20 transition-colors ${isUp ? 'bg-[#FFFDE7]' : 'hover:bg-gray-50/50'}`}>
+                                                            <td className="text-center px-4"><input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => toggleSelect(p.id)} className="accent-[#f05090] w-4 h-4 rounded" /></td>
+                                                            <td className="text-center"><div className="flex justify-center p-2"><div className="relative w-14 h-14 rounded-lg overflow-hidden border border-gray-100 shadow-sm bg-gray-50"><img src={p.img} className="w-full h-full object-cover" alt="t" /></div></div></td>
+                                                            <td className="font-black text-gray-900 pl-6 truncate" title={p.name}>{p.name}</td>
+                                                            <td className="text-gray-400 font-bold text-[11px] uppercase tracking-tighter text-center">{p.code}</td>
+                                                            <td className="text-center"><button onClick={() => toggleUp(p.id)} className={`px-4 py-1.5 rounded-lg text-[11px] font-black border transition-all shadow-sm ${isUp ? 'bg-[#f05090] text-white' : 'bg-gray-200 text-gray-500'}`}>UP</button></td>
+                                                            <td className="text-center"><div className="flex gap-1 justify-center bg-gray-50 p-1 rounded-xl border border-gray-100 w-fit mx-auto shadow-inner">{['판매예정', '판매시작', '품절'].map(st => (<button key={st} onClick={() => changeStatus(p.id, st)} className={`px-4 py-1.5 rounded-lg text-[10px] transition-all font-black ${status === st ? 'bg-white text-[#f05090] shadow-sm border border-pink-100' : 'text-gray-300 hover:text-gray-500'}`}>{st}</button>))}</div></td>
+                                                            <td className="text-center"><div className={`w-11 h-6 rounded-full relative mx-auto cursor-pointer transition-all duration-300 shadow-inner ${storeStatus[p.id] ? 'bg-emerald-400' : 'bg-gray-200'}`} onClick={() => toggleExposure(p.id)}><div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all ${storeStatus[p.id] ? 'right-1' : 'left-1'}`} /></div></td>
+                                                            <td className="font-bold text-gray-400 text-center">판매중</td>
+                                                            <td className="text-right pr-6 font-bold text-gray-400">{p.price.toLocaleString()}</td>
+                                                            <td className="text-right pr-6 font-bold text-gray-400">{p.price.toLocaleString()}</td>
+                                                            <td className="text-right pr-6"><span className="font-black text-[#f05090] text-[14px] underline cursor-pointer hover:bg-pink-50 transition-colors">{p.livePrice.toLocaleString()}</span></td>
+                                                            <td className="text-right pr-6"><span className="font-bold text-gray-700 underline cursor-pointer hover:bg-gray-100 transition-colors">{p.stats.total.toLocaleString()}</span></td>
+                                                            <td className="text-right pr-6 font-black text-[#f05090]">{p.stats.reserved.toLocaleString()}</td>
+                                                            <td className="text-right pr-6 font-black text-indigo-600">0</td>
+                                                            <td className="text-right pr-6 font-bold text-gray-900">{p.stats.real.toLocaleString()}</td>
+                                                            <td className="text-gray-400 text-[10px] font-bold text-center">{p.period.split(' - ')[1]}</td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
