@@ -99,84 +99,71 @@
             text-align: center;
         }
 
-        /* Category Section - 2 Row Horizontal Scroll */
-        .category-section {
+        /* Anchor Navigation */
+        .anchor-nav {
             background: white;
-            padding: 16px;
+            padding: 12px 8px;
             border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 56px;
+            z-index: 40;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
         }
 
-        .category-grid {
-            display: grid;
-            grid-template-rows: auto auto;
-            grid-auto-flow: column;
-            gap: 24px 16px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            scroll-behavior: smooth;
-            padding: 8px 0;
-            -webkit-overflow-scrolling: touch;
+        .anchor-nav-content {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 8px;
         }
 
-        .category-grid::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .category-grid::-webkit-scrollbar-thumb {
-            background: #ddd;
-            border-radius: 2px;
-        }
-
-        .category-item {
+        .anchor-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            width: 56px;
-            flex-shrink: 0;
+            gap: 4px;
             cursor: pointer;
             border: none;
             background: none;
+            min-width: 60px;
             transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 8px;
         }
 
-        .category-item:active {
+        .anchor-item:active {
             transform: scale(0.95);
         }
 
-        .category-icon {
-            width: 48px;
-            height: 48px;
+        .anchor-icon {
+            width: 40px;
+            height: 40px;
             background: var(--bg-light);
-            border-radius: 16px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 18px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             border: 1px solid var(--border);
             transition: background 0.2s;
         }
 
-        .category-item:hover .category-icon {
+        .anchor-item:hover .anchor-icon {
             background: #f3f4f6;
         }
 
-        .category-name {
-            font-size: 11px;
-            color: #374151;
-            font-weight: 500;
-            white-space: nowrap;
-            transition: color 0.2s;
-        }
-
-        .category-item:hover .category-name {
-            color: var(--primary);
+        .anchor-label {
+            font-size: 10px;
+            color: #666;
+            font-weight: 700;
+            text-align: center;
         }
 
         /* Main Banner */
         .banner-section {
             padding: 8px;
+            padding-top: 16px;
         }
 
         .banner-container {
@@ -391,13 +378,6 @@
             border-radius: 10px;
         }
 
-        .deal-sold {
-            font-size: 9px;
-            color: #999;
-            text-align: right;
-            font-weight: 600;
-        }
-
         /* Local Market Catalog */
         .catalog-tabs {
             display: flex;
@@ -532,6 +512,61 @@
             margin-bottom: 4px;
         }
 
+        /* Native Ad Banner */
+        .native-ad {
+            margin: 16px;
+        }
+
+        .ad-banner {
+            position: relative;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: #1e293b;
+            padding: 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .ad-banner:active {
+            transform: translateY(-2px);
+        }
+
+        .ad-label {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 8px;
+        }
+
+        .ad-title {
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+
+        .ad-desc {
+            font-size: 12px;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+
+        .ad-icon {
+            font-size: 48px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
         /* Region Cards */
         .region-items {
             display: flex;
@@ -615,61 +650,6 @@
 
         .region-icon {
             font-size: 32px;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-        }
-
-        /* Native Ad Banner */
-        .native-ad {
-            margin: 16px;
-        }
-
-        .ad-banner {
-            position: relative;
-            width: 100%;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            background: #1e293b;
-            padding: 20px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .ad-banner:active {
-            transform: translateY(-2px);
-        }
-
-        .ad-label {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 9px;
-            font-weight: 700;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 8px;
-        }
-
-        .ad-title {
-            font-size: 18px;
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 4px;
-        }
-
-        .ad-desc {
-            font-size: 12px;
-            opacity: 0.8;
-            font-weight: 300;
-        }
-
-        .ad-icon {
-            font-size: 48px;
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
         }
 
@@ -1112,64 +1092,32 @@
                 </div>
             </header>
 
-            <!-- Category Section - 2 Row Horizontal Scroll -->
-            <div class="category-section">
-                <div class="category-grid">
-                    <button class="category-item">
-                        <div class="category-icon">🍎</div>
-                        <span class="category-name">푸드</span>
+            <!-- Anchor Navigation -->
+            <div class="anchor-nav">
+                <div class="anchor-nav-content">
+                    <button class="anchor-item" onclick="scrollToSection('category')">
+                        <div class="anchor-icon">📋</div>
+                        <span class="anchor-label">카테고리</span>
                     </button>
-                    <button class="category-item">
-                        <div class="category-icon">👗</div>
-                        <span class="category-name">패션</span>
+                    <button class="anchor-item" onclick="scrollToSection('section-time-deal')">
+                        <div class="anchor-icon">🔥</div>
+                        <span class="anchor-label">오늘의 핫딜</span>
                     </button>
-                    <button class="category-item">
-                        <div class="category-icon">💄</div>
-                        <span class="category-name">뷰티</span>
+                    <button class="anchor-item" onclick="scrollToSection('section-local-market')">
+                        <div class="anchor-icon">🥬</div>
+                        <span class="anchor-label">산지직송</span>
                     </button>
-                    <button class="category-item">
-                        <div class="category-icon">🏠</div>
-                        <span class="category-name">리빙</span>
+                    <button class="anchor-item" onclick="scrollToSection('section-region-curated')">
+                        <div class="anchor-icon">✈️</div>
+                        <span class="anchor-label">전국맛집</span>
                     </button>
-                    <button class="category-item">
-                        <div class="category-icon">💻</div>
-                        <span class="category-name">디지털</span>
+                    <button class="anchor-item" onclick="scrollToSection('section-sponsored')">
+                        <div class="anchor-icon">✨</div>
+                        <span class="anchor-label">추천상품</span>
                     </button>
-                    <button class="category-item">
-                        <div class="category-icon">🍳</div>
-                        <span class="category-name">주방</span>
-                    </button>
-                    <button class="category-item">
-                        <div class="category-icon">🧸</div>
-                        <span class="category-name">키즈</span>
-                    </button>
-                    <button class="category-item">
-                        <div class="category-icon">⚽</div>
-                        <span class="category-name">스포츠</span>
-                    </button>
-                    <button class="category-item">
-                        <div class="category-icon">🐶</div>
-                        <span class="category-name">반려</span>
-                    </button>
-                    <button class="category-item">
-                        <div class="category-icon">✈️</div>
-                        <span class="category-name">여행</span>
-                    </button>
-                    <button class="category-item">
-                        <div class="category-icon">🎨</div>
-                        <span class="category-name">취미</span>
-                    </button>
-                    <button class="category-item">
-                        <div class="category-icon">📚</div>
-                        <span class="category-name">도서</span>
-                    </button>
-                    <button class="category-item">
-                        <div class="category-icon">🎁</div>
-                        <span class="category-name">선물</span>
-                    </button>
-                    <button class="category-item">
-                        <div class="category-icon">🚗</div>
-                        <span class="category-name">자동차</span>
+                    <button class="anchor-item" onclick="scrollToSection('section-best')">
+                        <div class="anchor-icon">🏆</div>
+                        <span class="anchor-label">베스트</span>
                     </button>
                 </div>
             </div>
@@ -1190,7 +1138,7 @@
                 </section>
 
                 <!-- Time Deal -->
-                <section class="section">
+                <section id="section-time-deal" class="section" style="scroll-margin-top: 112px;">
                     <div class="section-header">
                         <div>
                             <div class="time-deal-label">⏰ 03:24:11 남음</div>
@@ -1202,7 +1150,7 @@
                 </section>
 
                 <!-- Local Market -->
-                <section class="section" style="background: linear-gradient(180deg, #fff 0%, #f0fdf4 100%);">
+                <section id="section-local-market" class="section" style="background: linear-gradient(180deg, #fff 0%, #f0fdf4 100%); scroll-margin-top: 112px;">
                     <div class="section-header">
                         <div>
                             <div style="font-size: 12px; color: var(--success); font-weight: 700; margin-bottom: 4px;">🏪 지역 소상공인 & 산지직송</div>
@@ -1221,18 +1169,7 @@
                     <div class="local-items" id="local-items"></div>
                 </section>
 
-                <!-- Region Curated -->
-                <section class="section">
-                    <div class="section-header">
-                        <div>
-                            <div style="font-size: 12px; color: #2563eb; font-weight: 700; margin-bottom: 4px;">🗺️ 지역별 특산물관</div>
-                            <h2 class="section-title">방방곡곡 미식 여행 ✈️</h2>
-                        </div>
-                    </div>
-                    <div class="region-items" id="region-items"></div>
-                </section>
-
-                <!-- Native Ad -->
+                <!-- Native Ad (Moved to here) -->
                 <section class="native-ad">
                     <div class="ad-highlight" style="padding: 8px;">
                         <div class="ad-label-box">중간 띠배너 광고</div>
@@ -1247,8 +1184,19 @@
                     </div>
                 </section>
 
+                <!-- Region Curated -->
+                <section id="section-region-curated" class="section" style="scroll-margin-top: 112px;">
+                    <div class="section-header">
+                        <div>
+                            <div style="font-size: 12px; color: #2563eb; font-weight: 700; margin-bottom: 4px;">🗺️ 지역별 특산물관</div>
+                            <h2 class="section-title">방방곡곡 미식 여행 ✈️</h2>
+                        </div>
+                    </div>
+                    <div class="region-items" id="region-items"></div>
+                </section>
+
                 <!-- Sponsored -->
-                <section class="section">
+                <section id="section-sponsored" class="section" style="scroll-margin-top: 112px;">
                     <div class="section-header">
                         <div>
                             <span style="font-size: 10px; font-weight: 700; background: var(--bg-light); color: #999; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); margin-right: 4px;">Sponsored</span>
@@ -1262,7 +1210,7 @@
                 </section>
 
                 <!-- Product Grid -->
-                <section class="product-grid">
+                <section id="section-best" class="product-grid" style="scroll-margin-top: 112px;">
                     <div class="grid-header">
                         <h2 class="section-title">실시간 인기 상품</h2>
                         <div class="sort-options">
@@ -1327,23 +1275,6 @@
 
     <script>
         // Data
-        const CATEGORIES = [
-            { id: 'food', name: '푸드', icon: '🍎' },
-            { id: 'fashion', name: '패션', icon: '👗' },
-            { id: 'beauty', name: '뷰티', icon: '💄' },
-            { id: 'living', name: '리빙', icon: '🏠' },
-            { id: 'digital', name: '디지털', icon: '💻' },
-            { id: 'kitchen', name: '주방', icon: '🍳' },
-            { id: 'kids', name: '키즈', icon: '🧸' },
-            { id: 'sport', name: '스포츠', icon: '⚽' },
-            { id: 'pet', name: '반려', icon: '🐶' },
-            { id: 'travel', name: '여행', icon: '✈️' },
-            { id: 'hobby', name: '취미', icon: '🎨' },
-            { id: 'book', name: '도서', icon: '📚' },
-            { id: 'gift', name: '선물', icon: '🎁' },
-            { id: 'car', name: '자동차', icon: '🚗' },
-        ];
-
         const MAIN_BANNERS = [
             { 
                 id: 1, 
@@ -1412,6 +1343,20 @@
             renderSponsored();
             renderProducts();
             startBannerRotation();
+        }
+
+        // Scroll to Section
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                const headerOffset = 130;
+                const elementPosition = element.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: "smooth"
+                });
+            }
         }
 
         // Render Functions
