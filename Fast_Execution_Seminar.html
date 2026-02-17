@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast Execution with Antigravity</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --text-color: #f8fafc;
+            --accent-color: #f97316; /* Orange for Claude/Antigravity */
+            --secondary-color: #8b5cf6; /* Purple for Figma/Design */
+            --tertiary-color: #3b82f6; /* Blue for Gemini/Dev/QA */
+            --success-color: #10b981; /* Green for QA/Done */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .slides-container {
+            position: relative;
+            height: 100%;
+            width: 100%;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            pointer-events: none;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--accent-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: var(--text-color);
+        }
+
+        h3 {
+            font-size: 1.8rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        p, li {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+            max-width: 900px;
+        }
+
+        ul {
+            list-style: none;
+            text-align: left;
+            margin-top: 1rem;
+        }
+
+        li {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        li::before {
+            content: "•";
+            color: var(--accent-color);
+            font-size: 2rem;
+            margin-right: 0.8rem;
+            line-height: 1.5rem;
+        }
+
+        /* 다이어그램 스타일: 한 줄 정렬 강제 */
+        .workflow-diagram {
+            display: flex;
+            gap: 2rem;
+            margin-top: 3rem;
+            flex-wrap: nowrap; /* 줄바꿈 방지 */
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .node {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem 1.5rem;
+            border-radius: 1rem;
+            width: 280px;
+            min-width: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s, border-color 0.3s;
+            position: relative;
+        }
+
+        .node:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .node-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .arrow {
+            font-size: 2.5rem;
+            color: #64748b;
+            flex-shrink: 0;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid var(--accent-color);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin-top: 2rem;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+            background: var(--accent-color);
+            width: 0%;
+            transition: width 0.3s;
+            z-index: 100;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .tag-draft { background: rgba(249, 115, 22, 0.2); color: #fb923c; } /* Orange */
+        .tag-check { background: rgba(59, 130, 246, 0.2); color: #60a5fa; } /* Blue */
+        .tag-qa { background: rgba(16, 185, 129, 0.2); color: #34d399; } /* Green */
+
+        pre {
+            background: #1e293b;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: left;
+            width: 100%;
+            max-width: 800px;
+            overflow-x: auto;
+            margin-top: 1rem;
+            border: 1px solid #334155;
+        }
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+        }
+        
+        .mindset-card {
+            background: rgba(255,255,255,0.03);
+            border-left: 4px solid var(--accent-color);
+            padding: 1rem 1.5rem;
+            margin: 0.5rem 0;
+            width: 100%;
+            max-width: 700px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="slides-container">
+        
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="tag tag-draft" style="margin-bottom: 2rem;">Innovation Strategy</div>
+            <h1>Fast Execution with Antigravity</h1>
+            <p style="margin-top: 1.5rem; color: #94a3b8; font-size: 1.2rem;">AI-Driven Collaboration: Fast Draft, Pre-check, Distributed QA</p>
+            <p style="margin-top: 1rem; font-size: 1rem;">Presented by Grip Product Team</p>
+            <div style="margin-top: 3rem; font-size: 0.9rem; opacity: 0.6;">(키보드 → 화살표를 눌러 시작하세요)</div>
+        </div>
+
+        <!-- Slide 2: Context & Problem -->
+        <div class="slide">
+            <h2>Why Change? (The Bottleneck)</h2>
+            <ul>
+                <li><strong>순차적 진행 (Sequential):</strong> "완벽한 기획"을 기다리느라 디자인/개발 착수가 지연됨.</li>
+                <li><strong>뒤늦은 리스크 발견:</strong> 기획이 끝나고 개발 단계에 진입해서야 기술적 이슈 확인.</li>
+                <li><strong>단일 QA의 부담:</strong> 릴리즈 직전에 모든 QA가 몰려 병목 발생.</li>
+            </ul>
+            <div class="highlight-box">
+                <p>"완벽한 기획 문서를 만드는 것보다,<br><strong>빠르게 시각화하여 함께 검증하는 것</strong>이 핵심입니다."</p>
+            </div>
+        </div>
+
+        <!-- Slide 3: New Direction (One-line Layout) -->
+        <div class="slide">
+            <h2>Direction: Fast Execution</h2>
+            <p>가설 기반의 빠른 초안(Fast Draft)으로 병렬 협업을 시작합니다.</p>
+            
+            <div class="workflow-diagram">
+                <div class="node" style="border-color: var(--accent-color);">
+                    <div class="node-icon">⚡️</div>
+                    <h3>Fast Draft</h3>
+                    <p style="font-size: 1rem; margin-top: 0.5rem;">AI Agents 활용<br>(PRD & Prototype)</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="node" style="border-color: var(--tertiary-color);">
+                    <div class="node-icon">🔍</div>
+                    <h3>Pre-check</h3>
+                    <p style="font-size: 1rem; margin-top: 0.5rem;">Design/Dev<br>선행 검토 & 피드백</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="node" style="border-color: var(--success-color);">
+                    <div class="node-icon">✅</div>
+                    <h3>Distributed QA</h3>
+                    <p style="font-size: 1rem; margin-top: 0.5rem;">단계별 자체 검증<br>& 릴리즈 리포트</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Step 1 - Fast Draft -->
+        <div class="slide">
+            <span class="tag tag-draft">Step 1: Fast Draft</span>
+            <h2>AI-Powered Prototyping</h2>
+            <p>AI 에이전트를 활용해 기획의도와 디자인 초안을 즉시 생성합니다.</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; width: 100%; max-width: 900px;">
+                <div class="node" style="width: auto;">
+                    <h3>🧠 ChatGPT</h3>
+                    <p style="font-size: 1rem;">문제 정의, 논리 완결성 체크<br>→ <strong>PRD 초안 생성</strong></p>
+                </div>
+                <div class="node" style="width: auto;">
+                    <h3>🎨 Gemini & Claude</h3>
+                    <p style="font-size: 1rem;">Gemini Canvas로 레이아웃 시각화<br>→ <strong>Prototype 생성</strong></p>
+                </div>
+            </div>
+            <div style="margin-top: 2rem; font-size: 1rem; color: #94a3b8;">
+                * Antigravity를 통해 피그마(Figma)와 문서 도구에 자동 연결
+            </div>
+        </div>
+
+        <!-- Slide 5: Step 2 - Pre-check -->
+        <div class="slide">
+            <span class="tag tag-check">Step 2: Pre-check</span>
+            <h2>Early Sync & Validation</h2>
+            <p>완성된 기획서가 아닌, '프로토타입'을 놓고 먼저 이야기합니다.</p>
+            
+            <ul style="margin-top: 2rem;">
+                <li><strong>Design Check:</strong> Claude/Canvas가 만든 구조를 Figma로 가져와(MCP) 컴포넌트 방향성 검토.</li>
+                <li><strong>Dev Check:</strong> 시각화된 화면을 보고 DB 구조, API 스펙, 기술적 리스크 사전 식별.</li>
+            </ul>
+
+            <div class="highlight-box" style="margin-top: 1.5rem; padding: 1rem;">
+                <p><strong>Goal:</strong> 개발 공수 산정의 정확도 향상 및 재작업 최소화</p>
+            </div>
+        </div>
+
+        <!-- Slide 6: Step 3 - Distributed QA -->
+        <div class="slide">
+            <span class="tag tag-qa">Step 3: Distributed QA</span>
+            <h2>Layered Quality Assurance</h2>
+            <p>QA를 마지막 단계가 아닌, 프로세스 전반에 분산 배치합니다.</p>
+
+            <div class="workflow-diagram" style="gap: 1rem;">
+                <div class="node" style="height: auto; padding: 1rem; min-width: 220px;">
+                    <h3 style="font-size: 1.2rem;">1. 기획 QA</h3>
+                    <p style="font-size: 0.9rem;">기획 완료 단계<br>자체 논리/정책 검증</p>
+                </div>
+                <div class="node" style="height: auto; padding: 1rem; min-width: 220px;">
+                    <h3 style="font-size: 1.2rem;">2. 개발 QA</h3>
+                    <p style="font-size: 0.9rem;">기능 개발 직후<br>기획 의도 싱크업</p>
+                </div>
+                <div class="node" style="height: auto; padding: 1rem; min-width: 220px;">
+                    <h3 style="font-size: 1.2rem;">3. 릴리즈 QA</h3>
+                    <p style="font-size: 0.9rem;">통합 테스트 &<br>Regression Test</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Case Study (MCP Integration) -->
+        <div class="slide">
+            <div class="tag tag-draft">Case Study & Automation</div>
+            <h2>Project: 1:1 게시판 개선</h2>
+            <p>MCP 연동을 통한 Fast Execution 실제 적용 사례</p>
+            
+            <div style="text-align: left; background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 1rem; margin-top: 2rem; max-width: 900px; width: 100%;">
+                <div style="margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
+                    <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--accent-color);">1. Fast Draft & Confluence MCP</h3>
+                    <p style="font-size: 1.1rem;">Gemini Canvas에서 잡은 로직을 <strong>Confluence MCP</strong>와 연동하여,<br>PRD(목적, 시나리오, 정책)를 회사 템플릿에 맞춰 자동 생성 및 발행.</p>
+                </div>
+                <div style="margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem;">
+                    <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--secondary-color);">2. Pre-check & Figma MCP</h3>
+                    <p style="font-size: 1.1rem;">생성된 Canvas 이미지를 <strong>Figma MCP</strong>로 전송하여,<br>디자인 시스템(오토레이아웃, 컴포넌트)이 적용된 편집 가능한 노드로 즉시 변환.</p>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--success-color);">3. Result</h3>
+                    <p style="font-size: 1.1rem;">기획-디자인-문서의 싱크(Sync) 비용 제로화 및 개발 착수 리드타임 50% 단축.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Mindset -->
+        <div class="slide">
+            <h2>Mindset for Success</h2>
+            <p>우리는 기능 조직이 아닌, 하나의 제품 팀(Product Team)입니다.</p>
+            
+            <div style="margin-top: 2rem;">
+                <div class="mindset-card">
+                    "완벽한 기획은 없다. 개발 도중 변경사항은 자연스러운 과정이다."
+                </div>
+                <div class="mindset-card">
+                    "누구의 탓도 하지 않는다. 이슈는 함께 해결한다."
+                </div>
+                <div class="mindset-card">
+                    "기다리지 않고 병렬로 움직인다."
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Conclusion -->
+        <div class="slide">
+            <h1>Ready to Run?</h1>
+            <p>Antigravity & AI Agents for Fast Execution</p>
+            
+            <div class="workflow-diagram">
+                <div class="node" style="width: 250px; border-color: var(--accent-color);">
+                    <div style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;">🚀 Speed</div>
+                    <p style="font-size: 1rem;">리드타임 단축</p>
+                </div>
+                <div class="node" style="width: 250px; border-color: var(--tertiary-color);">
+                    <div style="font-size: 2rem; color: var(--tertiary-color); margin-bottom: 0.5rem;">🤝 Sync</div>
+                    <p style="font-size: 1rem;">기획-개발-디자인<br>초기 싱크업</p>
+                </div>
+                <div class="node" style="width: 250px; border-color: var(--success-color);">
+                    <div style="font-size: 2rem; color: var(--success-color); margin-bottom: 0.5rem;">🛡 Quality</div>
+                    <p style="font-size: 1rem;">선행 리스크 제거</p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 3rem;">
+                <button onclick="location.reload()">발표 다시 시작하기</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="controls">
+        <button id="prevBtn">← 이전</button>
+        <button id="nextBtn">다음 →</button>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('progressBar');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        let currentSlide = 0;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                if (i === index) {
+                    slide.classList.add('active');
+                }
+            });
+            updateProgress();
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentSlide + 1) / slides.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        nextBtn.addEventListener('click', nextSlide);
+        prevBtn.addEventListener('click', prevSlide);
+
+        showSlide(currentSlide);
+    </script>
+</body>
+</html>
