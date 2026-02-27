@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grip 비즈니스센터 · 플친 → 메시지 광고센터</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap');
+
+:root {
+  --kakao: #FEE500;
+  --grip: #FF6B2B;
+  --grip-light: #FFF0EA;
+  --bg: #F4F5F7;
+  --white: #FFFFFF;
+  --border: #E8E9EC;
+  --border2: #D4D6DB;
+  --text: #1A1A2E;
+  --text2: #4A4A68;
+  --text3: #8A8AA0;
+  --success: #00B493;
+  --success-bg: #E6F8F5;
+  --error: #FF4D4F;
+  --sidebar: #1E2235;
+  --sidebar-active: #2D3350;
+  --sidebar-text: #A0A8C0;
+  --ad-blue: #2B6EFF;
+  --ad-blue-light: #EEF3FF;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 14px; }
+body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+/* ── Top nav ── */
+.top-nav {
+  position: fixed; top: 0; left: 0; right: 0; height: 44px;
+  background: var(--sidebar); display: flex; align-items: center; z-index: 1000;
+  border-bottom: 1px solid #2D3350;
+}
+.top-nav .logo {
+  padding: 0 20px; font-size: 13px; font-weight: 700;
+  color: var(--grip); border-right: 1px solid #2D3350;
+  height: 100%; display: flex; align-items: center; gap: 6px;
+}
+.top-nav .logo span { color: #fff; font-weight: 400; }
+.nav-tab {
+  height: 100%; padding: 0 18px; font-size: 12px; font-weight: 500;
+  color: var(--sidebar-text); background: none; border: none; cursor: pointer;
+  border-right: 1px solid #2D3350; transition: all 0.2s; font-family: inherit;
+}
+.nav-tab:hover { background: #2D3350; color: #fff; }
+.nav-tab.active { background: var(--grip); color: #fff; }
+.nav-label { margin-left: auto; padding: 0 20px; font-size: 11px; color: var(--sidebar-text); }
+
+/* ── Layout ── */
+.app { display: flex; width: 100%; padding-top: 44px; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 196px; min-height: calc(100vh - 44px); background: var(--sidebar);
+  flex-shrink: 0; padding: 20px 0;
+  position: fixed; top: 44px; left: 0; bottom: 0;
+}
+.sb-logo { padding: 0 18px 18px; font-size: 15px; font-weight: 900; color: #fff; border-bottom: 1px solid #2D3350; margin-bottom: 14px; }
+.sb-logo em { color: var(--grip); font-style: normal; }
+.sb-section { padding: 6px 18px 2px; font-size: 10px; color: #3A4060; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; }
+.sb-item {
+  padding: 9px 18px; font-size: 12.5px; color: var(--sidebar-text);
+  cursor: pointer; display: flex; align-items: center; gap: 8px;
+  transition: all 0.15s; border-left: 3px solid transparent;
+}
+.sb-item:hover { background: #2A2F4A; color: #fff; }
+.sb-item.active { background: var(--sidebar-active); color: #fff; border-left-color: var(--grip); }
+.sb-badge { font-size: 9px; background: #2D6A4F; color: #52B788; padding: 1px 6px; border-radius: 10px; margin-left: auto; font-weight: 700; }
+.sb-badge.new { background: rgba(255,107,43,0.2); color: var(--grip); }
+
+/* ── Main ── */
+.main { margin-left: 196px; flex: 1; min-height: calc(100vh - 44px); display: flex; flex-direction: column; }
+.topbar {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 0 28px; height: 50px; display: flex; align-items: center; gap: 6px;
+}
+.crumb { font-size: 12px; color: var(--text3); display: flex; align-items: center; gap: 6px; }
+.crumb .cur { color: var(--text); font-weight: 600; }
+.crumb span { color: var(--border2); }
+
+/* ── Page ── */
+.page { display: none; flex: 1; flex-direction: column; }
+.page.active { display: flex; animation: fadeUp 0.2s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.content { padding: 24px 28px; flex: 1; }
+.ph { margin-bottom: 20px; }
+.ph h1 { font-size: 19px; font-weight: 700; letter-spacing: -0.4px; }
+.ph p { margin-top: 4px; font-size: 13px; color: var(--text3); line-height: 1.6; }
+
+/* ── Cards ── */
+.card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 22px; margin-bottom: 14px; }
+.card.bordered { border-left: 3px solid var(--grip); }
+.card.ad-connected { border-color: var(--success); border-width: 2px; }
+.ct { font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+.badge.orange { background: var(--grip-light); color: var(--grip); }
+.badge.green { background: var(--success-bg); color: var(--success); }
+.badge.blue { background: var(--ad-blue-light); color: var(--ad-blue); }
+.badge.kakao { background: #FFFDE0; color: #997A00; }
+
+/* ── Steps ── */
+.steps {
+  display: flex; align-items: center; gap: 0;
+  background: var(--white); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 20px; margin-bottom: 20px;
+}
+.sc {
+  width: 26px; height: 26px; border-radius: 50%; background: var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--text3); flex-shrink: 0; transition: all 0.3s;
+}
+.sc.done { background: var(--success); color: #fff; }
+.sc.active { background: var(--grip); color: #fff; }
+.st { font-size: 12px; }
+.st .sn { color: var(--text3); font-size: 10px; }
+.st .sl { font-weight: 600; color: var(--text2); }
+.st.active .sl { color: var(--grip); }
+.st.done .sl { color: var(--success); }
+.sa { width: 28px; text-align: center; color: var(--border2); font-size: 15px; flex-shrink: 0; }
+.si { display: flex; align-items: center; gap: 8px; flex: 1; }
+
+/* ── Form ── */
+.fl { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 5px; display: flex; align-items: center; gap: 4px; }
+.req { color: var(--error); }
+.auto { font-size: 10px; background: #E8F4FF; color: #1a7cc7; padding: 1px 6px; border-radius: 4px; font-weight: 500; }
+.fi {
+  width: 100%; height: 37px; border: 1px solid var(--border); border-radius: 6px;
+  padding: 0 11px; font-size: 13px; font-family: inherit; color: var(--text);
+  background: var(--white); outline: none; transition: border-color 0.2s;
+}
+.fi:focus { border-color: var(--grip); box-shadow: 0 0 0 3px rgba(255,107,43,0.08); }
+.fi.auto-f { background: #F0F8FF; border-color: #B8D9F5; }
+.fh { margin-top: 4px; font-size: 11px; color: var(--text3); line-height: 1.5; }
+.fr { margin-bottom: 14px; }
+.fg { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fg3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+/* ── Toggle ── */
+.trow {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 0; border-bottom: 1px solid var(--border);
+}
+.trow:last-child { border-bottom: none; }
+.tlabel { font-size: 13px; color: var(--text2); }
+.tlabel small { display: block; font-size: 11px; color: var(--text3); margin-top: 1px; }
+.tog {
+  width: 38px; height: 21px; border-radius: 11px; background: var(--border2);
+  position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+}
+.tog.on { background: var(--grip); }
+.tog::after {
+  content: ''; position: absolute; width: 15px; height: 15px; border-radius: 50%;
+  background: white; top: 3px; left: 3px; transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.tog.on::after { left: 20px; }
+
+/* ── Info / Warn boxes ── */
+.ibox {
+  border-radius: 8px; padding: 13px 15px; margin-bottom: 14px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.ibox.info { background: var(--success-bg); border: 1px solid #B8EDE4; }
+.ibox.warn { background: #FFF8E6; border: 1px solid #F5DDA0; }
+.ibox.blue { background: var(--ad-blue-light); border: 1px solid #C0D4FF; }
+.ibox.orange { background: var(--grip-light); border: 1px solid #FFD0B8; }
+.ibox .ico { font-size: 16px; flex-shrink: 0; }
+.ibox .txt { font-size: 12.5px; line-height: 1.7; }
+.ibox.info .txt { color: #006B56; }
+.ibox.warn .txt { color: #7A5500; }
+.ibox.blue .txt { color: #1a3d9c; }
+.ibox.orange .txt { color: #8A3000; }
+
+/* ── Kakao consent ── */
+.consent {
+  border: 2px solid var(--kakao); border-radius: 12px; overflow: hidden; margin-bottom: 14px;
+}
+.consent-hd {
+  background: var(--kakao); padding: 13px 18px; display: flex; align-items: center; gap: 10px;
+}
+.consent-hd .ki {
+  width: 30px; height: 30px; background: #3A1D1D; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.consent-hd h3 { font-size: 14px; font-weight: 700; color: #3A1D1D; }
+.consent-hd p { font-size: 11px; color: #5A3D1D; }
+.consent-bd { background: #FFFEF5; padding: 14px 18px; }
+.consent-list { list-style: none; }
+.consent-list li {
+  font-size: 12px; color: var(--text2); padding: 4px 0;
+  display: flex; gap: 7px; line-height: 1.5;
+}
+.consent-list li::before { content: '·'; color: var(--grip); font-weight: 900; flex-shrink: 0; }
+.consent-ft { background: #FFFDE0; padding: 11px 18px; display: flex; gap: 10px; }
+.cbtn {
+  flex: 1; height: 38px; border-radius: 6px; font-size: 13px; font-weight: 700;
+  cursor: pointer; border: none; transition: all 0.2s; font-family: inherit;
+}
+.cbtn.agree { background: #3A1D1D; color: var(--kakao); }
+.cbtn.agree:hover { background: #2A1010; }
+.cbtn.cancel { background: transparent; border: 1px solid #C0A060; color: #7A6030; }
+.cbtn.cancel:hover { background: #F5E8C0; }
+
+/* ── Buttons ── */
+.btn-row { display: flex; gap: 10px; justify-content: flex-end; padding-top: 6px; }
+.btn {
+  height: 38px; padding: 0 22px; border-radius: 6px; font-size: 13px; font-weight: 700;
+  cursor: pointer; border: none; transition: all 0.2s; font-family: inherit;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn.primary { background: var(--grip); color: #fff; }
+.btn.primary:hover { background: #E05A20; }
+.btn.outline { background: #fff; color: var(--text2); border: 1px solid var(--border2); }
+.btn.outline:hover { background: var(--bg); }
+.btn.kakao-btn { background: var(--kakao); color: #3A1D1D; }
+.btn.kakao-btn:hover { background: #F5D700; }
+.btn.success-btn { background: var(--success); color: #fff; }
+.btn.ad-btn { background: var(--ad-blue); color: #fff; }
+.btn.ad-btn:hover { background: #1a5ce0; }
+
+/* ── Processing ── */
+.processing { display: flex; flex-direction: column; align-items: center; padding: 56px 20px; text-align: center; }
+.spinner {
+  width: 44px; height: 44px; border: 3px solid var(--border);
+  border-top-color: var(--grip); border-radius: 50%;
+  animation: spin 0.8s linear infinite; margin-bottom: 18px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Channel result card ── */
+.ch-card { border: 2px solid var(--kakao); border-radius: 12px; overflow: hidden; }
+.ch-hd { background: var(--kakao); padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
+.ch-thumb {
+  width: 46px; height: 46px; border-radius: 10px; background: #3A1D1D;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: var(--kakao); font-weight: 900;
+}
+.ch-hd h3 { font-size: 15px; font-weight: 700; color: #3A1D1D; }
+.ch-hd p { font-size: 11px; color: #5A3D1D; }
+.ch-bd { background: var(--white); }
+.rrow { display: flex; justify-content: space-between; align-items: center; padding: 10px 18px; border-bottom: 1px solid var(--border); font-size: 13px; }
+.rrow:last-child { border-bottom: none; }
+.rkey { color: var(--text3); }
+.rval { font-weight: 600; font-size: 12.5px; }
+.rval.green { color: var(--success); }
+.rval.orange { color: var(--grip); }
+
+/* ── 광고 연동 완료 강조 행 ── */
+.rrow.ad-linked { background: linear-gradient(90deg, rgba(43,110,255,0.04), rgba(43,110,255,0.02)); }
+.rval.linked { color: var(--ad-blue); display: flex; align-items: center; gap: 6px; }
+.linked-btn {
+  font-size: 11px; background: var(--ad-blue); color: #fff; padding: 2px 10px;
+  border-radius: 20px; font-weight: 700; cursor: pointer; border: none;
+  font-family: inherit; transition: background 0.2s;
+}
+.linked-btn:hover { background: #1a5ce0; }
+
+/* ── 광고 센터 CTA 배너 ── */
+.ad-cta-banner {
+  background: linear-gradient(135deg, #2B6EFF 0%, #1a3d9c 100%);
+  border-radius: 12px; padding: 22px 24px; position: relative; overflow: hidden;
+  cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 14px;
+}
+.ad-cta-banner:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(43,110,255,0.3); }
+.ad-cta-banner::before {
+  content: '📢'; position: absolute; right: 20px; top: 50%;
+  transform: translateY(-50%); font-size: 64px; opacity: 0.12;
+}
+.ad-cta-banner .atag {
+  font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.6);
+  letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px;
+}
+.ad-cta-banner h3 { font-size: 18px; font-weight: 900; color: #fff; margin-bottom: 4px; line-height: 1.4; }
+.ad-cta-banner p { font-size: 12px; color: rgba(255,255,255,0.75); margin-bottom: 16px; line-height: 1.6; }
+.ad-cta-banner .start-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #fff; color: var(--ad-blue); font-size: 13px; font-weight: 700;
+  padding: 8px 20px; border-radius: 6px; border: none; cursor: pointer;
+  font-family: inherit; transition: background 0.2s;
+}
+.ad-cta-banner .start-btn:hover { background: #EEF3FF; }
+
+/* ── 광고 센터 탭 ── */
+.ad-center-tabs {
+  display: flex; border-bottom: 2px solid var(--border);
+  background: var(--white); padding: 0 28px; gap: 0;
+}
+.act {
+  height: 44px; padding: 0 18px; font-size: 13px; font-weight: 600;
+  color: var(--text3); cursor: pointer; border: none; background: none;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: all 0.2s; font-family: inherit;
+}
+.act:hover { color: var(--text2); }
+.act.active { color: var(--ad-blue); border-bottom-color: var(--ad-blue); }
+
+/* ── 메시지 광고 STEP ── */
+.ad-type-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.at-card {
+  border: 2px solid var(--border); border-radius: 10px; padding: 18px;
+  cursor: pointer; transition: all 0.2s; background: var(--white); position: relative;
+}
+.at-card:hover { border-color: var(--ad-blue); background: var(--ad-blue-light); }
+.at-card.selected { border-color: var(--ad-blue); background: var(--ad-blue-light); }
+.at-card.selected::after {
+  content: '✓'; position: absolute; top: 10px; right: 12px;
+  width: 20px; height: 20px; background: var(--ad-blue); color: #fff;
+  border-radius: 50%; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; text-align: center; line-height: 20px;
+}
+.at-icon { font-size: 28px; margin-bottom: 8px; }
+.at-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.at-desc { font-size: 11px; color: var(--text3); line-height: 1.5; }
+.at-badge { display: inline-block; margin-top: 7px; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+
+/* ── 메시지 미리보기 ── */
+.phone-wrap { width: 210px; flex-shrink: 0; }
+.phone {
+  width: 210px; background: #E8E8E8; border-radius: 22px;
+  padding: 14px 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+.phone-bar { width: 50px; height: 4px; background: #bbb; border-radius: 2px; margin: 0 auto 12px; }
+.phone-screen { background: #FAFAFA; border-radius: 12px; overflow: hidden; min-height: 280px; }
+.phone-hd { background: var(--kakao); padding: 9px 12px; display: flex; align-items: center; gap: 7px; }
+.phone-hd .phi { width: 26px; height: 26px; background: #3A1D1D; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; color: var(--kakao); }
+.phone-hd span { font-size: 12px; font-weight: 700; color: #3A1D1D; }
+.phone-bd { padding: 10px; }
+.bubble { background: #fff; border-radius: 3px 9px 9px 9px; padding: 9px; font-size: 11px; line-height: 1.6; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+.bubble-img { width: 100%; height: 70px; background: linear-gradient(135deg,#FFE0C8,#FFCBA0); border-radius: 5px; margin-bottom: 7px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.bubble-cta { width: 100%; height: 30px; background: var(--kakao); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #3A1D1D; margin-top: 5px; }
+.preview-label { text-align: center; font-size: 10px; color: var(--text3); margin-top: 8px; }
+
+/* ── 예산 슬라이더 ── */
+.budget-slider { width: 100%; accent-color: var(--ad-blue); cursor: pointer; }
+.budget-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.budget-num { font-size: 26px; font-weight: 900; color: var(--ad-blue); }
+
+/* ── 타겟 태그 ── */
+.ttag {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 11px; font-size: 12px; cursor: pointer; transition: all 0.15s;
+}
+.ttag:hover { border-color: var(--ad-blue); color: var(--ad-blue); }
+.ttag.on { background: var(--ad-blue-light); border-color: var(--ad-blue); color: var(--ad-blue); font-weight: 600; }
+
+/* ── 최종 퍼널 ── */
+.funnel-row { display: flex; align-items: center; justify-content: center; gap: 0; margin: 20px 0; flex-wrap: wrap; }
+.fn { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.fn-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.fn-done .fn-icon { background: var(--success-bg); }
+.fn-active .fn-icon { background: var(--ad-blue-light); }
+.fn-wait .fn-icon { background: var(--bg); opacity: 0.4; }
+.fn-label { font-size: 10px; color: var(--text3); font-weight: 600; text-align: center; white-space: nowrap; }
+.fn-arr { font-size: 18px; color: var(--border2); margin: 0 4px; padding-bottom: 14px; }
+
+/* ── 광고 성과 미리보기 ── */
+.perf-grid { display: grid; grid-template-columns: repeat(4,1fr); text-align: center; }
+.perf-item { padding: 10px; border-right: 1px solid var(--border); }
+.perf-item:last-child { border-right: none; }
+.perf-num { font-size: 22px; font-weight: 900; color: var(--ad-blue); }
+.perf-label { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+/* ── Section sep ── */
+.sep { font-size: 11px; font-weight: 700; color: var(--grip); letter-spacing: 1px; text-transform: uppercase; margin: 18px 0 10px; display: flex; align-items: center; gap: 8px; }
+.sep::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── status done ── */
+.done-wrap { display: flex; flex-direction: column; align-items: center; padding: 36px 20px; text-align: center; }
+.done-icon { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 14px; animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes pop { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.done-icon.orange { background: var(--grip-light); }
+.done-icon.blue { background: var(--ad-blue-light); }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- Top nav -->
+<div class="top-nav">
+  <div class="logo">🏢 <span>Grip</span> BizCenter</div>
+
+  <!-- 시나리오 A: 플친 연결됨 -->
+  <div style="display:flex;align-items:center;height:100%;border-right:1px solid #2D3350">
+    <span style="font-size:10px;color:#52B788;padding:0 10px;letter-spacing:0.5px;font-weight:700">A · 연결됨</span>
+    <button class="nav-tab active" onclick="showPage('p-complete', this)" style="border-right:none">광고 채널 (플친)</button>
+    <button class="nav-tab" onclick="showPage('p-adcenter', this)" style="border-right:none">메시지 광고센터</button>
+    <button class="nav-tab" onclick="showPage('p-adcreate', this)" style="border-right:none">광고 만들기</button>
+    <button class="nav-tab" onclick="showPage('p-addone', this)">광고 완료</button>
+  </div>
+
+  <!-- 시나리오 B: 플친 미연결 -->
+  <div style="display:flex;align-items:center;height:100%">
+    <span style="font-size:10px;color:#FFB74D;padding:0 10px;letter-spacing:0.5px;font-weight:700">B · 미연결</span>
+    <button class="nav-tab" onclick="showPage('p-nolink', this)" style="border-right:none">① 광고 진입 게이트</button>
+    <button class="nav-tab" onclick="showPage('p-apply', this)" style="border-right:none">② 플친 신청 플로우</button>
+    <button class="nav-tab" onclick="showPage('p-applied', this)">③ 신청 완료</button>
+  </div>
+
+  <div class="nav-label">prototype v0.3</div>
+</div>
+
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sb-logo"><em>Grip</em> BizCenter</div>
+
+    <div class="sb-section">입점 관리</div>
+    <div class="sb-item"><span>🏠</span> 입점 신청</div>
+    <div class="sb-item"><span>📋</span> 심사 현황</div>
+    <div class="sb-item"><span>📡</span> 라이브 관리</div>
+
+    <div class="sb-section">광고 · 마케팅</div>
+    <div class="sb-item active" id="sb-ch" onclick="showPage('p-complete', null)" style="padding-left:24px">
+      <span>💛</span> 광고 채널 (플친)
+      <span class="sb-badge green" id="sb-ch-badge">연결됨</span>
+    </div>
+    <div class="sb-item" id="sb-msg" onclick="showPage('p-nolink', null)" style="padding-left:24px">
+      <span>📢</span> 메시지 광고
+      <span class="sb-badge new">NEW</span>
+    </div>
+    <div class="sb-item" style="padding-left:24px;opacity:0.45;cursor:default">
+      <span>🖼️</span> 지면 광고
+      <span style="font-size:9px;background:rgba(255,107,43,0.15);color:var(--grip);padding:1px 6px;border-radius:10px;margin-left:auto;">준비중</span>
+    </div>
+
+    <div class="sb-section">정산 · 설정</div>
+    <div class="sb-item"><span>💰</span> 정산 관리</div>
+    <div class="sb-item"><span>⚙️</span> 설정</div>
+  </div>
+
+  <div class="main">
+
+    <!-- ==================================================
+         ① 플친 생성 완료 화면 (광고 연동 완료 상태)
+    ================================================== -->
+    <div class="page active" id="p-complete">
+      <div class="topbar">
+        <div class="crumb">광고·마케팅 <span>›</span> 광고 채널 <span>›</span> <span class="cur">플러스친구 채널</span></div>
+      </div>
+      <div class="content">
+        <div class="ph">
+          <h1>플러스친구 채널이 생성되었습니다!</h1>
+          <p>입점 신청과 함께 카카오 플러스친구 채널이 자동으로 생성되었습니다.</p>
+        </div>
+
+        <div class="done-wrap" style="padding:20px 0 0">
+          <div class="done-icon orange">✅</div>
+
+          <!-- 채널 결과 카드 - 광고 연동 완료 상태 -->
+          <div class="ch-card" style="width:100%;max-width:420px;margin-bottom:20px">
+            <div class="ch-hd">
+              <div class="ch-thumb" id="ch-thumb">그</div>
+              <div>
+                <h3 id="ch-name">그립 테스트 브랜드</h3>
+                <p>카카오 플러스친구 채널 · 생성 완료</p>
+              </div>
+            </div>
+            <div class="ch-bd">
+              <div class="rrow">
+                <span class="rkey">채널 ID</span>
+                <span class="rval">@grip_test_brand</span>
+              </div>
+              <div class="rrow">
+                <span class="rkey">채널 상태</span>
+                <span class="rval green">● 활성화</span>
+              </div>
+              <div class="rrow">
+                <span class="rkey">메시지 발송</span>
+                <span class="rval green">● 사용 가능</span>
+              </div>
+              <!-- 핵심: 광고 연동 완료 -->
+              <div class="rrow ad-linked">
+                <span class="rkey">광고 연동</span>
+                <span class="rval linked">
+                  <span style="color:var(--ad-blue)">● 연결됨 · 메시지 광고센터</span>
+                  <button class="linked-btn" onclick="showPage('p-adcenter', null)">광고 시작 →</button>
+                </span>
+              </div>
+              <div class="rrow">
+                <span class="rkey">친구 수</span>
+                <span class="rval">0명 <span style="color:var(--text3);font-weight:400">(수집 시작)</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 광고센터 연결 CTA 배너 -->
+          <div class="ad-cta-banner" style="width:100%;max-width:420px" onclick="showPage('p-adcenter', null)">
+            <div class="atag">CONNECTED · 광고센터 연동 완료</div>
+            <h3>지금 바로 첫 메시지 광고를<br>시작할 수 있어요</h3>
+            <p>플러스친구 채널이 메시지 광고센터에 연결되었습니다.<br>친구에게 직접 메시지를 발송하고 매출을 높이세요.</p>
+            <button class="start-btn">메시지 광고 만들기 →</button>
+          </div>
+
+          <div class="ibox info" style="max-width:420px;width:100%">
+            <div class="ico">💡</div>
+            <div class="txt">지금부터 <strong>친구 추가 링크</strong>를 공유하여 모수를 늘리세요. 친구 수가 많을수록 광고 도달률과 효과가 높아집니다.</div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:4px;width:100%;max-width:420px">
+            <button class="btn outline" style="flex:1">비즈센터 홈으로</button>
+            <button class="btn kakao-btn" style="flex:1">채널 관리</button>
+            <button class="btn ad-btn" style="flex:1" onclick="showPage('p-adcenter', null)">광고 시작 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ==================================================
+         ② 광고 진입 시 플친 미연결 게이트
+    ================================================== -->
+    <div class="page" id="p-nolink">
+      <div class="topbar">
+        <div class="crumb">광고·마케팅 <span>›</span> <span class="cur">메시지 광고</span></div>
+      </div>
+      <div class="content">
+        <div class="ph"><h1>메시지 광고</h1><p>플러스친구 채널을 연결하면 메시지 광고를 집행할 수 있습니다.</p></div>
+
+        <div class="card" style="text-align:center;padding:48px 32px;border:2px dashed var(--border2)">
+          <div style="font-size:52px;margin-bottom:16px">💛</div>
+          <div style="font-size:18px;font-weight:700;margin-bottom:8px">광고 채널(플러스친구)이 연결되지 않았습니다</div>
+          <div style="font-size:13px;color:var(--text3);line-height:1.8;margin-bottom:28px">
+            메시지 광고를 집행하려면 카카오 플러스친구 채널 연결이 필요합니다.<br>
+            입점 정보 기반으로 약 1분이면 자동 생성됩니다.
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;max-width:480px;margin:0 auto 28px;text-align:left">
+            <div style="background:var(--bg);border-radius:8px;padding:14px">
+              <div style="font-size:20px;margin-bottom:6px">📢</div>
+              <div style="font-size:12px;font-weight:700;margin-bottom:3px">메시지 광고</div>
+              <div style="font-size:11px;color:var(--text3)">친구에게 직접 발송</div>
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:14px">
+              <div style="font-size:20px;margin-bottom:6px">🎯</div>
+              <div style="font-size:12px;font-weight:700;margin-bottom:3px">타겟 모수 수집</div>
+              <div style="font-size:11px;color:var(--text3)">채널 친구 자동 누적</div>
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:14px">
+              <div style="font-size:20px;margin-bottom:6px">📈</div>
+              <div style="font-size:12px;font-weight:700;margin-bottom:3px">성과 분석</div>
+              <div style="font-size:11px;color:var(--text3)">ROAS 실시간 추적</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:center">
+            <button class="btn outline">나중에 하기</button>
+            <button class="btn kakao-btn" style="padding:0 28px;font-size:14px" onclick="showPage('p-apply', null); applyStep(1)">
+              💛 플러스친구 채널 생성하기
+            </button>
+          </div>
+        </div>
+
+        <div class="ibox orange">
+          <div class="ico">💡</div>
+          <div class="txt">
+            <strong>광고 채널(플러스친구)은 광고 인프라의 시작점입니다.</strong><br>
+            채널 생성 → 친구 모수 수집 → 메시지 광고 → 지면 광고 확장 순서로 광고 퍼널이 구성됩니다.
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ==================================================
+         B-② 플친 신청 플로우 (미연결 → 신청)
+    ================================================== -->
+    <div class="page" id="p-apply">
+      <div class="topbar">
+        <div class="crumb">광고·마케팅 <span>›</span> 광고 채널 (플친) <span>›</span> <span class="cur" id="apply-crumb">1단계: 채널 정보 확인</span></div>
+      </div>
+      <div class="content">
+        <div class="ph">
+          <h1>플러스친구 채널 신청</h1>
+          <p>입점 정보를 기반으로 카카오 플러스친구 채널이 자동으로 생성됩니다.</p>
+        </div>
+
+        <!-- 3단계 progress -->
+        <div class="steps">
+          <div class="si"><div class="sc active" id="apsc1">1</div><div class="st active" id="apst1"><div class="sn">STEP 1</div><div class="sl">채널 정보 확인</div></div></div>
+          <div class="sa">›</div>
+          <div class="si"><div class="sc" id="apsc2">2</div><div class="st" id="apst2"><div class="sn">STEP 2</div><div class="sl">카카오 동의</div></div></div>
+          <div class="sa">›</div>
+          <div class="si"><div class="sc" id="apsc3">3</div><div class="st" id="apst3"><div class="sn">STEP 3</div><div class="sl">완료</div></div></div>
+        </div>
+
+        <!-- STEP 1: 자동완성 채널 정보 -->
+        <div id="ap-s1">
+          <div class="ibox info">
+            <div class="ico">💛</div>
+            <div class="txt">입점 정보를 기반으로 <strong>채널 정보가 자동으로 입력</strong>되었습니다. 확인 후 신청해주세요.</div>
+          </div>
+          <div class="card" style="border-left:3px solid var(--grip)">
+            <div class="ct">자동 완성된 채널 정보 <span class="badge orange">입점 정보 기반</span></div>
+            <div class="fg">
+              <div class="fr">
+                <div class="fl">채널명 <span class="auto">자동 입력</span></div>
+                <input class="fi auto-f" value="그립 테스트 브랜드" readonly>
+                <div class="fh">입점 시 등록한 브랜드명이 적용됩니다.</div>
+              </div>
+              <div class="fr">
+                <div class="fl">채널 URL <span class="auto">자동 생성</span></div>
+                <input class="fi auto-f" value="@grip_test_brand" readonly>
+                <div class="fh">사업자번호 기반 자동 생성 · 변경 가능</div>
+              </div>
+            </div>
+            <div class="fr">
+              <div class="fl">채널 소개 <span class="auto">자동 입력</span></div>
+              <textarea class="fi auto-f" style="height:68px;padding:10px 11px;resize:none;line-height:1.7" readonly>그립 테스트 브랜드 공식 카카오 채널입니다. 라이브 방송과 최신 소식을 받아보세요.</textarea>
+            </div>
+            <div class="sep">채널 설정</div>
+            <div class="trow">
+              <div class="tlabel">친구 추가 시 웰컴 메시지 자동 발송<small>새 친구 추가 시 브랜드 소개 메시지를 자동 발송합니다.</small></div>
+              <div class="tog on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="trow">
+              <div class="tlabel">광고 인프라 사전 연결<small>광고센터 오픈 시 채널이 자동으로 광고 인프라에 연결됩니다.</small></div>
+              <div class="tog on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn outline" onclick="showPage('p-nolink', null)">← 취소</button>
+            <button class="btn primary" onclick="applyStep(2)">다음 · 카카오 동의 →</button>
+          </div>
+        </div>
+
+        <!-- STEP 2: 카카오 동의 -->
+        <div id="ap-s2" style="display:none">
+          <div class="ibox warn">
+            <div class="ico">⚠️</div>
+            <div class="txt">카카오 비즈니스 API를 통해 플러스친구 채널을 생성하기 위해 <strong>카카오 계정 연동 및 서비스 약관 동의</strong>가 필요합니다.</div>
+          </div>
+          <div class="consent">
+            <div class="consent-hd">
+              <div class="ki">💛</div>
+              <div>
+                <h3>동의가 필요한 매칭 계약이 있습니다</h3>
+                <p>카카오 비즈니스 · 플러스친구 채널 생성 계약</p>
+              </div>
+            </div>
+            <div class="consent-bd">
+              <div class="fr" style="margin-bottom:12px">
+                <div class="fl">연동 카카오 계정</div>
+                <input class="fi auto-f" value="seller@business.kakao.com" readonly>
+              </div>
+              <ul class="consent-list">
+                <li>카카오 플러스친구 채널 생성 및 관리 권한을 그립 비즈니스센터에 위임합니다.</li>
+                <li>그립이 채널 메시지 발송, 친구 관리 기능을 대행하는 것에 동의합니다.</li>
+                <li>채널 친구 수, 활성 통계 데이터를 그립과 공유하는 것에 동의합니다.</li>
+                <li>광고 집행 시 채널 친구 데이터가 광고 타겟 모수로 활용될 수 있습니다.</li>
+                <li>계약 해지 시 광고 집행이 중단되며, 채널 소유권은 판매자에게 귀속됩니다.</li>
+              </ul>
+            </div>
+            <div class="consent-ft">
+              <button class="cbtn cancel" onclick="applyStep(1)">취소</button>
+              <button class="cbtn agree" onclick="applyProcess()">동의 후 채널 생성 시작</button>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn outline" onclick="applyStep(1)">← 이전</button>
+          </div>
+        </div>
+
+        <!-- STEP 3: 생성 중 -->
+        <div id="ap-s3" style="display:none">
+          <div class="card" style="padding:48px">
+            <div class="processing">
+              <div class="spinner"></div>
+              <div style="font-size:16px;font-weight:700;margin-bottom:8px">카카오 플러스친구 채널 생성 중...</div>
+              <div style="font-size:13px;color:var(--text3);line-height:2.2" id="apply-proc-text">카카오 비즈니스 API 연결 중...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================
+         B-③ 플친 신청 완료 (미연결 플로우 종착점)
+    ================================================== -->
+    <div class="page" id="p-applied">
+      <div class="topbar">
+        <div class="crumb">광고·마케팅 <span>›</span> 광고 채널 (플친) <span>›</span> <span class="cur">채널 생성 완료</span></div>
+      </div>
+      <div class="content">
+        <div class="ph">
+          <h1>플러스친구 채널이 생성되었습니다!</h1>
+          <p>입점 신청과 함께 카카오 플러스친구 채널이 자동으로 생성되었습니다.</p>
+        </div>
+        <div class="done-wrap" style="padding:16px 0 0">
+          <div class="done-icon orange">✅</div>
+          <div class="ch-card" style="width:100%;max-width:420px;margin-bottom:20px">
+            <div class="ch-hd">
+              <div class="ch-thumb">그</div>
+              <div><h3>그립 테스트 브랜드</h3><p>카카오 플러스친구 채널 · 생성 완료</p></div>
+            </div>
+            <div class="ch-bd">
+              <div class="rrow"><span class="rkey">채널 ID</span><span class="rval">@grip_test_brand</span></div>
+              <div class="rrow"><span class="rkey">채널 상태</span><span class="rval green">● 활성화</span></div>
+              <div class="rrow"><span class="rkey">메시지 발송</span><span class="rval green">● 사용 가능</span></div>
+              <div class="rrow ad-linked">
+                <span class="rkey">광고 연동</span>
+                <span class="rval linked">
+                  <span style="color:var(--ad-blue)">● 연결됨 · 메시지 광고센터</span>
+                  <button class="linked-btn" onclick="showPage('p-adcenter', null)">광고 시작 →</button>
+                </span>
+              </div>
+              <div class="rrow"><span class="rkey">친구 수</span><span class="rval">0명 <span style="color:var(--text3);font-weight:400">(수집 시작)</span></span></div>
+            </div>
+          </div>
+          <div class="ad-cta-banner" style="width:100%;max-width:420px" onclick="showPage('p-adcenter', null)">
+            <div class="atag">CONNECTED · 광고센터 연동 완료</div>
+            <h3>지금 바로 첫 메시지 광고를<br>시작할 수 있어요</h3>
+            <p>플러스친구 채널이 메시지 광고센터에 연결되었습니다.<br>친구에게 직접 메시지를 발송하고 매출을 높이세요.</p>
+            <button class="start-btn" onclick="event.stopPropagation();showPage('p-adcenter',null)">메시지 광고 만들기 →</button>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:12px;width:100%;max-width:420px">
+            <button class="btn outline" style="flex:1">비즈센터 홈으로</button>
+            <button class="btn kakao-btn" style="flex:1">채널 관리</button>
+            <button class="btn ad-btn" style="flex:1" onclick="showPage('p-adcenter', null)">광고 시작 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ==================================================
+    ================================================== -->
+    <div class="page" id="p-adcenter">
+      <div class="topbar">
+        <div class="crumb">광고 · 마케팅 <span>›</span> <span class="cur">메시지 광고센터</span></div>
+      </div>
+      <div class="ad-center-tabs">
+        <button class="act active">광고 현황</button>
+        <button class="act">광고 만들기</button>
+        <button class="act">성과 분석</button>
+        <button class="act">정산</button>
+      </div>
+      <div class="content">
+        <div class="ph">
+          <h1>메시지 광고센터</h1>
+          <p>플러스친구 채널을 통해 고객에게 직접 메시지를 발송하고 매출을 높이세요.</p>
+        </div>
+
+        <!-- 채널 연동 상태 -->
+        <div class="card ad-connected">
+          <div class="ct">연결된 채널 <span class="badge green">● 활성</span></div>
+          <div style="display:flex;align-items:center;gap:14px;padding:4px 0">
+            <div style="width:40px;height:40px;background:var(--kakao);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#3A1D1D;">그</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:700">그립 테스트 브랜드</div>
+              <div style="font-size:12px;color:var(--text3)">@grip_test_brand · 친구 수 <strong style="color:var(--text2)">0명</strong></div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:2px">메시지 발송</div>
+              <div style="font-size:12px;font-weight:700;color:var(--success)">● 사용 가능</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 통계 카드 (첫 광고 전 = 0 상태) -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px">
+          <div class="card" style="margin-bottom:0;text-align:center;padding:16px">
+            <div style="font-size:24px;font-weight:900;color:var(--text3)">0</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">진행중 광고</div>
+          </div>
+          <div class="card" style="margin-bottom:0;text-align:center;padding:16px">
+            <div style="font-size:24px;font-weight:900;color:var(--text3)">₩0</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">이번달 광고비</div>
+          </div>
+          <div class="card" style="margin-bottom:0;text-align:center;padding:16px">
+            <div style="font-size:24px;font-weight:900;color:var(--text3)">0</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">총 발송 수</div>
+          </div>
+          <div class="card" style="margin-bottom:0;text-align:center;padding:16px">
+            <div style="font-size:24px;font-weight:900;color:var(--text3)">—</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">평균 ROAS</div>
+          </div>
+        </div>
+
+        <!-- 첫 광고 시작 유도 -->
+        <div class="ad-cta-banner" onclick="showPage('p-adcreate', null)">
+          <div class="atag">FIRST AD · 첫 번째 광고를 시작해보세요</div>
+          <h3>친구에게 첫 메시지를 보내고<br>라이브로 매출을 높이세요</h3>
+          <p>메시지 광고는 플러스친구 채널 친구에게 직접 발송됩니다.<br>지금 바로 첫 광고를 설정해보세요. 5분이면 충분합니다.</p>
+          <button class="start-btn" onclick="event.stopPropagation(); showPage('p-adcreate', null)">첫 메시지 광고 만들기 →</button>
+        </div>
+
+        <!-- 가이드 카드 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div class="card" style="margin-bottom:0">
+            <div style="font-size:22px;margin-bottom:8px">🎯</div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px">타겟 메시지</div>
+            <div style="font-size:12px;color:var(--text3);line-height:1.6">채널 친구에게 정확한 타겟으로 메시지를 발송해 전환율을 높이세요.</div>
+          </div>
+          <div class="card" style="margin-bottom:0">
+            <div style="font-size:22px;margin-bottom:8px">📊</div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px">실시간 성과</div>
+            <div style="font-size:12px;color:var(--text3);line-height:1.6">발송 수, 오픈율, 클릭률, ROAS를 실시간으로 확인하세요.</div>
+          </div>
+          <div class="card" style="margin-bottom:0">
+            <div style="font-size:22px;margin-bottom:8px">⚡</div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px">라이브 연동</div>
+            <div style="font-size:12px;color:var(--text3);line-height:1.6">라이브 시작 전 자동 알림 메시지로 시청자 유입을 극대화하세요.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ==================================================
+         ③ 광고 만들기 플로우 (4단계)
+    ================================================== -->
+    <div class="page" id="p-adcreate">
+      <div class="topbar">
+        <div class="crumb">메시지 광고 <span>›</span> <span class="cur" id="adcr-crumb">1단계: 광고 유형 선택</span></div>
+      </div>
+      <div class="content">
+        <div class="ph">
+          <h1>메시지 광고 만들기</h1>
+          <p>플러스친구 @grip_test_brand 채널을 통해 메시지를 발송합니다.</p>
+        </div>
+
+        <div class="steps">
+          <div class="si"><div class="sc active" id="adsc1">1</div><div class="st active" id="adst1"><div class="sn">STEP 1</div><div class="sl">광고 유형</div></div></div>
+          <div class="sa">›</div>
+          <div class="si"><div class="sc" id="adsc2">2</div><div class="st" id="adst2"><div class="sn">STEP 2</div><div class="sl">메시지 소재</div></div></div>
+          <div class="sa">›</div>
+          <div class="si"><div class="sc" id="adsc3">3</div><div class="st" id="adst3"><div class="sn">STEP 3</div><div class="sl">타겟 · 예산</div></div></div>
+          <div class="sa">›</div>
+          <div class="si"><div class="sc" id="adsc4">4</div><div class="st" id="adst4"><div class="sn">STEP 4</div><div class="sl">검토 · 신청</div></div></div>
+        </div>
+
+        <!-- AD STEP 1: 유형 -->
+        <div id="ads1">
+          <div class="card">
+            <div class="ct">광고 유형 선택</div>
+            <div class="ad-type-grid">
+              <div class="at-card selected" id="at-talk" onclick="selAdType('talk')">
+                <div class="at-icon">💬</div>
+                <div class="at-name">친구톡 메시지</div>
+                <div class="at-desc">플친 채널 친구에게 직접 발송. 오픈율 높음.</div>
+                <span class="at-badge" style="background:#FFFDE0;color:#997A00">채널 친구 대상</span>
+              </div>
+              <div class="at-card" id="at-smart" onclick="selAdType('smart')">
+                <div class="at-icon">🎯</div>
+                <div class="at-name">스마트 메시지</div>
+                <div class="at-desc">AI 알고리즘이 최적 타겟에 자동 발송.</div>
+                <span class="at-badge" style="background:var(--ad-blue-light);color:var(--ad-blue)">AI 타겟 최적화</span>
+              </div>
+              <div class="at-card" id="at-broad" onclick="selAdType('broad')">
+                <div class="at-icon">📡</div>
+                <div class="at-name">광역 메시지</div>
+                <div class="at-desc">관심사 기반 신규 유저에게 발송.</div>
+                <span class="at-badge" style="background:var(--grip-light);color:var(--grip)">신규 고객 확보</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="ct">광고 목표</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <label style="display:flex;align-items:center;gap:8px;padding:12px;border:2px solid var(--ad-blue);border-radius:8px;cursor:pointer;background:var(--ad-blue-light)">
+                <input type="radio" name="adgoal" checked style="accent-color:var(--ad-blue)">
+                <div><div style="font-size:13px;font-weight:700">라이브 시청 유도</div><div style="font-size:11px;color:var(--text3)">예정 라이브로 고객 유입</div></div>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--border);border-radius:8px;cursor:pointer">
+                <input type="radio" name="adgoal" style="accent-color:var(--ad-blue)">
+                <div><div style="font-size:13px;font-weight:700">상품 구매 전환</div><div style="font-size:11px;color:var(--text3)">특정 상품 구매 유도</div></div>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--border);border-radius:8px;cursor:pointer">
+                <input type="radio" name="adgoal" style="accent-color:var(--ad-blue)">
+                <div><div style="font-size:13px;font-weight:700">친구 추가 유도</div><div style="font-size:11px;color:var(--text3)">채널 팔로워 수 늘리기</div></div>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--border);border-radius:8px;cursor:pointer">
+                <input type="radio" name="adgoal" style="accent-color:var(--ad-blue)">
+                <div><div style="font-size:13px;font-weight:700">브랜드 인지도</div><div style="font-size:11px;color:var(--text3)">노출 기반 브랜딩</div></div>
+              </label>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn outline" onclick="showPage('p-adcenter',null)">취소</button>
+            <button class="btn ad-btn" onclick="adStep(2)">다음 · 메시지 소재 →</button>
+          </div>
+        </div>
+
+        <!-- AD STEP 2: 소재 -->
+        <div id="ads2" style="display:none">
+          <div style="display:grid;grid-template-columns:1fr 220px;gap:18px;align-items:start">
+            <div>
+              <div class="card">
+                <div class="ct">메시지 소재 작성</div>
+                <div class="fr">
+                  <div class="fl">광고 제목 <span class="req">*</span></div>
+                  <input class="fi" id="ad-ttl" placeholder="예) 🔥 오늘 밤 11시 라이브! 역대급 특가" oninput="updatePrev()">
+                  <div class="fh">최대 30자 · 친구 알림에 노출되는 핵심 문구</div>
+                </div>
+                <div class="fr">
+                  <div class="fl">메시지 본문 <span class="req">*</span></div>
+                  <textarea class="fi" id="ad-body" style="height:96px;padding:10px 11px;resize:none;line-height:1.7"
+                    placeholder="안녕하세요 😊&#10;오늘 밤 특별한 라이브를 준비했어요!&#10;지금 바로 확인해보세요 👇" oninput="updatePrev()"></textarea>
+                  <div class="fh">최대 200자</div>
+                </div>
+                <div class="fr">
+                  <div class="fl">이미지 첨부 <span style="font-size:11px;color:var(--text3);font-weight:400">(선택)</span></div>
+                  <div style="border:2px dashed var(--border2);border-radius:8px;padding:20px;text-align:center;cursor:pointer;background:var(--bg)">
+                    <div style="font-size:24px;margin-bottom:4px">🖼️</div>
+                    <div style="font-size:12px;color:var(--text3)">클릭하여 이미지 업로드</div>
+                    <div style="font-size:11px;color:var(--border2);margin-top:3px">800×400px · JPG/PNG · 최대 5MB</div>
+                  </div>
+                </div>
+                <div class="fr" style="margin-bottom:0">
+                  <div class="fl">버튼 <span class="req">*</span></div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                    <input class="fi" id="ad-cta" placeholder="라이브 보러가기" oninput="updatePrev()">
+                    <input class="fi" placeholder="https://grip.show/live/...">
+                  </div>
+                </div>
+              </div>
+              <div class="btn-row">
+                <button class="btn outline" onclick="adStep(1)">← 이전</button>
+                <button class="btn ad-btn" onclick="adStep(3)">다음 · 타겟·예산 →</button>
+              </div>
+            </div>
+            <!-- 미리보기 -->
+            <div style="position:sticky;top:70px">
+              <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;text-align:center">PREVIEW</div>
+              <div class="phone">
+                <div class="phone-bar"></div>
+                <div class="phone-screen">
+                  <div class="phone-hd">
+                    <div class="phi">그</div>
+                    <span>그립 테스트 브랜드</span>
+                  </div>
+                  <div class="phone-bd">
+                    <div class="bubble">
+                      <div class="bubble-img">🛍️</div>
+                      <div style="font-size:12px;font-weight:700;margin-bottom:4px" id="pv-title">광고 제목</div>
+                      <div style="font-size:11px;color:var(--text2);line-height:1.6" id="pv-body">메시지 본문이 여기에 표시됩니다.</div>
+                      <div class="bubble-cta" id="pv-cta">라이브 보러가기</div>
+                    </div>
+                    <div style="font-size:9px;color:var(--text3);text-align:right;margin-top:4px">오후 7:30</div>
+                  </div>
+                </div>
+              </div>
+              <div class="preview-label">카카오톡 수신 화면 미리보기</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AD STEP 3: 타겟·예산 -->
+        <div id="ads3" style="display:none">
+          <div class="card">
+            <div class="ct">발송 타겟</div>
+            <div class="fr">
+              <div class="fl">타겟 유형</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+                <label style="display:flex;align-items:center;gap:8px;padding:12px;border:2px solid var(--ad-blue);border-radius:8px;cursor:pointer;background:var(--ad-blue-light)">
+                  <input type="radio" name="tgt" checked style="accent-color:var(--ad-blue)">
+                  <div><div style="font-size:13px;font-weight:700">플친 채널 친구</div><div style="font-size:11px;color:var(--text3)">현재 0명 · 수집 중</div></div>
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;padding:12px;border:1px solid var(--border);border-radius:8px;cursor:pointer">
+                  <input type="radio" name="tgt" style="accent-color:var(--ad-blue)">
+                  <div><div style="font-size:13px;font-weight:700">카카오 추천 타겟</div><div style="font-size:11px;color:var(--text3)">AI 기반 유사 타겟 확장</div></div>
+                </label>
+              </div>
+            </div>
+            <div class="sep">세부 필터</div>
+            <div class="fr">
+              <div class="fl">관심 카테고리</div>
+              <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:4px">
+                <span class="ttag on" onclick="this.classList.toggle('on')">💄 뷰티</span>
+                <span class="ttag on" onclick="this.classList.toggle('on')">👗 패션</span>
+                <span class="ttag" onclick="this.classList.toggle('on')">🍎 식품</span>
+                <span class="ttag" onclick="this.classList.toggle('on')">🏠 생활</span>
+                <span class="ttag" onclick="this.classList.toggle('on')">📱 가전</span>
+                <span class="ttag" onclick="this.classList.toggle('on')">⚽ 스포츠</span>
+                <span class="ttag" onclick="this.classList.toggle('on')">🐾 펫</span>
+              </div>
+            </div>
+            <div class="fg">
+              <div class="fr" style="margin-bottom:0">
+                <div class="fl">성별</div>
+                <select class="fi"><option>전체</option><option>여성</option><option>남성</option></select>
+              </div>
+              <div class="fr" style="margin-bottom:0">
+                <div class="fl">연령대</div>
+                <select class="fi"><option>전체</option><option>18-24세</option><option>25-34세</option><option>35-44세</option><option>45세 이상</option></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="ct">예산 · 일정</div>
+            <div class="fr">
+              <div class="fl">일 예산</div>
+              <input type="range" class="budget-slider" min="10000" max="1000000" step="10000" value="100000"
+                oninput="document.getElementById('bval').textContent=Number(this.value).toLocaleString()">
+              <div class="budget-row">
+                <div style="font-size:11px;color:var(--text3)">₩10,000</div>
+                <div><span class="budget-num" id="bval">100,000</span><span style="font-size:13px;color:var(--text3)">원/일</span></div>
+                <div style="font-size:11px;color:var(--text3)">₩1,000,000</div>
+              </div>
+            </div>
+            <div class="fg">
+              <div class="fr"><div class="fl">광고 시작일 <span class="req">*</span></div><input class="fi" type="date" value="2026-02-28"></div>
+              <div class="fr"><div class="fl">종료일</div><input class="fi" type="date" value="2026-03-06"></div>
+            </div>
+            <div class="fr" style="margin-bottom:8px">
+              <div class="fl">발송 시간대</div>
+              <div style="display:flex;gap:8px">
+                <select class="fi" style="flex:1"><option>오전 10시</option><option>오후 12시</option><option>오후 2시</option><option selected>오후 7시</option><option>오후 9시</option></select>
+                <span style="line-height:37px;color:var(--text3)">~</span>
+                <select class="fi" style="flex:1"><option>오후 9시</option><option selected>오후 11시</option><option>자정</option></select>
+              </div>
+            </div>
+            <!-- 예상 성과 -->
+            <div style="background:var(--bg);border-radius:8px;padding:14px;margin-top:4px">
+              <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px">📊 예상 광고 성과 (일 예산 ₩100,000 기준)</div>
+              <div class="perf-grid">
+                <div class="perf-item"><div class="perf-num">8.5만</div><div class="perf-label">예상 발송</div></div>
+                <div class="perf-item"><div class="perf-num">6.8%</div><div class="perf-label">예상 오픈율</div></div>
+                <div class="perf-item"><div class="perf-num">1.2%</div><div class="perf-label">예상 클릭률</div></div>
+                <div class="perf-item"><div class="perf-num">₩8.3</div><div class="perf-label">예상 CPC</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn outline" onclick="adStep(2)">← 이전</button>
+            <button class="btn ad-btn" onclick="adStep(4)">다음 · 검토 및 신청 →</button>
+          </div>
+        </div>
+
+        <!-- AD STEP 4: 검토 -->
+        <div id="ads4" style="display:none">
+          <div class="card">
+            <div class="ct">광고 내용 최종 검토</div>
+            <div class="rrow"><span class="rkey">광고 유형</span><span class="rval">친구톡 메시지 · 라이브 시청 유도</span></div>
+            <div class="rrow"><span class="rkey">발송 채널</span><span class="rval">@grip_test_brand</span></div>
+            <div class="rrow"><span class="rkey">타겟</span><span class="rval">플친 채널 친구 · 뷰티/패션 관심</span></div>
+            <div class="rrow"><span class="rkey">일 예산</span><span class="rval">₩100,000</span></div>
+            <div class="rrow"><span class="rkey">광고 기간</span><span class="rval">2026.02.28 ~ 2026.03.06 (7일)</span></div>
+            <div class="rrow"><span class="rkey">발송 시간</span><span class="rval">오후 7시 ~ 11시</span></div>
+            <div class="rrow"><span class="rkey">총 예상 비용</span><span class="rval orange" style="font-size:14px">₩700,000</span></div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 220px;gap:18px;align-items:start;margin-bottom:14px">
+            <div class="ibox warn">
+              <div class="ico">⚠️</div>
+              <div class="txt">광고 신청 후 심사가 진행됩니다. 심사 완료(최대 24시간) 후 설정된 일정에 맞춰 자동 발송됩니다. 심사 중 취소는 가능합니다.</div>
+            </div>
+            <div style="text-align:center">
+              <div class="phone" style="transform:scale(0.85);transform-origin:top center">
+                <div class="phone-bar"></div>
+                <div class="phone-screen">
+                  <div class="phone-hd"><div class="phi">그</div><span>그립 테스트 브랜드</span></div>
+                  <div class="phone-bd">
+                    <div class="bubble">
+                      <div class="bubble-img">🛍️</div>
+                      <div style="font-size:12px;font-weight:700;margin-bottom:4px" id="pv-title2">광고 제목</div>
+                      <div style="font-size:11px;color:var(--text2);line-height:1.6" id="pv-body2">메시지 본문</div>
+                      <div class="bubble-cta" id="pv-cta2">라이브 보러가기</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn outline" onclick="adStep(3)">← 이전</button>
+            <button class="btn ad-btn" style="padding:0 32px;font-size:14px;height:44px" onclick="submitAd()">광고 신청하기 →</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ==================================================
+         ④ 광고 완료 · 퍼널 뷰
+    ================================================== -->
+    <div class="page" id="p-addone">
+      <div class="topbar">
+        <div class="crumb">메시지 광고 <span>›</span> <span class="cur">신청 완료</span></div>
+      </div>
+      <div class="content">
+        <div class="done-wrap">
+          <div class="done-icon blue">🎉</div>
+          <div style="font-size:20px;font-weight:700;margin-bottom:6px">메시지 광고 신청 완료!</div>
+          <div style="font-size:13px;color:var(--text3);margin-bottom:28px">심사 완료 후 설정한 일정에 맞춰 자동 발송됩니다.</div>
+
+          <!-- 퍼널 완성 시각화 -->
+          <div style="background:var(--bg);border-radius:12px;padding:20px 24px;width:100%;max-width:520px;margin-bottom:18px">
+            <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;text-align:center">광고 퍼널 설계 현황</div>
+            <div class="funnel-row">
+              <div class="fn fn-done"><div class="fn-icon">🏠</div><div class="fn-label">입점 완료</div></div>
+              <div class="fn-arr">→</div>
+              <div class="fn fn-done"><div class="fn-icon">💛</div><div class="fn-label">플친 생성</div></div>
+              <div class="fn-arr">→</div>
+              <div class="fn fn-done"><div class="fn-icon">📢</div><div class="fn-label">메시지 광고<br><span style="color:var(--success);font-size:9px">● 진행중</span></div></div>
+              <div class="fn-arr">→</div>
+              <div class="fn fn-wait"><div class="fn-icon">🖼️</div><div class="fn-label">지면 광고<br><span style="color:var(--grip);font-size:9px">준비중</span></div></div>
+              <div class="fn-arr">→</div>
+              <div class="fn fn-wait"><div class="fn-icon">📈</div><div class="fn-label">GMV 증대</div></div>
+            </div>
+          </div>
+
+          <!-- 광고 접수 요약 -->
+          <div class="ch-card" style="width:100%;max-width:420px;margin-bottom:14px;border-color:var(--ad-blue)">
+            <div class="ch-hd" style="background:var(--ad-blue)">
+              <div class="ch-thumb" style="background:rgba(255,255,255,0.2);color:#fff;font-size:18px">📢</div>
+              <div><h3 style="color:#fff">메시지 광고 신청 완료</h3><p style="color:rgba(255,255,255,0.7)">MSG-2026022700001</p></div>
+            </div>
+            <div class="ch-bd">
+              <div class="rrow"><span class="rkey">발송 채널</span><span class="rval">@grip_test_brand</span></div>
+              <div class="rrow"><span class="rkey">광고 기간</span><span class="rval">2026.02.28 ~ 2026.03.06</span></div>
+              <div class="rrow"><span class="rkey">일 예산</span><span class="rval">₩100,000</span></div>
+              <div class="rrow"><span class="rkey">심사 상태</span><span class="rval" style="color:#E08000">● 심사 중 (최대 24시간)</span></div>
+              <div class="rrow ad-linked"><span class="rkey">지면 광고 연동</span><span class="rval linked">준비중 · 오픈 시 타겟 데이터 자동 연결</span></div>
+            </div>
+          </div>
+
+          <div class="ibox blue" style="max-width:420px;width:100%">
+            <div class="ico">🔗</div>
+            <div class="txt">지면 광고센터 오픈 시, 현재 설정한 <strong>타겟·예산 데이터가 자동으로 연결</strong>됩니다. 메시지 광고 성과 데이터는 지면 광고 최적화에 활용됩니다.</div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:16px;width:100%;max-width:420px">
+            <button class="btn outline" style="flex:1" onclick="showPage('p-adcenter',null)">광고 현황 보기</button>
+            <button class="btn ad-btn" style="flex:1" onclick="showPage('p-adcreate',null);adStep(1)">새 광고 만들기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  // 사이드바 active
+  document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
+  if (id === 'p-complete' || id === 'p-apply' || id === 'p-applied') {
+    document.getElementById('sb-ch').classList.add('active');
+  }
+  if (id === 'p-nolink' || id === 'p-adcenter' || id === 'p-adcreate' || id === 'p-addone') {
+    document.getElementById('sb-msg').classList.add('active');
+  }
+
+  // 시나리오 B(미연결) ↔ A(연결됨) 에 따라 사이드바 플친 배지 상태 변경
+  const badge = document.getElementById('sb-ch-badge');
+  const isB = ['p-nolink','p-apply'].includes(id);
+  badge.textContent = isB ? '미연결' : '연결됨';
+  badge.style.background = isB ? 'rgba(255,107,43,0.2)' : '#2D6A4F';
+  badge.style.color = isB ? 'var(--grip)' : '#52B788';
+
+  window.scrollTo(0, 0);
+}
+
+// ── 플친 신청 플로우 (B 시나리오) ──
+function applyStep(step) {
+  ['1','2','3'].forEach(n => {
+    const el = document.getElementById('ap-s' + n);
+    if (el) el.style.display = n == step ? 'block' : 'none';
+  });
+  const labels = ['','1단계: 채널 정보 확인','2단계: 카카오 동의','3단계: 채널 생성 중'];
+  document.getElementById('apply-crumb').textContent = labels[step];
+  // progress
+  for (let i = 1; i <= 3; i++) {
+    const c = document.getElementById('apsc' + i);
+    const t = document.getElementById('apst' + i);
+    c.classList.remove('done','active'); t.classList.remove('done','active');
+    if (i < step) { c.classList.add('done'); c.textContent = '✓'; t.classList.add('done'); }
+    else if (i === step) { c.classList.add('active'); c.textContent = i; t.classList.add('active'); }
+    else { c.textContent = i; }
+  }
+  window.scrollTo(0, 0);
+}
+
+function applyProcess() {
+  applyStep(3);
+  const steps = [
+    '카카오 비즈니스 API 연결 중...',
+    '카카오 비즈니스 API 연결 중...<br>채널 정보 등록 중...',
+    '카카오 비즈니스 API 연결 중...<br>채널 정보 등록 중...<br>채널 ID 발급 중...',
+    '카카오 비즈니스 API 연결 중...<br>채널 정보 등록 중...<br>채널 ID 발급 중...<br>광고 인프라 사전 등록 중...',
+  ];
+  let i = 0;
+  const iv = setInterval(() => {
+    if (i < steps.length) {
+      document.getElementById('apply-proc-text').innerHTML = steps[i++];
+    } else {
+      clearInterval(iv);
+      setTimeout(() => showPage('p-applied', null), 600);
+    }
+  }, 700);
+}
+
+function selAdType(t) {
+  ['talk','smart','broad'].forEach(x => document.getElementById('at-'+x).classList.remove('selected'));
+  document.getElementById('at-'+t).classList.add('selected');
+}
+
+let curAdStep = 1;
+function adStep(step) {
+  curAdStep = step;
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('ads' + i);
+    if (el) el.style.display = (i === step) ? 'block' : 'none';
+  }
+  const labels = ['','1단계: 광고 유형 선택','2단계: 메시지 소재 작성','3단계: 타겟·예산 설정','4단계: 검토 및 신청'];
+  document.getElementById('adcr-crumb').textContent = labels[step];
+  // progress
+  for (let i = 1; i <= 4; i++) {
+    const c = document.getElementById('adsc' + i);
+    const t = document.getElementById('adst' + i);
+    c.classList.remove('done','active'); t.classList.remove('done','active');
+    if (i < step) { c.classList.add('done'); c.textContent = '✓'; t.classList.add('done'); }
+    else if (i === step) { c.classList.add('active'); c.textContent = i; t.classList.add('active'); }
+    else { c.textContent = i; }
+  }
+  // sync step 4 preview
+  if (step === 4) {
+    document.getElementById('pv-title2').textContent = document.getElementById('pv-title').textContent;
+    document.getElementById('pv-body2').textContent = document.getElementById('pv-body').textContent;
+    document.getElementById('pv-cta2').textContent = document.getElementById('pv-cta').textContent;
+  }
+  window.scrollTo(0, 0);
+}
+
+function updatePrev() {
+  const t = document.getElementById('ad-ttl').value || '광고 제목';
+  const b = document.getElementById('ad-body').value || '메시지 본문이 여기에 표시됩니다.';
+  const c = document.getElementById('ad-cta').value || '라이브 보러가기';
+  document.getElementById('pv-title').textContent = t;
+  document.getElementById('pv-body').textContent = b;
+  document.getElementById('pv-cta').textContent = c;
+}
+
+function submitAd() {
+  showPage('p-addone', null);
+}
+</script>
+</body>
+</html>
