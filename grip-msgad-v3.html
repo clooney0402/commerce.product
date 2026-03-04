@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grip BizCenter · 메시지 광고 신청</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap');
+:root {
+  --kakao:#FEE500; --grip:#FF6B2B; --grip-l:#FFF0EA;
+  --bg:#F2F4F7; --white:#fff; --border:#E5E7EB; --border2:#D1D5DB;
+  --text:#111827; --text2:#374151; --text3:#9CA3AF;
+  --ok:#059669; --ok-bg:#ECFDF5;
+  --blue:#2563EB; --blue-l:#EFF6FF;
+  --sidebar:#1C2237; --sb-act:#252D48; --sb-txt:#94A3B8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:14px;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+/* ── 시나리오 탑바 ── */
+.scenario-bar{position:fixed;top:0;left:0;right:0;height:42px;background:#0F1629;display:flex;align-items:center;z-index:200;border-bottom:1px solid #1E2A45;}
+.scenario-bar .logo{padding:0 18px;font-size:13px;font-weight:800;color:var(--grip);border-right:1px solid #1E2A45;height:100%;display:flex;align-items:center;gap:5px;}
+.scenario-bar .logo span{color:#fff;font-weight:400;}
+.stab{height:100%;padding:0 16px;font-size:12px;font-weight:500;color:#64748B;background:none;border:none;cursor:pointer;font-family:inherit;border-right:1px solid #1E2A45;transition:all .15s;white-space:nowrap;}
+.stab:hover{background:#1E2A45;color:#fff;}
+.stab.on{background:var(--grip);color:#fff;}
+.scenario-bar .ver{margin-left:auto;padding:0 18px;font-size:10px;color:#334155;}
+
+/* ── 앱 레이아웃 ── */
+.app{display:flex;flex:1;padding-top:42px;}
+
+/* ── 사이드바 ── */
+.sb{width:200px;background:var(--sidebar);position:fixed;top:42px;bottom:0;left:0;padding:20px 0;}
+.sb-logo{padding:0 18px 18px;font-size:15px;font-weight:900;color:#fff;border-bottom:1px solid #252D48;margin-bottom:12px;}
+.sb-logo em{color:var(--grip);font-style:normal;}
+.sb-sec{padding:6px 18px 3px;font-size:10px;color:#334155;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;}
+.sb-item{padding:9px 18px;font-size:12.5px;color:var(--sb-txt);cursor:pointer;display:flex;align-items:center;gap:8px;border-left:3px solid transparent;transition:all .15s;}
+.sb-item:hover{background:#252D48;color:#fff;}
+.sb-item.on{background:var(--sb-act);color:#fff;border-left-color:var(--grip);}
+.sb-item.sub{padding-left:30px;font-size:12px;}
+.sb-item.sub.on{border-left-color:var(--blue);}
+.badge-new{font-size:9px;background:rgba(255,107,43,.2);color:var(--grip);padding:1px 6px;border-radius:10px;margin-left:auto;font-weight:700;}
+.badge-pending{font-size:9px;background:#1A3060;color:#60A5FA;padding:1px 6px;border-radius:10px;margin-left:auto;font-weight:700;}
+
+/* ── 메인 ── */
+.main{margin-left:200px;flex:1;display:flex;flex-direction:column;min-height:calc(100vh - 42px);}
+.topbar{background:var(--white);border-bottom:1px solid var(--border);height:50px;padding:0 28px;display:flex;align-items:center;}
+.crumb{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;}
+.crumb .cur{color:var(--text);font-weight:600;}
+.crumb span{color:var(--border2);}
+
+/* ── 페이지 ── */
+.page{display:none;flex:1;flex-direction:column;}
+.page.on{display:flex;animation:fadeUp .2s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.content{padding:24px 28px 40px;flex:1;max-width:720px;}
+.ph{margin-bottom:24px;}
+.ph h1{font-size:20px;font-weight:800;letter-spacing:-.5px;}
+.ph p{margin-top:5px;font-size:13px;color:var(--text3);line-height:1.6;}
+
+/* ── 카드 ── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:22px;margin-bottom:16px;}
+.card.hl{border-left:3px solid var(--grip);}
+.ct{font-size:14px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.chip{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;}
+.chip.orange{background:var(--grip-l);color:var(--grip);}
+.chip.blue{background:var(--blue-l);color:var(--blue);}
+.chip.green{background:var(--ok-bg);color:var(--ok);}
+.chip.gray{background:#F3F4F6;color:#6B7280;}
+
+/* ── 스텝 바 ── */
+.steps{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;}
+.si{display:flex;align-items:center;gap:8px;flex:1;}
+.sc{width:26px;height:26px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text3);flex-shrink:0;transition:all .3s;}
+.sc.done{background:var(--ok);color:#fff;}
+.sc.act{background:var(--grip);color:#fff;}
+.stxt .sn{font-size:10px;color:var(--text3);}
+.stxt .sl{font-weight:600;color:var(--text2);font-size:12px;}
+.stxt.act .sl{color:var(--grip);}
+.stxt.done .sl{color:var(--ok);}
+.sarr{width:28px;text-align:center;color:var(--border2);font-size:14px;flex-shrink:0;}
+
+/* ── 폼 ── */
+.fl{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;display:flex;align-items:center;gap:5px;}
+.req{color:#EF4444;}
+.auto-chip{font-size:10px;background:#FFF8F5;color:var(--grip);padding:1px 6px;border-radius:4px;font-weight:500;border:1px solid #FFD0B8;}
+.fi{width:100%;height:38px;border:1px solid var(--border);border-radius:6px;padding:0 11px;font-size:13px;font-family:inherit;color:var(--text);background:var(--white);outline:none;transition:border-color .2s;}
+.fi:focus{border-color:var(--grip);box-shadow:0 0 0 3px rgba(255,107,43,.08);}
+.fi.grip-auto{background:#FFF8F5;border-color:#FFD0B8;}
+.fh{margin-top:4px;font-size:11px;color:var(--text3);line-height:1.5;}
+.fr{margin-bottom:16px;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+/* ── 체크/라디오 선택 카드 ── */
+.sel-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;}
+.sel-item{border:2px solid var(--border);border-radius:8px;padding:12px 14px;cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:10px;}
+.sel-item:hover{border-color:var(--grip);background:var(--grip-l);}
+.sel-item.on{border-color:var(--grip);background:var(--grip-l);}
+.sel-item input{margin-top:2px;accent-color:var(--grip);}
+.sel-item-body .name{font-size:13px;font-weight:600;}
+.sel-item-body .desc{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.4;}
+
+/* 목표 수 버튼 그룹 */
+.goal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px;}
+.goal-btn{border:2px solid var(--border);border-radius:8px;padding:14px 10px;text-align:center;cursor:pointer;transition:all .15s;background:var(--white);}
+.goal-btn:hover{border-color:var(--blue);background:var(--blue-l);}
+.goal-btn.on{border-color:var(--blue);background:var(--blue-l);}
+.goal-btn .gnum{font-size:16px;font-weight:800;color:var(--text);margin-bottom:2px;}
+.goal-btn.on .gnum{color:var(--blue);}
+.goal-btn .glbl{font-size:11px;color:var(--text3);}
+
+/* ── 동의 박스 ── */
+.consent{border:2px solid var(--kakao);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.consent-hd{background:var(--kakao);padding:13px 18px;display:flex;align-items:center;gap:10px;}
+.consent-hd .ki{width:30px;height:30px;background:#3A1D1D;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.consent-hd h3{font-size:14px;font-weight:700;color:#3A1D1D;}
+.consent-hd p{font-size:11px;color:#5A3D1D;}
+.consent-bd{background:#FFFEF5;padding:14px 18px;}
+.consent-list{list-style:none;}
+.consent-list li{font-size:12px;color:var(--text2);padding:5px 0;display:flex;gap:8px;line-height:1.5;border-bottom:1px solid #FFF0C0;}
+.consent-list li:last-child{border-bottom:none;}
+.consent-list li::before{content:'·';color:var(--grip);font-weight:900;flex-shrink:0;}
+.consent-ft{background:#FFFDE0;padding:12px 18px;display:flex;gap:10px;}
+.cbtn{flex:1;height:40px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .2s;font-family:inherit;}
+.cbtn.agree{background:#3A1D1D;color:var(--kakao);}
+.cbtn.agree:hover{background:#2A1010;}
+.cbtn.cancel{background:transparent;border:1px solid #C0A060;color:#7A6030;}
+
+/* ── 알림 박스 ── */
+.ibox{border-radius:8px;padding:12px 15px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;}
+.ibox.blue{background:var(--blue-l);border:1px solid #BFDBFE;}
+.ibox.orange{background:var(--grip-l);border:1px solid #FFCBA0;}
+.ibox.info{background:var(--ok-bg);border:1px solid #A7F3D0;}
+.ibox .ico{font-size:16px;flex-shrink:0;margin-top:1px;}
+.ibox .txt{font-size:12.5px;line-height:1.7;}
+.ibox.blue .txt{color:#1E40AF;}
+.ibox.orange .txt{color:#9A3412;}
+.ibox.info .txt{color:#065F46;}
+
+/* ── 버튼 ── */
+.brow{display:flex;gap:10px;justify-content:flex-end;margin-top:4px;}
+.btn{height:40px;padding:0 24px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .2s;font-family:inherit;display:inline-flex;align-items:center;gap:6px;}
+.btn.pri{background:var(--grip);color:#fff;}
+.btn.pri:hover{background:#E05A20;}
+.btn.out{background:#fff;color:var(--text2);border:1px solid var(--border2);}
+.btn.out:hover{background:var(--bg);}
+.btn.kakao{background:var(--kakao);color:#3A1D1D;}
+.btn.kakao:hover{background:#F5D700;}
+.btn.lg{height:46px;padding:0 36px;font-size:15px;}
+
+/* ── 처리 중 ── */
+.proc{display:flex;flex-direction:column;align-items:center;padding:64px 20px;text-align:center;}
+.spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--grip);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:20px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── 완료 화면 ── */
+.done-wrap{display:flex;flex-direction:column;align-items:center;padding:40px 20px 20px;text-align:center;}
+.done-ic{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:16px;animation:pop .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes pop{from{transform:scale(.4);opacity:0;}to{transform:scale(1);opacity:1;}}
+.done-ic.kakao-bg{background:var(--kakao);}
+
+/* ── 신청 요약 카드 ── */
+.summary-card{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden;width:100%;max-width:480px;margin-bottom:16px;}
+.summary-hd{background:#F8FAFC;border-bottom:1px solid var(--border);padding:12px 18px;font-size:12px;font-weight:700;color:var(--text2);}
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:10px 18px;border-bottom:1px solid var(--border);font-size:13px;}
+.rrow:last-child{border-bottom:none;}
+.rkey{color:var(--text3);}
+.rval{font-weight:600;}
+
+/* ── 안내 타임라인 ── */
+.timeline{display:flex;flex-direction:column;gap:0;width:100%;max-width:480px;margin-bottom:16px;}
+.tl-item{display:flex;gap:14px;align-items:flex-start;}
+.tl-dot-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.tl-dot.done{background:var(--ok);color:#fff;}
+.tl-dot.wait{background:#F3F4F6;color:var(--text3);border:2px solid var(--border);}
+.tl-dot.active{background:var(--grip);color:#fff;}
+.tl-line{width:2px;flex:1;background:var(--border);min-height:20px;margin:4px 0;}
+.tl-body{padding:3px 0 20px;}
+.tl-title{font-size:13px;font-weight:700;margin-bottom:2px;}
+.tl-desc{font-size:12px;color:var(--text3);line-height:1.5;}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- ── 시나리오 탑바 ── -->
+<div class="scenario-bar">
+  <div class="logo">🏢 <span>Grip</span> BizCenter</div>
+  <button class="stab on" onclick="goPage('p-apply',this);obStep(1)">① 신청 플로우</button>
+  <button class="stab" onclick="goPage('p-pending',this)">② 계약 현황</button>
+  <button class="stab" onclick="goPage('p-history',this)">③ 발송 내역</button>
+  <div class="ver">prototype v1.1 · 수기 운영 단계</div>
+</div>
+
+<div class="app">
+  <!-- ── 사이드바 ── -->
+  <div class="sb">
+    <div class="sb-logo"><em>Grip</em> BizCenter</div>
+
+    <div class="sb-sec">입점 관리</div>
+    <div class="sb-item"><span>🏠</span> 입점 신청</div>
+    <div class="sb-item"><span>📋</span> 심사 현황</div>
+    <div class="sb-item"><span>📡</span> 라이브 관리</div>
+
+    <div class="sb-sec">메시지 광고 <span class="badge-new">NEW</span></div>
+    <div class="sb-item sub on" id="sb-apply" onclick="goPage('p-apply',null);obStep(1)">
+      <span style="font-size:11px">📩</span> 서비스 신청
+    </div>
+    <div class="sb-item sub" id="sb-pending" onclick="goPage('p-pending',null)" style="opacity:.4;cursor:default">
+      <span style="font-size:11px">📄</span> 계약 현황
+    </div>
+    <div class="sb-item sub" id="sb-history" onclick="goPage('p-history',null)" style="opacity:.4;cursor:default">
+      <span style="font-size:11px">📊</span> 발송 내역
+    </div>
+
+    <div class="sb-sec">정산 · 설정</div>
+    <div class="sb-item"><span>💰</span> 정산 관리</div>
+    <div class="sb-item"><span>⚙️</span> 계정 설정</div>
+  </div>
+
+  <div class="main">
+
+    <!-- ============================================================
+         신청 플로우 (STEP 1~4)
+    ============================================================ -->
+    <div class="page on" id="p-apply">
+      <div class="topbar">
+        <div class="crumb">메시지 광고 <span>›</span> <span class="cur" id="ob-crumb">1단계: 채널 정보 입력</span></div>
+      </div>
+      <div class="content">
+        <div class="ph">
+          <h1>메시지 광고 서비스 신청</h1>
+          <p>카카오 채널 개설에 필요한 정보를 입력해주세요. 신청 후 영업일 기준 1~2일 내에 채널이 개설됩니다.</p>
+        </div>
+
+        <!-- 3단계 스텝 -->
+        <div class="steps">
+          <div class="si"><div class="sc act" id="sc1">1</div><div class="stxt act" id="st1"><div class="sn">STEP 1</div><div class="sl">채널 정보</div></div></div>
+          <div class="sarr">›</div>
+          <div class="si"><div class="sc" id="sc2">2</div><div class="stxt" id="st2"><div class="sn">STEP 2</div><div class="sl">친구 모객 목표</div></div></div>
+          <div class="sarr">›</div>
+          <div class="si"><div class="sc" id="sc3">3</div><div class="stxt" id="st3"><div class="sn">STEP 3</div><div class="sl">동의 및 신청</div></div></div>
+        </div>
+
+        <!-- ── STEP 1: 채널 정보 ── -->
+        <div id="s1">
+          <div class="ibox orange">
+            <div class="ico">💡</div>
+            <div class="txt">채널명은 <strong>그립_셀러명</strong> 형식으로 고정됩니다. 카카오 채널은 그립 담당자가 직접 개설하며, 신청 정보 기반으로 처리됩니다.</div>
+          </div>
+
+          <div class="card hl">
+            <div class="ct">카카오 채널 기본 정보</div>
+
+            <div class="fr">
+              <div class="fl">채널명 <span class="req">*</span> <span class="auto-chip">그립_셀러명 자동완성</span></div>
+              <div style="display:flex;gap:8px">
+                <span style="height:38px;background:#FFF8F5;border:1px solid #FFD0B8;border-radius:6px;padding:0 12px;display:flex;align-items:center;font-size:13px;font-weight:600;color:var(--grip);flex-shrink:0">그립_</span>
+                <input class="fi" id="seller-name" placeholder="셀러명 입력" oninput="updateChName()" style="flex:1">
+              </div>
+              <div class="fh">완성 채널명: <strong id="ch-name-preview" style="color:var(--text)">그립_</strong> · 카카오 플러스친구에 이 이름으로 채널이 만들어집니다.</div>
+            </div>
+
+            <div class="fr">
+              <div class="fl">채널 소개 <span class="req">*</span></div>
+              <textarea class="fi" id="ch-intro" style="height:80px;padding:10px 11px;resize:none;line-height:1.7" placeholder="브랜드 소개와 채널 구독 혜택을 입력해주세요. (최대 150자)&#10;예) 뷰티 브랜드 OO의 공식 채널입니다. 라이브 방송 알림과 단독 할인 혜택을 받아보세요."></textarea>
+              <div class="fh">카카오 플러스친구 채널 프로필에 표시됩니다.</div>
+            </div>
+
+            <div class="fg">
+              <div class="fr" style="margin-bottom:0">
+                <div class="fl">업종 카테고리 <span class="req">*</span></div>
+                <select class="fi">
+                  <option value="">선택해주세요</option>
+                  <option>패션/의류</option>
+                  <option>뷰티/화장품</option>
+                  <option>식품/건강식품</option>
+                  <option>가전/디지털</option>
+                  <option>생활/가구/인테리어</option>
+                  <option>스포츠/레저</option>
+                  <option>유아/아동</option>
+                  <option>반려동물</option>
+                  <option>기타</option>
+                </select>
+              </div>
+              <div class="fr" style="margin-bottom:0">
+                <div class="fl">채널 담당자 연락처 <span class="req">*</span></div>
+                <input class="fi" placeholder="010-0000-0000" type="tel">
+                <div class="fh">채널 개설 완료 시 안내 연락을 드립니다.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="brow">
+            <button class="btn pri" onclick="obStep(2)">다음 · 친구 모객 목표 →</button>
+          </div>
+        </div>
+
+        <!-- ── STEP 2: 친구 모객 목표 ── -->
+        <div id="s2" style="display:none">
+          <div class="card">
+            <div class="ct">친구 모객 목표 설정</div>
+
+            <div class="fr">
+              <div class="fl">초기 목표 친구 수 <span class="req">*</span></div>
+              <div class="goal-grid">
+                <div class="goal-btn" id="g1" onclick="selGoal(1)">
+                  <div class="gnum">~500명</div>
+                  <div class="glbl">소규모 테스트</div>
+                </div>
+                <div class="goal-btn on" id="g2" onclick="selGoal(2)">
+                  <div class="gnum">500~2,000명</div>
+                  <div class="glbl">초기 운영</div>
+                </div>
+                <div class="goal-btn" id="g3" onclick="selGoal(3)">
+                  <div class="gnum">2,000~5,000명</div>
+                  <div class="glbl">성장 단계</div>
+                </div>
+                <div class="goal-btn" id="g4" onclick="selGoal(4)">
+                  <div class="gnum">5,000~1만명</div>
+                  <div class="glbl">중규모 셀러</div>
+                </div>
+                <div class="goal-btn" id="g5" onclick="selGoal(5)">
+                  <div class="gnum">1만명 이상</div>
+                  <div class="glbl">대형 셀러</div>
+                </div>
+                <div class="goal-btn" id="g6" onclick="selGoal(6)">
+                  <div class="gnum">미정</div>
+                  <div class="glbl">일단 시작</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fr" style="margin-bottom:0">
+              <div class="fl">친구 모집 채널 <span class="req">*</span> <span style="font-size:11px;font-weight:400;color:var(--text3)">(복수 선택 가능)</span></div>
+              <div class="sel-grid">
+                <div class="sel-item on" onclick="toggleSel(this)">
+                  <input type="checkbox" checked>
+                  <div class="sel-item-body">
+                    <div class="name">💛 그립 서비스 노출</div>
+                    <div class="desc">홈/상품 상세에 채널 친추 버튼 노출</div>
+                  </div>
+                </div>
+                <div class="sel-item on" onclick="toggleSel(this)">
+                  <input type="checkbox" checked>
+                  <div class="sel-item-body">
+                    <div class="name">📡 라이브 방송 중 유도</div>
+                    <div class="desc">방송 중 팝업으로 친추 유도</div>
+                  </div>
+                </div>
+                <div class="sel-item" onclick="toggleSel(this)">
+                  <input type="checkbox">
+                  <div class="sel-item-body">
+                    <div class="name">🔗 외부 링크/QR</div>
+                    <div class="desc">SNS·블로그 등 외부 공유용</div>
+                  </div>
+                </div>
+                <div class="sel-item" onclick="toggleSel(this)">
+                  <input type="checkbox">
+                  <div class="sel-item-body">
+                    <div class="name">🎁 친추 혜택 쿠폰</div>
+                    <div class="desc">친추 시 웰컴 쿠폰 자동 발급</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="brow">
+            <button class="btn out" onclick="obStep(1)">← 이전</button>
+            <button class="btn pri" onclick="obStep(3)">다음 · 동의 및 신청 →</button>
+          </div>
+        </div>
+
+        <!-- ── STEP 3: 동의 및 신청 ── -->
+        <div id="s3" style="display:none">
+
+          <!-- 입력 내용 요약 -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="ct">신청 내용 확인</div>
+            <div class="rrow"><span class="rkey">채널명</span><span class="rval" id="sum-ch">그립_테스트브랜드</span></div>
+            <div class="rrow"><span class="rkey">업종</span><span class="rval">뷰티/화장품</span></div>
+            <div class="rrow"><span class="rkey">친구 목표 수</span><span class="rval">500 ~ 2,000명</span></div>
+            <div class="rrow"><span class="rkey">모집 채널</span><span class="rval">그립 서비스 노출 · 라이브 방송 중</span></div>
+            <div class="rrow" style="border-bottom:none"><span class="rkey">개통 예상</span><span class="rval" style="color:var(--ok)">영업일 1~2일 이내</span></div>
+          </div>
+
+          <div class="consent">
+            <div class="consent-hd">
+              <div class="ki">💛</div>
+              <div>
+                <h3>카카오 채널 연동 동의</h3>
+                <p>카카오 비즈니스 · 그립 메시지 광고 서비스 이용 약관</p>
+              </div>
+            </div>
+            <div class="consent-bd">
+              <ul class="consent-list">
+                <li>그립이 제공한 정보를 기반으로 카카오 플러스친구 채널을 개설하는 것에 동의합니다.</li>
+                <li>채널명은 <strong>그립_셀러명</strong> 형식으로 고정되며, 개설 후 변경이 제한될 수 있습니다.</li>
+                <li>채널 관리(메시지 발송, 친구 관리) 권한을 그립에 위임하는 것에 동의합니다.</li>
+                <li>채널 친구 수, 활성 통계 등 데이터를 그립과 공유하는 것에 동의합니다.</li>
+                <li>서비스 이용 요금은 추후 그립 담당자가 별도 안내합니다.</li>
+              </ul>
+            </div>
+            <div class="consent-ft">
+              <button class="cbtn cancel" onclick="obStep(2)">취소</button>
+              <button class="cbtn agree" onclick="obProcess()">동의하고 신청 완료</button>
+            </div>
+          </div>
+
+          <div class="brow">
+            <button class="btn out" onclick="obStep(2)">← 이전</button>
+          </div>
+        </div>
+
+        <!-- ── STEP 4: 처리 중 ── -->
+        <div id="s4" style="display:none">
+          <div class="card" style="padding:48px">
+            <div class="proc">
+              <div class="spinner"></div>
+              <div style="font-size:16px;font-weight:700;margin-bottom:8px">신청서 제출 중...</div>
+              <div style="font-size:13px;color:var(--text3)" id="proc-text">잠시만 기다려주세요.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+         계약 현황
+    ============================================================ -->
+    <div class="page" id="p-pending">
+      <div class="topbar">
+        <div class="crumb">메시지 광고 <span>›</span> <span class="cur">계약 현황</span></div>
+      </div>
+      <div class="content" style="max-width:760px">
+        <div class="ph">
+          <h1>계약 현황</h1>
+          <p>서비스 신청 후 그립 담당자와 수기로 진행되는 계약 상태를 확인할 수 있습니다.</p>
+        </div>
+
+        <!-- 계약 상태 카드 -->
+        <div class="card hl" style="margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div class="ct" style="margin-bottom:0">현재 계약 상태</div>
+            <span class="chip" style="background:#FEF3C7;color:#92400E;font-size:11px;padding:4px 12px">⏳ 계약 협의 중</span>
+          </div>
+          <div class="rrow"><span class="rkey">접수번호</span><span class="rval">MSG-2026022700001</span></div>
+          <div class="rrow"><span class="rkey">채널명</span><span class="rval" style="color:var(--grip)">그립_테스트브랜드</span></div>
+          <div class="rrow"><span class="rkey">신청일</span><span class="rval">2026.02.27</span></div>
+          <div class="rrow"><span class="rkey">담당자</span><span class="rval">그립 파트너팀 · partner@grip.show</span></div>
+          <div class="rrow" style="border-bottom:none"><span class="rkey">계약 방식</span><span class="rval">수기 계약 (이메일/대면)</span></div>
+        </div>
+
+        <!-- 계약 진행 타임라인 -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="ct">계약 진행 단계</div>
+          <div class="timeline">
+            <div class="tl-item">
+              <div class="tl-dot-wrap"><div class="tl-dot done">✓</div><div class="tl-line"></div></div>
+              <div class="tl-body">
+                <div class="tl-title">서비스 신청 완료</div>
+                <div class="tl-desc">2026.02.27 · 접수번호 MSG-2026022700001 발급</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot-wrap"><div class="tl-dot done">✓</div><div class="tl-line"></div></div>
+              <div class="tl-body">
+                <div class="tl-title">담당자 배정</div>
+                <div class="tl-desc">2026.02.28 · 그립 파트너팀 담당자 배정 완료</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot-wrap"><div class="tl-dot active" style="font-size:14px">✉</div><div class="tl-line"></div></div>
+              <div class="tl-body">
+                <div class="tl-title" style="color:var(--grip)">계약서 협의 중</div>
+                <div class="tl-desc">발송 건수, 단가, 결제 조건 등 조율 중 · 담당자가 별도 연락드립니다</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot-wrap"><div class="tl-dot wait">4</div><div class="tl-line"></div></div>
+              <div class="tl-body">
+                <div class="tl-title">계약 체결</div>
+                <div class="tl-desc">이메일 서명 또는 대면 계약서 작성</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot-wrap"><div class="tl-dot wait">5</div><div class="tl-line"></div></div>
+              <div class="tl-body">
+                <div class="tl-title">채널 개설 및 서비스 개통</div>
+                <div class="tl-desc">카카오 채널 수동 개설 · Braze 발송 연동 완료 후 서비스 시작</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 계약 조건 (협의 예정 항목) -->
+        <div class="card">
+          <div class="ct">계약 협의 예정 항목 <span class="chip gray">참고용</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div style="background:var(--bg);border-radius:8px;padding:14px">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:4px">월 발송 건수 (예상)</div>
+              <div style="font-size:16px;font-weight:700">미정</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">신청 시 입력: 500~2,000명 타겟</div>
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:14px">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:4px">발송 단가</div>
+              <div style="font-size:16px;font-weight:700">협의 중</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">광고톡 / 알림톡 유형별 단가</div>
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:14px">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:4px">결제 조건</div>
+              <div style="font-size:16px;font-weight:700">협의 중</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">선불 충전 또는 월말 정산</div>
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:14px">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:4px">계약 기간</div>
+              <div style="font-size:16px;font-weight:700">협의 중</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">최소 3개월 이상 예정</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ibox blue">
+          <div class="ico">📞</div>
+          <div class="txt">계약 관련 문의: <strong>그립 파트너팀</strong> · partner@grip.show · 평일 10:00~18:00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         발송 내역
+    ============================================================ -->
+    <div class="page" id="p-history">
+      <div class="topbar">
+        <div class="crumb">메시지 광고 <span>›</span> <span class="cur">발송 내역</span></div>
+      </div>
+      <div class="content" style="max-width:900px">
+        <div class="ph">
+          <h1>발송 내역</h1>
+          <p>Braze를 통해 발송된 메시지 이력과 건수 기반 요금을 확인할 수 있습니다.</p>
+        </div>
+
+        <!-- 이번달 요약 -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+          <div class="card" style="margin-bottom:0;text-align:center;padding:18px">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:6px">이번달 총 발송</div>
+            <div style="font-size:26px;font-weight:900;color:var(--text)">3,840<span style="font-size:13px;color:var(--text3);font-weight:400">건</span></div>
+          </div>
+          <div class="card" style="margin-bottom:0;text-align:center;padding:18px">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:6px">광고톡</div>
+            <div style="font-size:26px;font-weight:900;color:var(--blue)">1,200<span style="font-size:13px;color:var(--text3);font-weight:400">건</span></div>
+          </div>
+          <div class="card" style="margin-bottom:0;text-align:center;padding:18px">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:6px">알림톡</div>
+            <div style="font-size:26px;font-weight:900;color:var(--ok)">2,640<span style="font-size:13px;color:var(--text3);font-weight:400">건</span></div>
+          </div>
+          <div class="card" style="margin-bottom:0;text-align:center;padding:18px;border-left:3px solid var(--grip)">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:6px">이번달 예상 요금</div>
+            <div style="font-size:26px;font-weight:900;color:var(--grip)">₩52,800</div>
+          </div>
+        </div>
+
+        <!-- 필터 -->
+        <div class="card" style="padding:14px 18px;margin-bottom:14px">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <select class="fi" style="width:130px;height:34px;font-size:12px">
+              <option>전체 유형</option>
+              <option>광고톡</option>
+              <option>알림톡</option>
+            </select>
+            <select class="fi" style="width:130px;height:34px;font-size:12px">
+              <option>2026년 2월</option>
+              <option>2026년 1월</option>
+              <option>2025년 12월</option>
+            </select>
+            <select class="fi" style="width:130px;height:34px;font-size:12px">
+              <option>전체 상태</option>
+              <option>발송 완료</option>
+              <option>일부 실패</option>
+              <option>실패</option>
+            </select>
+            <button class="btn out" style="height:34px;padding:0 16px;font-size:12px">조회</button>
+            <button class="btn out" style="height:34px;padding:0 16px;font-size:12px;margin-left:auto">CSV 다운로드</button>
+          </div>
+        </div>
+
+        <!-- 발송 내역 테이블 -->
+        <div class="card" style="padding:0;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+            <thead>
+              <tr style="background:#F8FAFC;border-bottom:2px solid var(--border)">
+                <th style="padding:12px 16px;text-align:left;font-weight:700;color:var(--text2)">발송일시</th>
+                <th style="padding:12px 16px;text-align:left;font-weight:700;color:var(--text2)">캠페인명</th>
+                <th style="padding:12px 16px;text-align:center;font-weight:700;color:var(--text2)">유형</th>
+                <th style="padding:12px 16px;text-align:right;font-weight:700;color:var(--text2)">발송 건수</th>
+                <th style="padding:12px 16px;text-align:right;font-weight:700;color:var(--text2)">성공</th>
+                <th style="padding:12px 16px;text-align:right;font-weight:700;color:var(--text2)">실패</th>
+                <th style="padding:12px 16px;text-align:right;font-weight:700;color:var(--text2)">단가</th>
+                <th style="padding:12px 16px;text-align:right;font-weight:700;color:var(--text2)">요금</th>
+                <th style="padding:12px 16px;text-align:center;font-weight:700;color:var(--text2)">상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:12px 16px;color:var(--text2)">2026.02.27<br><span style="color:var(--text3);font-size:11px">오후 7:00</span></td>
+                <td style="padding:12px 16px"><div style="font-weight:600">2월 라이브 사전 알림</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Braze Campaign ID: BRZ-20260227-001</div></td>
+                <td style="padding:12px 16px;text-align:center"><span class="chip green">알림톡</span></td>
+                <td style="padding:12px 16px;text-align:right;font-weight:700">1,240</td>
+                <td style="padding:12px 16px;text-align:right;color:var(--ok);font-weight:600">1,228</td>
+                <td style="padding:12px 16px;text-align:right;color:#EF4444">12</td>
+                <td style="padding:12px 16px;text-align:right;color:var(--text3)">₩10</td>
+                <td style="padding:12px 16px;text-align:right;font-weight:700">₩12,400</td>
+                <td style="padding:12px 16px;text-align:center"><span class="chip green">완료</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:12px 16px;color:var(--text2)">2026.02.27<br><span style="color:var(--text3);font-size:11px">오후 7:30</span></td>
+                <td style="padding:12px 16px"><div style="font-weight:600">라이브 시작 알림 (LIVE)</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Braze Campaign ID: BRZ-20260227-002</div></td>
+                <td style="padding:12px 16px;text-align:center"><span class="chip green">알림톡</span></td>
+                <td style="padding:12px 16px;text-align:right;font-weight:700">1,400</td>
+                <td style="padding:12px 16px;text-align:right;color:var(--ok);font-weight:600">1,389</td>
+                <td style="padding:12px 16px;text-align:right;color:#EF4444">11</td>
+                <td style="padding:12px 16px;text-align:right;color:var(--text3)">₩10</td>
+                <td style="padding:12px 16px;text-align:right;font-weight:700">₩14,000</td>
+                <td style="padding:12px 16px;text-align:center"><span class="chip green">완료</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:12px 16px;color:var(--text2)">2026.02.25<br><span style="color:var(--text3);font-size:11px">오후 2:00</span></td>
+                <td style="padding:12px 16px"><div style="font-weight:600">신규 상품 출시 광고</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Braze Campaign ID: BRZ-20260225-001</div></td>
+                <td style="padding:12px 16px;text-align:center"><span class="chip blue">광고톡</span></td>
+                <td style="padding:12px 16px;text-align:right;font-weight:700">800</td>
+                <td style="padding:12px 16px;text-align:right;color:var(--ok);font-weight:600">795</td>
+                <td style="padding:12px 16px;text-align:right;color:#EF4444">5</td>
+                <td style="padding:12px 16px;text-align:right;color:var(--text3)">₩20</td>
+                <td style="padding:12px 16px;text-align:right;font-weight:700">₩16,000</td>
+                <td style="padding:12px 16px;text-align:center"><span class="chip green">완료</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:12px 16px;color:var(--text2)">2026.02.20<br><span style="color:var(--text3);font-size:11px">오전 10:00</span></td>
+                <td style="padding:12px 16px"><div style="font-weight:600">2월 특가 프로모션</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Braze Campaign ID: BRZ-20260220-001</div></td>
+                <td style="padding:12px 16px;text-align:center"><span class="chip blue">광고톡</span></td>
+                <td style="padding:12px 16px;text-align:right;font-weight:700">400</td>
+                <td style="padding:12px 16px;text-align:right;color:var(--ok);font-weight:600">371</td>
+                <td style="padding:12px 16px;text-align:right;color:#EF4444">29</td>
+                <td style="padding:12px 16px;text-align:right;color:var(--text3)">₩20</td>
+                <td style="padding:12px 16px;text-align:right;font-weight:700">₩8,000</td>
+                <td style="padding:12px 16px;text-align:center"><span class="chip" style="background:#FEF3C7;color:#92400E">일부실패</span></td>
+              </tr>
+              <tr>
+                <td style="padding:12px 16px;color:var(--text2)">2026.02.15<br><span style="color:var(--text3);font-size:11px">오후 7:00</span></td>
+                <td style="padding:12px 16px"><div style="font-weight:600">발렌타인 라이브 알림</div><div style="font-size:11px;color:var(--text3);margin-top:2px">Braze Campaign ID: BRZ-20260215-001</div></td>
+                <td style="padding:12px 16px;text-align:center"><span class="chip green">알림톡</span></td>
+                <td style="padding:12px 16px;text-align:right;font-weight:700">-</td>
+                <td style="padding:12px 16px;text-align:right;color:var(--text3)">-</td>
+                <td style="padding:12px 16px;text-align:right;color:#EF4444">-</td>
+                <td style="padding:12px 16px;text-align:right;color:var(--text3)">-</td>
+                <td style="padding:12px 16px;text-align:right;font-weight:700;color:var(--text3)">₩2,400</td>
+                <td style="padding:12px 16px;text-align:center"><span class="chip gray">정산완료</span></td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr style="background:#F8FAFC;border-top:2px solid var(--border)">
+                <td colspan="7" style="padding:12px 16px;font-weight:700;color:var(--text2)">이번달 합계</td>
+                <td style="padding:12px 16px;text-align:right;font-size:16px;font-weight:900;color:var(--grip)">₩52,800</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="ibox orange" style="margin-top:4px">
+          <div class="ico">💡</div>
+          <div class="txt">발송 요금은 <strong>성공 건수 기준</strong>으로 정산됩니다. 실패 건수는 요금이 발생하지 않습니다. 월말 기준으로 그립 파트너팀에서 세금계산서를 발행합니다.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── 모든 함수를 window에 명시 등록 (렌더러 호환) ──
+
+window.goPage = function(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  document.querySelectorAll('.stab').forEach(b => b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('on'));
+  if (id === 'p-apply') document.getElementById('sb-apply').classList.add('on');
+  if (id === 'p-pending') document.getElementById('sb-pending').classList.add('on');
+  if (id === 'p-history') document.getElementById('sb-history').classList.add('on');
+  window.scrollTo(0,0);
+};
+
+window.obStep = function(n) {
+  for (let i=1;i<=4;i++) {
+    const el = document.getElementById('s'+i);
+    if (el) el.style.display = (i===n)?'block':'none';
+  }
+  const labels = ['','1단계: 채널 정보 입력','2단계: 친구 모객 목표','3단계: 동의 및 신청','처리 중'];
+  const crumb = document.getElementById('ob-crumb');
+  if (crumb) crumb.textContent = labels[n]||'';
+  for (let i=1;i<=3;i++) {
+    const c=document.getElementById('sc'+i), t=document.getElementById('st'+i);
+    if (!c) continue;
+    c.classList.remove('done','act'); t.classList.remove('done','act');
+    if (i<n) { c.classList.add('done'); c.textContent='✓'; t.classList.add('done'); }
+    else if (i===n) { c.classList.add('act'); c.textContent=i; t.classList.add('act'); }
+    else { c.textContent=i; }
+  }
+  window.scrollTo(0,0);
+};
+
+window.obProcess = function() {
+  window.obStep(4);
+  const steps = ['신청서 검토 중...', '카카오 비즈니스 연동 확인 중...', '신청 완료!'];
+  let i=0;
+  const iv = setInterval(()=>{
+    if (i < steps.length) {
+      document.getElementById('proc-text').textContent = steps[i++];
+    } else {
+      clearInterval(iv);
+      setTimeout(()=>{
+        window.goPage('p-pending', null);
+        document.querySelectorAll('.stab').forEach(b => b.classList.remove('on'));
+        document.querySelectorAll('.stab')[1].classList.add('on');
+        const sbP = document.getElementById('sb-pending');
+        sbP.style.opacity='1'; sbP.style.cursor='pointer';
+        sbP.classList.add('on');
+        const sbH = document.getElementById('sb-history');
+        sbH.style.opacity='1'; sbH.style.cursor='pointer';
+        document.getElementById('sb-apply').classList.remove('on');
+      }, 600);
+    }
+  }, 800);
+};
+
+window.updateChName = function() {
+  const val = document.getElementById('seller-name').value || '';
+  document.getElementById('ch-name-preview').textContent = '그립_' + val;
+  const sumCh = document.getElementById('sum-ch');
+  if (sumCh) sumCh.textContent = '그립_' + (val || '(미입력)');
+};
+
+window.selGoal = function(n) {
+  for (let i=1;i<=6;i++) {
+    document.getElementById('g'+i).classList.remove('on');
+  }
+  document.getElementById('g'+n).classList.add('on');
+};
+
+window.toggleSel = function(el) {
+  el.classList.toggle('on');
+  el.querySelector('input').checked = el.classList.contains('on');
+};
+
+// ── (구버전 호환용 - 아래는 삭제 예정) ──
+function goPage(id,btn){window.goPage(id,btn);}
+function obStep(n){window.obStep(n);}
+function obProcess(){window.obProcess();}
+function updateChName(){window.updateChName();}
+function selGoal(n){window.selGoal(n);}
+function toggleSel(el){window.toggleSel(el);}
+</script>
+</body>
+</html>
