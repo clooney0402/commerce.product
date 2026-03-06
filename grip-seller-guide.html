@@ -115,12 +115,123 @@
 <!-- ===== 개요 ===== -->
 <div class="section active" id="section-overview">
   <div class="section-header">
-    <h2>그립 스토어 판매란?</h2>
-    <p>상품을 미리 등록해두고, 라이브 방송 중에 불러와서 시청자에게 소개하고 판매하는 방식입니다.<br>방송 전 준비가 탄탄할수록 방송 중에 더 여유롭게 판매에 집중할 수 있어요.</p>
+    <h2>라이브 방송, 이렇게 제안합니다.</h2>
+    <p>라이브커머스의 핵심은 <strong>방송 집중도와 흥분도</strong>입니다. 시청자가 화면에서 눈을 떼지 못하게 만들어야 구매가 일어납니다.<br><br>
+    그립은 두 가지 판매 방식을 조합해 이 흥분도를 극대화할 수 있어요.<br>
+    <strong>재고가 여유로운 상품</strong>은 스토어에 미리 등록해두고 방송 중 자연스럽게 소개하고,
+    <strong>재고가 한정적인 상품</strong>은 선착순 게임으로 실시간 경쟁을 만들어 방송의 집중도를 끌어올립니다.<br><br>
+    두 방식을 전략적으로 섞는 것, 그게 잘 파는 셀러들의 비결입니다.</p>
   </div>
 
+  <div class="funnel-title">📺 실제 셀러 방송 시나리오</div>
+  <div class="funnel-sub">잘 파는 셀러들은 이렇게 방송합니다.</div>
+
+  <div class="scenario-wrap">
+    <div class="scenario-tabs">
+      <div class="s-tab active" onclick="switchScenario(this, 'sc1')">👗 의류 셀러</div>
+      <div class="s-tab" onclick="switchScenario(this, 'sc2')">🍱 식품 셀러</div>
+      <div class="s-tab" onclick="switchScenario(this, 'sc3')">💄 뷰티 셀러</div>
+    </div>
+
+    <div class="scenario-body" id="sc1">
+      <div class="sc-timeline">
+        <div class="sc-row">
+          <div class="sc-time">0~5분</div>
+          <div class="sc-badge store">스토어</div>
+          <div class="sc-desc">오프닝 인사 + "오늘 신상 봄 원피스 3종 가져왔어요!" 예고. 방송 중반에 한정 수량 이벤트 있다고 미리 예고해 시청자 잔류 유도.</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-time">5~25분</div>
+          <div class="sc-badge store">스토어</div>
+          <div class="sc-desc">봄 원피스 2종 스토어 상품 소개. 직접 착용해서 보여주고, 채팅 질문 답하며 신뢰 쌓기. 구매 버튼 반복 강조.</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-time">25~35분</div>
+          <div class="sc-badge game">선착순게임</div>
+          <div class="sc-desc">"딱 3장만 있어요. 지금 바로 올립니다!" 즉석 상품 등록 후 선착순 게임 시작. 채팅 폭발, 당첨자 닉네임 크게 불러주기.</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-time">35~55분</div>
+          <div class="sc-badge store">스토어</div>
+          <div class="sc-desc">나머지 원피스 + 코디 아이템 소개. "아까 못 사신 분들, 이건 재고 넉넉해요~" 멘트로 자연스럽게 전환.</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-time">55~60분</div>
+          <div class="sc-badge game">선착순게임</div>
+          <div class="sc-desc">마지막 피날레. "오늘 방송 마지막 찬스!" 클로징 한정 이벤트로 마무리. 팔로우 & 다음 방송 예고.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scenario-body" id="sc2" style="display:none;">
+      <div class="sc-timeline">
+        <div class="sc-row">
+          <div class="sc-time">0~5분</div>
+          <div class="sc-badge store">스토어</div>
+          <div class="sc-desc">오프닝 + 오늘 소개할 제철 식품 예고. "오늘 산지 직송 한우 소량 가져왔어요, 끝까지 보세요!" 잔류 유도.</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-time">5~30분</div>
+          <div class="sc-badge store">스토어</div>
+          <div class="sc-desc">스토어 상품 (반찬, 간편식 등) 소개. 실제 조리하거나 시식하면서 맛 묘사. 채팅에서 "어디서 왔어요?" 질문 실시간 답변.</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-time">30~42분</div>
+          <div class="sc-badge game">선착순게임</div>
+          <div class="sc-desc">"한우 1++ 딱 5세트. 마트 절반 가격이에요. 지금 올립니다!" 선착순 게임 → 5초 만에 완판. 채팅 흥분 극대화.</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-time">42~60분</div>
+          <div class="sc-badge store">스토어</div>
+          <div class="sc-desc">완판 여운 타고 추가 식품 소개. "못 사신 분들 이거 보세요, 이것도 진짜예요." 클로징 + 다음 방송 예고.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scenario-body" id="sc3" style="display:none;">
+      <div class="sc-timeline">
+        <div class="sc-row">
+          <div class="sc-time">0~5분</div>
+          <div class="sc-badge store">스토어</div>
+          <div class="sc-desc">민낯으로 등장 → "오늘 방송 동안 이 제품들로 메이크업 완성해볼게요!" 시청자 호기심 유발. 중간 이벤트 예고.</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-time">5~25분</div>
+          <div class="sc-badge store">스토어</div>
+          <div class="sc-desc">스킨케어 라인 스토어 상품 소개. 직접 발라보며 흡수 속도, 향, 발림성 실시간 묘사. 구매 버튼 수시로 강조.</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-time">25~38분</div>
+          <div class="sc-badge game">선착순게임</div>
+          <div class="sc-desc">"사은품 세트 딱 10개. 절대 못 구하는 거예요." 게임 시작 → 당첨자 발표 → "다음에도 이런 거 드릴게요, 팔로우 눌러요!" 연결.</div>
+        </div>
+        <div class="sc-row">
+          <div class="sc-time">38~60분</div>
+          <div class="sc-badge store">스토어</div>
+          <div class="sc-desc">메이크업 완성 단계 공개하며 색조 제품 소개. 방송 처음과 끝 비교로 제품 효과 극적으로 보여주기. 클로징.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .scenario-wrap { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.07); margin-bottom: 28px; }
+    .scenario-tabs { display: flex; border-bottom: 1px solid #f0f0f0; }
+    .s-tab { flex: 1; text-align: center; padding: 14px 8px; font-size: 13px; font-weight: 600; color: #888; cursor: pointer; transition: all 0.2s; border-bottom: 2px solid transparent; }
+    .s-tab.active { color: #FF3366; border-bottom-color: #FF3366; background: #fff8fa; }
+    .s-tab:hover { color: #FF3366; }
+    .scenario-body { padding: 20px; }
+    .sc-timeline { display: flex; flex-direction: column; gap: 12px; }
+    .sc-row { display: flex; align-items: flex-start; gap: 10px; }
+    .sc-time { width: 58px; flex-shrink: 0; font-size: 11px; font-weight: 700; color: #999; padding-top: 3px; }
+    .sc-badge { flex-shrink: 0; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .sc-badge.store { background: #EBF3FF; color: #4A90D9; }
+    .sc-badge.game { background: #FFF0F3; color: #FF3366; }
+    .sc-desc { font-size: 13px; color: #444; line-height: 1.6; }
+  </style>
+
   <div class="funnel-title">전체 프로세스 한눈에 보기</div>
-  <div class="funnel-sub">4단계만 따라오시면 됩니다.</div>
+  <div class="funnel-sub">5단계만 따라오시면 됩니다.</div>
 
   <div class="timeline">
     <div class="timeline-item">
@@ -742,6 +853,12 @@
 </div><!-- /content -->
 
 <script>
+function switchScenario(tab, id) {
+  document.querySelectorAll('.s-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.scenario-body').forEach(b => b.style.display = 'none');
+  tab.classList.add('active');
+  document.getElementById(id).style.display = 'block';
+}
 function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
