@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>스토어 라이브 프로토타입</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const {createElement:h,useState,useEffect,Fragment}=React;
+
+/* ── SVG Icons ── */
+const Icon={
+  X:({size=20})=>h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2.5',strokeLinecap:'round'},h('line',{x1:18,y1:6,x2:6,y2:18}),h('line',{x1:6,y1:6,x2:18,y2:18})),
+  ChevronRight:({size=16})=>h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'3',strokeLinecap:'round'},h('polyline',{points:'9 18 15 12 9 6'})),
+  ChevronDown:({size=16})=>h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2.5',strokeLinecap:'round'},h('polyline',{points:'6 9 12 15 18 9'})),
+  ChevronUp:({size=16})=>h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2.5',strokeLinecap:'round'},h('polyline',{points:'18 15 12 9 6 15'})),
+  ChevronLeft:({size=20})=>h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2.5',strokeLinecap:'round'},h('polyline',{points:'15 18 9 12 15 6'})),
+  Share2:()=>h('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2',strokeLinecap:'round'},h('circle',{cx:18,cy:5,r:3}),h('circle',{cx:6,cy:12,r:3}),h('circle',{cx:18,cy:19,r:3}),h('line',{x1:'8.59',y1:'13.51',x2:'15.42',y2:'17.49'}),h('line',{x1:'15.41',y1:'6.51',x2:'8.59',y2:'10.49'})),
+  Heart:({fill='none',color='white',size=24})=>h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill,stroke:color,strokeWidth:'2',strokeLinecap:'round'},h('path',{d:'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'})),
+  Eye:({size=14})=>h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2',strokeLinecap:'round'},h('path',{d:'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z'}),h('circle',{cx:12,cy:12,r:3})),
+  Zap:({size=20,fill='none'})=>h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill,stroke:'currentColor',strokeWidth:'2',strokeLinecap:'round'},h('polygon',{points:'13 2 3 14 12 14 11 22 21 10 12 10 13 2'})),
+  Gamepad2:()=>h('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2',strokeLinecap:'round'},h('line',{x1:6,y1:12,x2:10,y2:12}),h('line',{x1:8,y1:10,x2:8,y2:14}),h('line',{x1:15,y1:13,x2:'15.01',y2:13}),h('line',{x1:18,y1:11,x2:'18.01',y2:11}),h('rect',{x:2,y:6,width:20,height:12,rx:2})),
+  Monitor:()=>h('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2',strokeLinecap:'round'},h('rect',{x:2,y:3,width:20,height:14,rx:2}),h('line',{x1:8,y1:21,x2:16,y2:21}),h('line',{x1:12,y1:17,x2:12,y2:21})),
+  RefreshCw:()=>h('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2',strokeLinecap:'round'},h('polyline',{points:'23 4 23 10 17 10'}),h('polyline',{points:'1 20 1 14 7 14'}),h('path',{d:'M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15'})),
+  Sparkles:()=>h('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2',strokeLinecap:'round'},h('path',{d:'M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z'}),h('path',{d:'M19 3l.75 2.25L22 6l-2.25.75L19 9l-.75-2.25L16 6l2.25-.75z'}),h('path',{d:'M5 15l.75 2.25L8 18l-2.25.75L5 21l-.75-2.25L2 18l2.25-.75z'})),
+  Smile:()=>h('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2',strokeLinecap:'round'},h('circle',{cx:12,cy:12,r:10}),h('path',{d:'M8 14s1.5 2 4 2 4-2 4-2'}),h('line',{x1:9,y1:9,x2:'9.01',y2:9}),h('line',{x1:15,y1:9,x2:'15.01',y2:9})),
+  ShoppingBag:({size=20})=>h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2',strokeLinecap:'round'},h('path',{d:'M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z'}),h('line',{x1:3,y1:6,x2:21,y2:6}),h('path',{d:'M16 10a4 4 0 0 1-8 0'})),
+  Plus:({size=14})=>h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2.5',strokeLinecap:'round'},h('line',{x1:12,y1:5,x2:12,y2:19}),h('line',{x1:5,y1:12,x2:19,y2:12})),
+  Minus:({size=14})=>h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2.5',strokeLinecap:'round'},h('line',{x1:5,y1:12,x2:19,y2:12})),
+  Check:({color='white',size=11})=>h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:color,strokeWidth:'5',strokeLinecap:'round'},h('polyline',{points:'20 6 9 17 4 12'})),
+  MoreVertical:()=>h('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2',strokeLinecap:'round'},h('circle',{cx:12,cy:5,r:1}),h('circle',{cx:12,cy:12,r:1}),h('circle',{cx:12,cy:19,r:1})),
+  RotateCcw:()=>h('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2',strokeLinecap:'round'},h('polyline',{points:'1 4 1 10 7 10'}),h('path',{d:'M3.51 15a9 9 0 1 0 .49-4.5'})),
+  Camera:()=>h('svg',{width:28,height:28,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2',strokeLinecap:'round'},h('path',{d:'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z'}),h('circle',{cx:12,cy:13,r:4})),
+  CircleX:({size=20})=>h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2',strokeLinecap:'round'},h('circle',{cx:12,cy:12,r:10}),h('line',{x1:15,y1:9,x2:9,y2:15}),h('line',{x1:9,y1:9,x2:15,y2:15})),
+};
+
+const parsePrice=s=>parseInt(String(s||'0').replace(/[^0-9]/g,''))||0;
+
+const PRODUCTS=[
+  {id:1,optionType:'none',name:'옵션없음 선풍기 특가',price:'89,000원',total:47,oldPrice:'220,000원'},
+  {id:2,optionType:'depth1',name:'1뎁스 여름 원피스',price:'129,000원',total:23,oldPrice:'280,000원',options:{depth1:{label:'사이즈',items:['S','M','L','XL']}}},
+  {id:3,optionType:'depth2',name:'2뎁스 캐주얼 티셔츠',price:'69,000원',total:8,oldPrice:'150,000원',options:{depth1:{label:'색상',items:['블랙','화이트','그레이']},depth2:{label:'사이즈',items:['S','M','L']}}},
+  {id:4,optionType:'depth3',name:'3뎁스 패턴 셔츠',price:'55,000원',total:15,oldPrice:'120,000원',options:{depth1:{label:'색상',items:['블랙','화이트']},depth2:{label:'사이즈',items:['S','M','L']},depth3:{label:'패턴',items:['체크','스트라이프','무지']}}},
+];
+
+const CHAT_MSGS=[
+  {id:1,user:'나비🦋',text:'선풍기 얼마에요?',color:'#fde047'},
+  {id:2,user:'홍길동',text:'와 이 가격 실화??',color:'#67e8f9'},
+  {id:3,user:'핑크고양이',text:'바로 담았어요!!🛒',color:'#f9a8d4'},
+  {id:4,user:'별빛소녀',text:'무료배송이에요?',color:'#86efac'},
+];
+
+const OPTION_BADGE={none:'옵션없음',depth1:'1뎁스',depth2:'2뎁스',depth3:'3뎁스'};
+const OPT_COLOR={none:'#64748b',depth1:'#6366f1',depth2:'#0ea5e9',depth3:'#f43f5e'};
+
+/* ─ helpers ─ */
+const s=obj=>obj; // identity, keeps inline style objects readable
+
+function ProductImage({size=64,radius=12}){
+  return h('div',{style:{width:size,height:size,borderRadius:radius,background:'#dbeafe',flexShrink:0,position:'relative',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center'}},
+    h('svg',{viewBox:'0 0 100 100',style:{width:'66%',height:'66%',fill:'#6366f1'}},
+      h('path',{d:'M20,35 L80,35 L85,90 L15,90 Z',opacity:'0.8'}),
+      h('path',{d:'M35,35 Q35,15 50,15 Q65,15 65,35',fill:'none',stroke:'#6366f1',strokeWidth:'6',strokeLinecap:'round'}),
+      h('text',{x:'50',y:'72',fontSize:'24',fontWeight:'900',textAnchor:'middle',fill:'white',opacity:'0.9'},'%')
+    ),
+    h('div',{style:{position:'absolute',top:0,left:0,width:'50%',height:'50%',background:'#6366f1',borderBottomRightRadius:10,display:'flex',alignItems:'center',justifyContent:'center'}},
+      h(Icon.Zap,{size:size*0.28,fill:'white'})
+    )
+  );
+}
+
+function Dropdown({label,items,value,onChange,disabled=false}){
+  const[open,setOpen]=useState(false);
+  return h('div',{style:{position:'relative'}},
+    h('button',{onClick:()=>!disabled&&setOpen(o=>!o),disabled,style:{width:'100%',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'13px 16px',border:'1px solid #e2e8f0',borderRadius:10,background:disabled?'#f8fafc':'white',cursor:disabled?'not-allowed':'pointer',fontSize:13,color:value?'#0f172a':'#94a3b8',fontWeight:value?700:500}},
+      h('span',null,value||label),
+      open?h(Icon.ChevronUp,{size:16}):h(Icon.ChevronDown,{size:16})
+    ),
+    open&&h('div',{style:{position:'absolute',top:'calc(100% + 4px)',left:0,right:0,background:'white',border:'1px solid #e2e8f0',borderRadius:10,zIndex:10,overflow:'hidden',boxShadow:'0 4px 16px rgba(0,0,0,0.1)'}},
+      items.map(item=>h('div',{key:item,onClick:()=>{onChange(item);setOpen(false);},style:{padding:'13px 16px',fontSize:13,fontWeight:600,color:'#0f172a',cursor:'pointer',borderBottom:'1px solid #f8fafc',background:value===item?'#fff1f2':'white'}},item))
+    )
+  );
+}
+
+function SelectedOptionRow({label,qty,onQtyChange,onRemove}){
+  return h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 14px',background:'#f8fafc',borderRadius:10,marginTop:8}},
+    h('span',{style:{fontSize:12,fontWeight:600,color:'#1e293b',flex:1}},label),
+    h('div',{style:{display:'flex',alignItems:'center',gap:4}},
+      h('div',{style:{display:'flex',alignItems:'center',border:'1px solid #e2e8f0',borderRadius:8,overflow:'hidden',background:'white'}},
+        h('button',{onClick:()=>onQtyChange(-1),style:{padding:'5px 9px',background:'none',border:'none',cursor:'pointer',color:'#94a3b8'}},h(Icon.Minus)),
+        h('span',{style:{minWidth:28,textAlign:'center',fontSize:13,fontWeight:900,color:'#0f172a'}},qty),
+        h('button',{onClick:()=>onQtyChange(1),style:{padding:'5px 9px',background:'none',border:'none',cursor:'pointer',color:'#94a3b8'}},h(Icon.Plus))
+      ),
+      h('button',{onClick:onRemove,style:{background:'none',border:'none',cursor:'pointer',color:'#cbd5e1',padding:'0 2px'}},h(Icon.CircleX,{size:18}))
+    )
+  );
+}
+
+function CheckoutPage({isOpen,onClose,cartItems,cartQty}){
+  if(!isOpen)return null;
+  const orderTotal=cartItems.reduce((s,i)=>s+parsePrice(i.price)*(cartQty[i.id]||1),0);
+  const discount=cartItems.length>0?3000:0;
+  const deliveryFee=orderTotal>=100000?0:3000;
+  const payTotal=Math.max(0,orderTotal-discount)+deliveryFee;
+  const row=(k,v)=>h('div',{key:k,style:{display:'flex',justifyContent:'space-between',fontSize:12}},h('span',{style:{color:'#9ca3af'}},k),h('span',{style:{fontWeight:700,color:'#e5e7eb'}},v));
+  return h('div',{style:{position:'absolute',inset:0,zIndex:90,background:'#111827',display:'flex',flexDirection:'column',overflow:'hidden'}},
+    h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 16px',borderBottom:'1px solid #1f2937',flexShrink:0,background:'#111827'}},
+      h('button',{onClick:onClose,style:{background:'none',border:'none',cursor:'pointer',color:'white',padding:4}},h(Icon.ChevronLeft,{size:22})),
+      h('h2',{style:{fontSize:15,fontWeight:900,color:'white'}},'주문'),
+      h('button',{onClick:onClose,style:{background:'none',border:'none',cursor:'pointer',color:'white',padding:4}},h(Icon.X,{size:20}))
+    ),
+    h('div',{style:{flex:1,overflowY:'auto',background:'#111827'}},
+      h('div',{style:{padding:16,borderBottom:'1px solid #1f2937'}},
+        h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',cursor:'pointer'}},
+          h('div',null,h('p',{style:{fontSize:13,fontWeight:900,color:'white',marginBottom:5}},'주문자 정보'),h('p',{style:{fontSize:12,color:'#9ca3af'}},'김그립 01012341234')),
+          h(Icon.ChevronDown,{size:16})
+        )
+      ),
+      h('div',{style:{padding:16,borderBottom:'1px solid #1f2937'}},
+        h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start',cursor:'pointer'}},
+          h('div',null,h('p',{style:{fontSize:13,fontWeight:900,color:'white',marginBottom:6}},'배송지'),h('p',{style:{fontSize:12,fontWeight:700,color:'#e5e7eb'}},'김그립 01012341234'),h('p',{style:{fontSize:11,color:'#9ca3af',marginTop:2}},'[05537] 판교알파돔타워, 11층')),
+          h(Icon.ChevronRight,{size:16})
+        )
+      ),
+      h('div',{style:{padding:16,borderBottom:'1px solid #1f2937'}},
+        h('p',{style:{fontSize:13,fontWeight:900,color:'white',marginBottom:10}},'배송 요청 사항'),
+        h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 14px',border:'1px solid #374151',borderRadius:10,cursor:'pointer'}},
+          h('span',{style:{fontSize:12,color:'#6b7280'}},'배송시 요청사항을 선택해주세요.'),h(Icon.ChevronDown,{size:16})
+        )
+      ),
+      h('div',{style:{padding:16,borderBottom:'1px solid #1f2937'}},
+        h('p',{style:{fontSize:13,fontWeight:900,color:'white',marginBottom:12}},
+          '주문 상품 ',h('span',{style:{color:'#f43f5e'}},cartItems.length)
+        ),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:14}},
+          cartItems.length===0
+            ?h('p',{style:{fontSize:12,color:'#6b7280',textAlign:'center',padding:'16px 0'}},'상품이 없습니다.')
+            :cartItems.map(item=>h('div',{key:item.id},
+              h('div',{style:{display:'flex',alignItems:'flex-start',gap:10,marginBottom:8}},
+                h('div',{style:{position:'relative',flexShrink:0}},
+                  h(ProductImage,{size:60,radius:10}),
+                  h('div',{style:{position:'absolute',top:0,left:0,background:'#f43f5e',fontSize:7,fontWeight:900,color:'white',padding:'2px 4px',borderRadius:'4px 0 4px 0'}},'오늘두부탁해')
+                ),
+                h('div',{style:{flex:1,minWidth:0}},
+                  h('p',{style:{fontSize:11,fontWeight:700,color:'#e5e7eb',lineHeight:1.4,marginBottom:4}},item.name),
+                  h('p',{style:{fontSize:10,color:'#6b7280',marginBottom:5}},'컬러: 기본 | 사이즈: FREE'),
+                  h('div',{style:{display:'flex',alignItems:'baseline',gap:6}},
+                    h('span',{style:{fontSize:15,fontWeight:900,color:'white'}},item.price),
+                    h('span',{style:{fontSize:10,color:'#4b5563',textDecoration:'line-through'}},item.oldPrice),
+                    h('span',{style:{fontSize:10,color:'#6b7280'}},(cartQty[item.id]||1)+'개')
+                  )
+                )
+              ),
+              h('div',{style:{textAlign:'right',fontSize:11,color:'#6b7280',paddingTop:8,borderTop:'1px solid #1f2937'}},
+                '배송비 '+(deliveryFee===0?'무료':deliveryFee.toLocaleString()+'원')
+              )
+            ))
+        )
+      ),
+      h('div',{style:{padding:16,borderBottom:'1px solid #1f2937'}},
+        h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',cursor:'pointer'}},
+          h('div',null,h('p',{style:{fontSize:13,fontWeight:900,color:'white',marginBottom:4}},'셀러 / 장바구니 쿠폰'),h('p',{style:{fontSize:11,color:'#6b7280'}},'보유한 쿠폰이 없습니다.')),
+          h(Icon.ChevronRight,{size:16})
+        )
+      ),
+      h('div',{style:{padding:16,paddingBottom:32}},
+        h('p',{style:{fontSize:13,fontWeight:900,color:'white',marginBottom:14}},'결제 금액'),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:11}},
+          row('상품 금액',orderTotal.toLocaleString()+'원'),
+          row('할인 금액','-'+discount.toLocaleString()+'원'),
+          row('배송비',deliveryFee===0?'무료':deliveryFee.toLocaleString()+'원'),
+          h('div',{style:{display:'flex',justifyContent:'space-between',paddingTop:12,borderTop:'1px solid #374151',marginTop:2}},
+            h('span',{style:{fontSize:14,fontWeight:900,color:'white'}},'최종 결제금액'),
+            h('span',{style:{fontSize:16,fontWeight:900,color:'#f43f5e'}},payTotal.toLocaleString()+'원')
+          )
+        )
+      )
+    ),
+    h('div',{style:{padding:'12px 16px 28px',background:'#111827',borderTop:'1px solid #1f2937',flexShrink:0}},
+      h('button',{onClick:onClose,style:{width:'100%',height:52,background:'#f43f5e',borderRadius:16,fontWeight:900,fontSize:15,color:'white',border:'none',cursor:'pointer',boxShadow:'0 4px 20px rgba(244,63,94,0.4)'}},
+        payTotal.toLocaleString()+'원 결제하기'
+      )
+    )
+  );
+}
+
+function OptionPopup({isOpen,onClose,product,onAddToCart,onDirectBuy}){
+  const[d1,setD1]=useState('');const[d2,setD2]=useState('');const[d3,setD3]=useState('');
+  const[qty,setQty]=useState(1);const[selRows,setSelRows]=useState([]);
+  useEffect(()=>{if(isOpen){setD1('');setD2('');setD3('');setQty(1);setSelRows([]);}}, [isOpen]);
+  if(!isOpen||!product)return null;
+  const{optionType,options}=product;
+  const base=parsePrice(product.price);
+  const hD1=v=>{setD1(v);setD2('');setD3('');if(optionType==='depth1'){if(!selRows.find(r=>r.label===v))setSelRows(p=>[...p,{label:v,qty:1}]);setD1('');}};
+  const hD2=v=>{setD2(v);setD3('');if(optionType==='depth2'){const lbl=`${d1}, ${v}`;if(!selRows.find(r=>r.label===lbl))setSelRows(p=>[...p,{label:lbl,qty:1}]);setD1('');setD2('');}};
+  const hD3=v=>{setD3(v);if(optionType==='depth3'){const lbl=`${d1}, ${d2}, ${v}`;if(!selRows.find(r=>r.label===lbl))setSelRows(p=>[...p,{label:lbl,qty:1}]);setD1('');setD2('');setD3('');}};
+  const chQty=(i,d)=>setSelRows(p=>p.map((r,j)=>j===i?{...r,qty:Math.max(1,r.qty+d)}:r));
+  const rmRow=i=>setSelRows(p=>p.filter((_,j)=>j!==i));
+  const total=optionType==='none'?base*qty:selRows.reduce((s,r)=>s+base*r.qty,0);
+  const canBuy=optionType==='none'?true:selRows.length>0;
+  const totalQty=()=>optionType==='none'?qty:selRows.reduce((s,r)=>s+r.qty,0);
+  const btnStyle=ok=>({flex:1,padding:'13px 0',background:ok?'#0f172a':'#e2e8f0',color:ok?'white':'#94a3b8',fontWeight:900,borderRadius:14,fontSize:13,border:'none',cursor:ok?'pointer':'not-allowed'});
+  return h('div',{style:{position:'absolute',inset:0,zIndex:50,display:'flex',alignItems:'flex-end'}},
+    h('div',{style:{position:'absolute',inset:0,background:'rgba(0,0,0,0.5)'},onClick:onClose}),
+    h('div',{style:{width:'100%',background:'white',borderTopLeftRadius:24,borderTopRightRadius:24,position:'relative',zIndex:1,display:'flex',flexDirection:'column',maxHeight:'88%'}},
+      h('div',{style:{padding:'16px 16px 0',flexShrink:0}},
+        h('button',{onClick:onClose,style:{position:'absolute',right:16,top:14,background:'none',border:'none',cursor:'pointer',color:'#1e293b'}},h(Icon.X)),
+        h('div',{style:{display:'flex',gap:12,marginBottom:16,paddingBottom:16,borderBottom:'1px solid #f1f5f9',marginTop:4}},
+          h('div',{style:{position:'relative'}},
+            h(ProductImage,{size:60,radius:10}),
+            h('div',{style:{position:'absolute',bottom:0,left:0,right:0,background:'#f43f5e',color:'white',fontSize:8,fontWeight:900,textAlign:'center',padding:'2px 0',borderBottomLeftRadius:10,borderBottomRightRadius:10}},'마지막 '+product.total+'개')
+          ),
+          h('div',{style:{flex:1,minWidth:0}},
+            h('h4',{style:{fontSize:12,fontWeight:700,color:'#0f172a',marginBottom:3,lineHeight:1.4}},product.name),
+            h('span',{style:{fontSize:10,color:'#cbd5e1',fontWeight:700,textDecoration:'line-through',display:'block'}},product.oldPrice),
+            h('div',{style:{display:'flex',alignItems:'center',gap:6,marginTop:2}},
+              h('span',{style:{fontSize:15,fontWeight:900,color:'#0f172a'}},product.price),
+              h('span',{style:{background:'#fff1f2',color:'#f43f5e',fontSize:8,padding:'2px 5px',borderRadius:4,fontWeight:900}},'라이브가')
+            )
+          )
+        )
+      ),
+      h('div',{style:{flex:1,overflowY:'auto',padding:'0 16px'}},
+        optionType==='none'&&h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 0'}},
+          h('span',{style:{fontSize:13,fontWeight:900,color:'#1e293b'}},'수량'),
+          h('div',{style:{display:'flex',alignItems:'center',border:'1px solid #e2e8f0',borderRadius:10,overflow:'hidden'}},
+            h('button',{onClick:()=>setQty(Math.max(1,qty-1)),style:{padding:'7px 11px',background:'none',border:'none',cursor:'pointer',borderRight:'1px solid #f1f5f9',color:'#94a3b8'}},h(Icon.Minus)),
+            h('span',{style:{padding:'0 16px',fontSize:13,fontWeight:900,color:'#0f172a',minWidth:36,textAlign:'center'}},qty),
+            h('button',{onClick:()=>setQty(qty+1),style:{padding:'7px 11px',background:'none',border:'none',cursor:'pointer',color:'#94a3b8'}},h(Icon.Plus))
+          )
+        ),
+        optionType==='depth1'&&h('div',{style:{padding:'12px 0 4px'}},
+          h(Dropdown,{label:options.depth1.label+' 선택',items:options.depth1.items,value:d1,onChange:hD1}),
+          selRows.map((r,i)=>h(SelectedOptionRow,{key:i,label:r.label,qty:r.qty,onQtyChange:d=>chQty(i,d),onRemove:()=>rmRow(i)}))
+        ),
+        optionType==='depth2'&&h('div',{style:{padding:'12px 0 4px',display:'flex',flexDirection:'column',gap:8}},
+          h(Dropdown,{label:options.depth1.label+' 선택',items:options.depth1.items,value:d1,onChange:hD1}),
+          h(Dropdown,{label:options.depth2.label+' 선택',items:options.depth2.items,value:d2,onChange:hD2,disabled:!d1}),
+          selRows.map((r,i)=>h(SelectedOptionRow,{key:i,label:r.label,qty:r.qty,onQtyChange:d=>chQty(i,d),onRemove:()=>rmRow(i)}))
+        ),
+        optionType==='depth3'&&h('div',{style:{padding:'12px 0 4px',display:'flex',flexDirection:'column',gap:8}},
+          h(Dropdown,{label:options.depth1.label+' 선택',items:options.depth1.items,value:d1,onChange:hD1}),
+          h(Dropdown,{label:options.depth2.label+' 선택',items:options.depth2.items,value:d2,onChange:hD2,disabled:!d1}),
+          h(Dropdown,{label:options.depth3.label+' 선택',items:options.depth3.items,value:d3,onChange:hD3,disabled:!d2}),
+          selRows.map((r,i)=>h(SelectedOptionRow,{key:i,label:r.label,qty:r.qty,onQtyChange:d=>chQty(i,d),onRemove:()=>rmRow(i)}))
+        ),
+        h('div',{style:{marginTop:16,paddingTop:14,borderTop:'1px solid #f1f5f9',marginBottom:8}},
+          h('p',{style:{fontSize:9,color:'#94a3b8',fontWeight:700,textAlign:'right'}},'무료배송 | 2일 이내 배송출발 예정'),
+          h('div',{style:{display:'flex',justifyContent:'flex-end',alignItems:'baseline',gap:6,marginTop:6}},
+            h('span',{style:{fontSize:11,fontWeight:700,color:'#64748b'}},'상품 총 금액'),
+            h('span',{style:{fontSize:20,fontWeight:900,color:'#0f172a'}},total.toLocaleString()+'원')
+          )
+        )
+      ),
+      h('div',{style:{padding:'12px 16px 28px',borderTop:'1px solid #f1f5f9',display:'flex',gap:8,flexShrink:0}},
+        h('button',{onClick:()=>canBuy&&onAddToCart(product,totalQty()),disabled:!canBuy,style:btnStyle(canBuy)},'장바구니'),
+        h('button',{onClick:()=>canBuy&&onDirectBuy(product,totalQty()),disabled:!canBuy,style:{...btnStyle(canBuy),background:canBuy?'#f43f5e':'#e2e8f0'}},'바로구매')
+      )
+    )
+  );
+}
+
+function ProductSelectPopup({isOpen,onClose,products,selectedIds,onToggle}){
+  if(!isOpen)return null;
+  return h('div',{style:{position:'absolute',inset:0,zIndex:50,display:'flex',alignItems:'flex-end'}},
+    h('div',{style:{position:'absolute',inset:0,background:'rgba(0,0,0,0.6)'},onClick:onClose}),
+    h('div',{style:{width:'100%',background:'white',borderTopLeftRadius:24,borderTopRightRadius:24,position:'relative',zIndex:1,display:'flex',flexDirection:'column',maxHeight:'78%',overflow:'hidden'}},
+      h('div',{style:{width:36,height:4,background:'#e2e8f0',borderRadius:9999,margin:'10px auto',flexShrink:0}}),
+      h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'8px 18px 14px',flexShrink:0}},
+        h('h3',{style:{fontSize:15,fontWeight:900,color:'#0f172a'}},'판매 상품 선택'),
+        h('button',{onClick:onClose,style:{background:'none',border:'none',cursor:'pointer',color:'#1e293b'}},h(Icon.X))
+      ),
+      h('div',{style:{flex:1,overflowY:'auto',padding:'0 16px 16px',display:'flex',flexDirection:'column',gap:12}},
+        products.map(p=>{
+          const sel=selectedIds.includes(p.id);
+          return h('div',{key:p.id,onClick:()=>onToggle(p.id),style:{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderRadius:18,border:`2px solid ${sel?'#f43f5e':'#f1f5f9'}`,background:sel?'#fff1f2':'white',cursor:'pointer'}},
+            h(ProductImage,{size:52,radius:10}),
+            h('div',{style:{flex:1,minWidth:0}},
+              h('span',{style:{background:OPT_COLOR[p.optionType],color:'white',fontSize:9,padding:'1px 6px',borderRadius:4,fontWeight:900,display:'inline-block',marginBottom:3}},OPTION_BADGE[p.optionType]),
+              h('p',{style:{fontSize:12,fontWeight:700,color:'#0f172a',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},p.name),
+              h('p',{style:{fontSize:13,fontWeight:900,color:sel?'#f43f5e':'#0f172a',marginTop:2}},p.price)
+            ),
+            h('div',{style:{width:22,height:22,borderRadius:9999,background:sel?'#f43f5e':'#e2e8f0',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},
+              sel&&h(Icon.Check,{color:'white'})
+            )
+          );
+        })
+      ),
+      h('div',{style:{padding:'12px 16px 24px',borderTop:'1px solid #f1f5f9'}},
+        h('button',{onClick:onClose,style:{width:'100%',height:50,background:'#f43f5e',borderRadius:16,fontWeight:900,fontSize:14,color:'white',border:'none',cursor:'pointer'}},
+          '선택 완료 ('+selectedIds.length+')'
+        )
+      )
+    )
+  );
+}
+
+function ProductListPopup({isOpen,onClose,initialTab='products',products,cartItems,cartQty,onProductSelect,onQtyChange,onCartRemove,onCheckout}){
+  const[tab,setTab]=useState(initialTab);
+  useEffect(()=>{if(isOpen)setTab(initialTab);},[isOpen,initialTab]);
+  if(!isOpen)return null;
+  const orderTotal=cartItems.reduce((s,i)=>s+parsePrice(i.price)*(cartQty[i.id]||1),0);
+  const discount=cartItems.length>0?30000:0;
+  const payTotal=Math.max(0,orderTotal-discount);
+  return h('div',{style:{position:'absolute',inset:0,zIndex:30,display:'flex',alignItems:'flex-end'}},
+    h('div',{style:{position:'absolute',inset:0,background:'rgba(0,0,0,0.6)'},onClick:onClose}),
+    h('div',{style:{width:'100%',background:'white',borderTopLeftRadius:24,borderTopRightRadius:24,position:'relative',zIndex:1,display:'flex',flexDirection:'column',height:'82%',overflow:'hidden'}},
+      h('div',{style:{width:36,height:4,background:'#e2e8f0',borderRadius:9999,margin:'10px auto',flexShrink:0}}),
+      h('div',{style:{display:'flex',borderBottom:'1px solid #f1f5f9',position:'relative',flexShrink:0}},
+        [['products','판매상품 '+products.length],['cart','장바구니 '+cartItems.length]].map(([key,label])=>
+          h('button',{key,onClick:()=>setTab(key),style:{flex:1,padding:'12px 0',fontSize:12,fontWeight:900,color:tab===key?'#f43f5e':'#94a3b8',background:'none',border:'none',cursor:'pointer',borderBottom:tab===key?'2px solid #f43f5e':'none'}},label)
+        ),
+        h('button',{onClick:onClose,style:{position:'absolute',right:12,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'#1e293b'}},h(Icon.X))
+      ),
+      h('div',{style:{flex:1,overflowY:'auto'}},
+        tab==='products'&&h('div',{style:{padding:14,display:'flex',flexDirection:'column',gap:14}},
+          products.map(p=>h('div',{key:p.id,onClick:()=>onProductSelect(p),style:{display:'flex',gap:10,alignItems:'center',padding:'8px 6px',borderRadius:14,cursor:'pointer'}},
+            h(ProductImage,{size:64,radius:10}),
+            h('div',{style:{flex:1,minWidth:0}},
+              h('span',{style:{background:OPT_COLOR[p.optionType],color:'white',fontSize:9,padding:'1px 6px',borderRadius:4,fontWeight:900,display:'inline-block',marginBottom:3}},OPTION_BADGE[p.optionType]),
+              h('h4',{style:{fontSize:12,fontWeight:700,color:'#0f172a',lineHeight:1.4,marginBottom:4}},p.name),
+              h('p',{style:{color:'#f43f5e',fontWeight:900,fontSize:13}},p.price)
+            ),
+            h('button',{onClick:e=>{e.stopPropagation();onProductSelect(p);},style:{flexShrink:0,border:'1px solid #fecdd3',color:'#f43f5e',fontSize:10,fontWeight:900,padding:'6px 12px',borderRadius:9999,background:'none',cursor:'pointer'}},'구매')
+          ))
+        ),
+        tab==='cart'&&h('div',{style:{background:'#f8fafc',minHeight:'100%',display:'flex',flexDirection:'column'}},
+          cartItems.length===0
+            ?h('div',{style:{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flex:1,padding:'60px 0',gap:14}},
+              h('div',{style:{width:56,height:56,background:'#f1f5f9',borderRadius:9999,display:'flex',alignItems:'center',justifyContent:'center',color:'#cbd5e1'}},
+                h('svg',{width:28,height:28,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:'2',strokeLinecap:'round'},h('circle',{cx:9,cy:21,r:1}),h('circle',{cx:20,cy:21,r:1}),h('path',{d:'M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6'}))
+              ),
+              h('p',{style:{color:'#94a3b8',fontSize:13,fontWeight:700}},'장바구니에 상품이 없습니다.')
+            )
+            :h('div',{style:{padding:14,display:'flex',flexDirection:'column',gap:14,paddingBottom:130}},
+              cartItems.map(item=>h('div',{key:item.id,style:{background:'white',borderRadius:18,padding:14,boxShadow:'0 1px 4px rgba(0,0,0,0.05)',border:'1px solid #f1f5f9'}},
+                h('div',{style:{display:'flex',gap:10,marginBottom:10}},
+                  h('div',{style:{width:18,height:18,borderRadius:9999,background:'#f43f5e',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:2}},h(Icon.Check,{color:'white',size:11})),
+                  h(ProductImage,{size:56,radius:10}),
+                  h('div',{style:{flex:1,minWidth:0}},
+                    h('h4',{style:{fontSize:11,fontWeight:700,color:'#0f172a',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},item.name),
+                    h('p',{style:{fontSize:13,fontWeight:900,color:'#0f172a',marginTop:3}},item.price)
+                  )
+                ),
+                h('div',{style:{display:'flex',alignItems:'center',gap:7}},
+                  h('div',{style:{display:'flex',alignItems:'center',border:'1px solid #e2e8f0',borderRadius:9,overflow:'hidden',width:76,flexShrink:0}},
+                    h('button',{onClick:()=>onQtyChange(item.id,-1),style:{padding:'5px 7px',background:'none',border:'none',cursor:'pointer',color:'#94a3b8'}},h(Icon.Minus)),
+                    h('span',{style:{flex:1,fontSize:11,fontWeight:900,color:'#0f172a',textAlign:'center'}},cartQty[item.id]||1),
+                    h('button',{onClick:()=>onQtyChange(item.id,1),style:{padding:'5px 7px',background:'none',border:'none',cursor:'pointer',color:'#94a3b8'}},h(Icon.Plus))
+                  ),
+                  h('div',{style:{flex:1,display:'flex',gap:6,height:32}},
+                    h('button',{onClick:()=>onCartRemove(item.id),style:{width:48,fontSize:11,fontWeight:700,color:'#64748b',background:'#f8fafc',border:'1px solid #f1f5f9',borderRadius:10,cursor:'pointer'}},'삭제'),
+                    h('button',{onClick:()=>{onClose();onCheckout();},style:{flex:1,fontSize:11,fontWeight:900,color:'white',background:'#f43f5e',border:'none',borderRadius:10,cursor:'pointer'}},'바로구매')
+                  )
+                )
+              )),
+              h('div',{style:{background:'white',borderRadius:18,padding:18,display:'flex',flexDirection:'column',gap:10}},
+                [['총 주문금액',orderTotal.toLocaleString()+'원'],['쿠폰 할인','-'+discount.toLocaleString()+'원'],['배송비','0원']].map(([k,v])=>
+                  h('div',{key:k,style:{display:'flex',justifyContent:'space-between',fontSize:11,color:'#64748b'}},h('span',null,k),h('span',{style:{fontWeight:900,color:'#1e293b'}},v))
+                ),
+                h('div',{style:{display:'flex',justifyContent:'space-between',paddingTop:10,borderTop:'1px solid #f8fafc'}},
+                  h('span',{style:{fontSize:13,fontWeight:900,color:'#0f172a'}},'총 결제 금액'),
+                  h('span',{style:{fontSize:16,fontWeight:900,color:'#f43f5e'}},payTotal.toLocaleString()+'원')
+                )
+              )
+            )
+        )
+      ),
+      tab==='cart'&&cartItems.length>0&&h('div',{style:{position:'absolute',bottom:0,left:0,right:0,background:'white',borderTop:'1px solid #f1f5f9',padding:'14px 16px',zIndex:2}},
+        h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10}},
+          h('div',null,
+            h('span',{style:{background:'#fff1f2',color:'#f43f5e',fontSize:9,fontWeight:900,padding:'2px 7px',borderRadius:5,display:'block',width:'max-content'}},'30,000원 할인 적용'),
+            h('span',{style:{fontSize:14,fontWeight:900,color:'#0f172a',display:'block',marginTop:3}},'총 '+payTotal.toLocaleString()+'원')
+          ),
+          h('button',{onClick:()=>{onClose();onCheckout();},style:{background:'#f43f5e',color:'white',fontWeight:900,height:48,padding:'0 22px',borderRadius:14,border:'none',cursor:'pointer',fontSize:13,flex:1,maxWidth:150}},
+            '구매하기 ('+cartItems.length+')'
+          )
+        )
+      )
+    )
+  );
+}
+
+function CartToast({isOpen,onClose,onGoToCart}){
+  if(!isOpen)return null;
+  return h('div',{style:{position:'absolute',inset:0,zIndex:60,display:'flex',alignItems:'flex-end',justifyContent:'center',padding:'0 12px 100px',pointerEvents:'none'}},
+    h('div',{style:{position:'absolute',inset:0,pointerEvents:'auto'},onClick:onClose}),
+    h('div',{style:{position:'relative',width:'100%',background:'white',borderRadius:14,padding:'9px 10px',display:'flex',alignItems:'center',justifyContent:'space-between',boxShadow:'0 8px 30px rgba(0,0,0,0.18)',border:'1px solid #f1f5f9',pointerEvents:'auto'}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:8}},
+        h(ProductImage,{size:26,radius:7}),
+        h('span',{style:{fontSize:10,fontWeight:700,color:'#1e293b'}},'장바구니에 담겼습니다.')
+      ),
+      h('button',{onClick:onGoToCart,style:{display:'flex',alignItems:'center',gap:2,background:'none',border:'none',cursor:'pointer',color:'#f43f5e',fontSize:10,fontWeight:900,flexShrink:0}},
+        '바로가기',h(Icon.ChevronRight,{size:11})
+      )
+    )
+  );
+}
+
+function SellerManagePopup({isOpen,onClose,products,currentUpId,onToggleUp}){
+  if(!isOpen)return null;
+  return h('div',{style:{position:'absolute',inset:0,zIndex:30,display:'flex',alignItems:'flex-end'}},
+    h('div',{style:{position:'absolute',inset:0,background:'rgba(0,0,0,0.6)'},onClick:onClose}),
+    h('div',{style:{width:'100%',background:'white',borderTopLeftRadius:24,borderTopRightRadius:24,position:'relative',zIndex:1,display:'flex',flexDirection:'column',height:'75%',overflow:'hidden'}},
+      h('div',{style:{width:36,height:4,background:'#e2e8f0',borderRadius:9999,margin:'10px auto',flexShrink:0}}),
+      h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 18px',borderBottom:'1px solid #f1f5f9',flexShrink:0}},
+        h('span',{style:{color:'#94a3b8'}},h(Icon.RotateCcw)),
+        h('h3',{style:{fontSize:15,fontWeight:900,color:'#0f172a'}},'판매상품 ',h('span',{style:{color:'#f43f5e'}},products.length)),
+        h('button',{onClick:onClose,style:{background:'none',border:'none',cursor:'pointer',color:'#1e293b'}},h(Icon.X))
+      ),
+      h('div',{style:{flex:1,overflowY:'auto',padding:16,display:'flex',flexDirection:'column',gap:14}},
+        h('p',{style:{textAlign:'center',fontSize:11,color:'#64748b',fontWeight:700}},'지금 이 순간 홍보하고 있는 상품을 ',h('span',{style:{color:'#f43f5e'}},'NOW'),' 해주세요.'),
+        products.map(p=>h('div',{key:p.id,style:{background:'white',borderRadius:20,border:'1px solid #f1f5f9',boxShadow:'0 1px 4px rgba(0,0,0,0.05)',padding:14,display:'flex',flexDirection:'column',gap:12}},
+          h('div',{style:{display:'flex',gap:12,alignItems:'center'}},
+            h(ProductImage,{size:50,radius:10}),
+            h('div',{style:{flex:1,minWidth:0}},
+              h('h4',{style:{fontSize:11,fontWeight:700,color:'#0f172a',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},p.name),
+              h('p',{style:{fontSize:13,fontWeight:900,marginTop:2}},p.price),
+              h('button',{style:{fontSize:10,fontWeight:700,color:'#94a3b8',background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:5,padding:'2px 8px',marginTop:4,cursor:'pointer'}},'수정')
+            ),
+            h('button',{onClick:()=>onToggleUp(p),style:{width:58,height:34,borderRadius:10,background:currentUpId===p.id?'#f43f5e':'#cbd5e1',color:'white',fontWeight:900,fontSize:12,border:'none',cursor:'pointer'}},'NOW')
+          ),
+          h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 14px',background:'#f8fafc',borderRadius:14,border:'1px solid #f1f5f9'}},
+            [['판매 가능',p.total],['주문 완료',0],['점유 수량',0]].map(([lbl,val],i)=>
+              h('div',{key:lbl,style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:2,borderLeft:i>0?'1px solid #e2e8f0':'none'}},
+                h('span',{style:{fontSize:9,color:'#94a3b8',fontWeight:700}},lbl),
+                h('span',{style:{fontSize:13,fontWeight:900,color:'#0f172a'}},val)
+              )
+            )
+          )
+        ))
+      )
+    )
+  );
+}
+
+function SellerSetupView({onStart,products}){
+  const[salesType,setSalesType]=useState('store');
+  const[title,setTitle]=useState('');
+  const[selectedIds,setSelectedIds]=useState(products.map(p=>p.id));
+  const[selectPopupOpen,setSelectPopupOpen]=useState(false);
+  const toggle=id=>setSelectedIds(p=>p.includes(id)?p.filter(i=>i!==id):[...p,id]);
+  const selProds=products.filter(p=>selectedIds.includes(p.id));
+  return h('div',{style:{display:'flex',flexDirection:'column',height:'100%',background:'#0a0a0a',color:'white',overflow:'hidden'}},
+    h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 16px',height:50,borderBottom:'1px solid #111'}},
+      h('span',{style:{color:'white',cursor:'pointer'}},h(Icon.X)),
+      h('h1',{style:{fontSize:14,fontWeight:900,letterSpacing:'0.15em',textTransform:'uppercase'}},'라이브'),
+      h('div',{style:{width:20}})
+    ),
+    h('div',{style:{display:'flex',padding:'10px 14px',gap:6}},
+      ['라이브','녹화','연습하기'].map((t,i)=>h('button',{key:t,style:{flex:1,padding:'10px 0',borderRadius:14,background:i===0?'white':'#222',color:i===0?'black':'#64748b',fontWeight:i===0?900:700,fontSize:12,border:'none',cursor:'pointer'}},t))
+    ),
+    h('div',{style:{flex:1,overflowY:'auto',padding:20,display:'flex',flexDirection:'column',gap:24}},
+      h('div',null,
+        h('div',{style:{display:'flex',alignItems:'center',gap:4,marginBottom:4}},
+          h('span',{style:{fontSize:13,fontWeight:900}},'라이브 판매유형'),h('span',{style:{color:'#f43f5e',fontSize:16}},'*')
+        ),
+        h('p',{style:{fontSize:11,color:'#64748b',marginBottom:10}},'한정판매/스토어 판매 유형을 선택합니다.'),
+        h('div',{style:{display:'flex',gap:24}},
+          ['limited','store'].map(type=>h('label',{key:type,onClick:()=>setSalesType(type),style:{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}},
+            h('div',{style:{width:18,height:18,borderRadius:9999,border:`2px solid ${salesType===type?'#f43f5e':'#475569'}`,display:'flex',alignItems:'center',justifyContent:'center'}},
+              salesType===type&&h('div',{style:{width:9,height:9,borderRadius:9999,background:'#f43f5e'}})
+            ),
+            h('span',{style:{fontSize:13,fontWeight:900,color:salesType===type?'white':'#64748b'}},type==='limited'?'한정판매':'스토어판매')
+          ))
+        )
+      ),
+      h('div',{style:{borderTop:'1px solid #111',paddingTop:20,display:'flex',gap:18,alignItems:'flex-start'}},
+        h('div',{style:{width:96,height:136,border:'2px dashed #222',borderRadius:20,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:10,cursor:'pointer',flexShrink:0,color:'#475569'}},
+          h(Icon.Camera),h('span',{style:{fontSize:9,color:'#475569',fontWeight:700,textAlign:'center',textTransform:'uppercase',letterSpacing:'0.1em'}},'Add Cover')
+        ),
+        h('textarea',{value:title,onChange:e=>setTitle(e.target.value),placeholder:'제목을 입력해 주세요 *',style:{flex:1,background:'transparent',border:'none',outline:'none',fontSize:14,fontWeight:900,color:'white',resize:'none',lineHeight:1.6,minHeight:100,fontFamily:'inherit'}})
+      ),
+      h('div',{style:{borderTop:'1px solid #111',paddingTop:18}},
+        h('div',{onClick:()=>setSelectPopupOpen(true),style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 14px',borderRadius:14,background:'#111',cursor:'pointer',marginBottom:12}},
+          h('div',null,h('span',{style:{fontWeight:900,fontSize:13}},'판매 상품 선택'),h('span',{style:{fontSize:11,color:'#f43f5e',fontWeight:900,marginLeft:8}},selectedIds.length+'개 선택됨')),
+          h('span',{style:{color:'#374151'}},h(Icon.ChevronRight,{size:18}))
+        ),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:10}},
+          selProds.map(p=>h('div',{key:p.id,style:{display:'flex',gap:10,alignItems:'center'}},
+            h(ProductImage,{size:36,radius:8}),
+            h('div',{style:{flex:1,minWidth:0}},
+              h('span',{style:{background:OPT_COLOR[p.optionType],color:'white',fontSize:8,padding:'1px 5px',borderRadius:3,fontWeight:900,display:'inline-block',marginBottom:2}},OPTION_BADGE[p.optionType]),
+              h('p',{style:{fontSize:11,fontWeight:700,color:'#94a3b8',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},p.name),
+              h('p',{style:{fontSize:11,fontWeight:900,color:'white'}},p.price)
+            )
+          ))
+        )
+      )
+    ),
+    h('div',{style:{padding:'14px 14px 28px'}},
+      h('button',{onClick:onStart,style:{width:'100%',height:56,background:'#f43f5e',borderRadius:20,fontWeight:900,fontSize:16,color:'white',border:'none',cursor:'pointer',letterSpacing:'0.12em',textTransform:'uppercase',boxShadow:'0 10px 25px rgba(244,63,94,0.4)'}},'방송하기')
+    ),
+    h(ProductSelectPopup,{isOpen:selectPopupOpen,onClose:()=>setSelectPopupOpen(false),products,selectedIds,onToggle:toggle})
+  );
+}
+
+function SellerLiveView({upProduct,onToggleUp,products}){
+  const[isManageOpen,setIsManageOpen]=useState(false);
+  const[msgText,setMsgText]=useState('');
+  const[msgs,setMsgs]=useState(CHAT_MSGS);
+  const send=()=>{if(!msgText.trim())return;setMsgs(m=>[...m,{id:Date.now(),user:'나',text:msgText,color:'white'}]);setMsgText('');};
+  const tools=[
+    {icon:h(Icon.Zap,{size:18,fill:'white'}),label:'플래시'},
+    {icon:h(Icon.Gamepad2),label:'게임'},
+    {icon:h(Icon.Monitor),label:'듀얼'},
+    {icon:h(Icon.RefreshCw),label:'카메라'},
+    {icon:h(Icon.Sparkles),label:'효과'},
+    {icon:h(Icon.Smile),label:'스티커'},
+  ];
+  return h('div',{style:{position:'relative',height:'100%',background:'#0f172a',overflow:'hidden'}},
+    h('div',{style:{position:'absolute',inset:0,backgroundImage:"url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=800&auto=format&fit=crop')",backgroundSize:'cover',backgroundPosition:'center'}},
+      h('div',{style:{position:'absolute',inset:0,background:'rgba(0,0,0,0.25)'}})
+    ),
+    h('div',{style:{position:'absolute',top:28,left:0,right:0,padding:'0 14px',display:'flex',justifyContent:'space-between',alignItems:'flex-start',zIndex:10}},
+      h('div',{style:{display:'flex',flexDirection:'column',gap:4}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:6}},
+          h('span',{style:{background:'#dc2626',fontSize:9,padding:'2px 5px',fontWeight:900,borderRadius:4,color:'white',fontStyle:'italic'}},'LIVE'),
+          h('div',{style:{display:'flex',alignItems:'center',gap:3,color:'white',fontSize:10,fontWeight:900}},h(Icon.Eye,{size:12}),' 2,434'),
+          h('span',{style:{color:'white',fontSize:10,fontWeight:900}},'04:01')
+        ),
+        h('h2',{style:{color:'white',fontWeight:900,fontSize:12,marginTop:2,textShadow:'0 2px 8px rgba(0,0,0,0.5)'}},'선풍기 특가판매')
+      ),
+      h('div',{style:{display:'flex',gap:10,color:'white'}},h(Icon.Share2),h(Icon.MoreVertical),h(Icon.X))
+    ),
+    h('div',{style:{position:'absolute',left:14,right:14,zIndex:10,display:'flex',flexDirection:'column',gap:5,maxWidth:'85%',justifyContent:'flex-end',bottom:205,height:110}},
+      msgs.slice(-4).map(m=>h('div',{key:m.id,style:{background:'rgba(0,0,0,0.25)',padding:'5px 9px',borderRadius:14,border:'1px solid rgba(255,255,255,0.05)',width:'max-content',maxWidth:'100%',backdropFilter:'blur(8px)'}},
+        h('p',{style:{fontSize:11,fontWeight:900}},h('span',{style:{color:m.color}},m.user+' '),h('span',{style:{color:'white',fontWeight:500}},m.text))
+      ))
+    ),
+    upProduct&&h('div',{onClick:()=>setIsManageOpen(true),style:{position:'absolute',zIndex:20,bottom:205,left:14,right:14,cursor:'pointer'}},
+      h('div',{style:{background:'rgba(255,255,255,0.95)',backdropFilter:'blur(12px)',borderRadius:18,display:'flex',alignItems:'center',padding:7,boxShadow:'0 8px 24px rgba(0,0,0,0.18)'}},
+        h(ProductImage,{size:40,radius:9}),
+        h('div',{style:{flex:1,padding:'0 10px',minWidth:0}},
+          h('p',{style:{color:'#0f172a',fontSize:11,fontWeight:700,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},upProduct.name),
+          h('p',{style:{color:'#f43f5e',fontWeight:900,fontSize:12,marginTop:1}},upProduct.price)
+        ),
+        h('div',{style:{textAlign:'right',paddingRight:6,flexShrink:0}},
+          h('p',{style:{color:'#f43f5e',fontSize:9,fontWeight:900,fontStyle:'italic'}},'판매가능 '+upProduct.total),
+          h('p',{style:{color:'#94a3b8',fontSize:8,fontWeight:700}},'재고 '+upProduct.total)
+        )
+      )
+    ),
+    h('div',{style:{position:'absolute',bottom:0,left:0,right:0,zIndex:30}},
+      h('div',{style:{background:'rgba(31,41,55,0.85)',backdropFilter:'blur(24px)',padding:'10px 14px',display:'flex',alignItems:'center',gap:10,borderTop:'1px solid rgba(255,255,255,0.1)'}},
+        h('div',{onClick:()=>setIsManageOpen(true),style:{width:40,height:40,borderRadius:14,background:'white',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',cursor:'pointer',flexShrink:0,color:'#6366f1'}},
+          h(Icon.ShoppingBag,{size:20}),
+          h('div',{style:{position:'absolute',top:-5,right:-5,background:'#f43f5e',width:18,height:18,borderRadius:9999,display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:900,color:'white',border:'2px solid #1f2937'}},products.length)
+        ),
+        h('div',{style:{flex:1,height:40,background:'rgba(0,0,0,0.4)',borderRadius:9999,display:'flex',alignItems:'center',padding:'0 14px',border:'1px solid rgba(255,255,255,0.15)'}},
+          h('input',{value:msgText,onChange:e=>setMsgText(e.target.value),onKeyDown:e=>e.key==='Enter'&&send(),type:'text',placeholder:'메시지 입력',style:{background:'transparent',border:'none',outline:'none',fontSize:13,color:'white',width:'100%',fontWeight:700,fontFamily:'inherit'}})
+        ),
+        h('span',{style:{color:'white',cursor:'pointer'}},h(Icon.Heart,{fill:'none',color:'white',size:24}))
+      ),
+      h('div',{style:{background:'#111827',padding:'12px 14px 32px',display:'flex',gap:12,overflowX:'auto'}},
+        tools.map(({icon,label})=>h('div',{key:label,style:{display:'flex',flexDirection:'column',alignItems:'center',gap:5,flexShrink:0,minWidth:48,cursor:'pointer',color:'white'}},
+          h('div',{style:{width:38,height:38,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(255,255,255,0.05)',borderRadius:10,border:'1px solid rgba(255,255,255,0.05)'}},icon),
+          h('span',{style:{fontSize:8,color:'white',fontWeight:900}},label)
+        ))
+      )
+    ),
+    h(SellerManagePopup,{isOpen:isManageOpen,onClose:()=>setIsManageOpen(false),products,currentUpId:upProduct&&upProduct.id,onToggleUp})
+  );
+}
+
+function CustomerLiveView({isLive,upProduct,products,cartItems,cartQty,onAddToCart,onQtyChange,onCartRemove}){
+  const[listOpen,setListOpen]=useState(false);
+  const[listTab,setListTab]=useState('products');
+  const[optProd,setOptProd]=useState(null);
+  const[toastOpen,setToastOpen]=useState(false);
+  const[checkoutOpen,setCheckoutOpen]=useState(false);
+  const[msg,setMsg]=useState('');
+  const[msgs,setMsgs]=useState(CHAT_MSGS);
+  const[liked,setLiked]=useState(false);
+  const openList=tab=>{setListTab(tab||'products');setListOpen(true);};
+  const addCart=(prod,qty)=>{onAddToCart(prod,qty);setOptProd(null);setListOpen(false);setToastOpen(true);setTimeout(()=>setToastOpen(false),3000);};
+  const directBuy=(prod,qty)=>{onAddToCart(prod,qty);setOptProd(null);setListOpen(false);setCheckoutOpen(true);};
+  const send=()=>{if(!msg.trim())return;setMsgs(m=>[...m,{id:Date.now(),user:'나',text:msg,color:'white'}]);setMsg('');};
+  if(!isLive){
+    return h('div',{style:{height:'100%',background:'#020617',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',color:'white'}},
+      h('div',{style:{width:56,height:56,border:'4px solid #f43f5e',borderTopColor:'transparent',borderRadius:'50%',animation:'spin 1s linear infinite',marginBottom:20}}),
+      h('h3',{style:{fontSize:16,fontWeight:900,opacity:0.3,textTransform:'uppercase',letterSpacing:'0.2em'}},'Off Air'),
+      h('p',{style:{color:'#475569',fontSize:11,marginTop:8,textAlign:'center',padding:'0 20px'}},'셀러가 방송을 시작하면',h('br'),'자동으로 연결됩니다')
+    );
+  }
+  const BOTTOM_BAR=82,CARD_BOTTOM=BOTTOM_BAR+8,CHAT_BOTTOM=upProduct?CARD_BOTTOM+66:CARD_BOTTOM;
+  return h('div',{style:{position:'relative',height:'100%',background:'#0f172a',overflow:'hidden'}},
+    h('div',{style:{position:'absolute',inset:0,backgroundImage:"url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=800&auto=format&fit=crop')",backgroundSize:'cover',backgroundPosition:'center'}},
+      h('div',{style:{position:'absolute',inset:0,background:'rgba(0,0,0,0.45)'}})
+    ),
+    h('div',{style:{position:'absolute',top:28,left:14,right:14,display:'flex',justifyContent:'space-between',zIndex:10,alignItems:'flex-start'}},
+      h('div',{style:{display:'flex',flexDirection:'column',gap:5}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:6,background:'rgba(0,0,0,0.3)',backdropFilter:'blur(16px)',borderRadius:9999,padding:'5px 12px 5px 5px',border:'1px solid rgba(255,255,255,0.2)'}},
+          h('div',{style:{width:32,height:32,borderRadius:9999,border:'2px solid #f43f5e',overflow:'hidden'}},
+            h('img',{src:'https://api.dicebear.com/7.x/avataaars/svg?seed=Lily',alt:'',style:{width:'100%',height:'100%',objectFit:'cover'}})
+          ),
+          h('span',{style:{fontSize:12,fontWeight:900,color:'white'}},'릴리유나 💎'),
+          h('button',{style:{background:'#f43f5e',fontSize:10,padding:'3px 10px',borderRadius:9999,fontWeight:900,border:'none',color:'white',cursor:'pointer',marginLeft:4}},'팔로우')
+        ),
+        h('div',{style:{display:'flex',alignItems:'center',gap:10,paddingLeft:10,marginTop:2}},
+          h('span',{style:{display:'flex',alignItems:'center',gap:4,color:'white',fontSize:11,fontWeight:900}},h(Icon.Heart,{fill:'white',color:'white',size:12}),' 2.6만'),
+          h('span',{style:{display:'flex',alignItems:'center',gap:4,color:'white',fontSize:11,fontWeight:900}},h(Icon.Eye,{size:12}),' 2,434')
+        )
+      ),
+      h('div',{style:{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:6,background:'rgba(0,0,0,0.3)',backdropFilter:'blur(8px)',borderRadius:9999,padding:'5px 10px',border:'1px solid rgba(255,255,255,0.2)'}},
+          h('span',{style:{background:'#dc2626',fontSize:9,padding:'2px 5px',fontWeight:900,borderRadius:4,color:'white',fontStyle:'italic'}},'LIVE'),
+          h('span',{style:{color:'white',fontSize:11,fontWeight:900}},'04:01')
+        ),
+        h('span',{style:{color:'white'}},h(Icon.X))
+      )
+    ),
+    h('div',{style:{position:'absolute',left:14,zIndex:10,display:'flex',flexDirection:'column',gap:5,maxWidth:'80%',justifyContent:'flex-end',bottom:CHAT_BOTTOM,height:100}},
+      msgs.slice(-4).map(m=>h('div',{key:m.id,style:{background:'rgba(0,0,0,0.2)',padding:'5px 9px',borderRadius:14,border:'1px solid rgba(255,255,255,0.05)',width:'max-content',maxWidth:'100%',backdropFilter:'blur(8px)'}},
+        h('p',{style:{fontSize:11,fontWeight:900}},h('span',{style:{color:m.color}},m.user+' '),h('span',{style:{color:'white',fontWeight:500}},m.text))
+      ))
+    ),
+    upProduct&&h('div',{style:{position:'absolute',zIndex:20,bottom:CARD_BOTTOM,left:14,right:14}},
+      h('div',{style:{background:'rgba(255,255,255,0.95)',backdropFilter:'blur(12px)',borderRadius:18,display:'flex',alignItems:'center',padding:7,boxShadow:'0 8px 24px rgba(0,0,0,0.18)'}},
+        h(ProductImage,{size:40,radius:9}),
+        h('div',{style:{flex:1,padding:'0 10px',minWidth:0}},
+          h('p',{style:{color:'#0f172a',fontSize:11,fontWeight:700,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},upProduct.name),
+          h('p',{style:{color:'#f43f5e',fontWeight:900,fontSize:12,marginTop:1}},upProduct.price)
+        ),
+        h('button',{onClick:()=>openList('products'),style:{background:'#0f172a',color:'white',fontSize:11,fontWeight:900,padding:'6px 12px',borderRadius:10,marginRight:3,border:'none',cursor:'pointer',whiteSpace:'nowrap'}},'상품보기')
+      )
+    ),
+    h('div',{style:{position:'absolute',bottom:0,left:0,right:0,zIndex:20}},
+      h('div',{style:{background:'rgba(17,24,39,0.85)',backdropFilter:'blur(24px)',padding:'10px 14px',display:'flex',alignItems:'center',gap:10,borderTop:'1px solid rgba(255,255,255,0.1)'}},
+        h('div',{onClick:()=>openList('products'),style:{width:40,height:40,borderRadius:14,background:'white',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',cursor:'pointer',flexShrink:0,color:'#6366f1'}},
+          h(Icon.ShoppingBag,{size:20}),
+          products.length>0&&h('div',{style:{position:'absolute',top:-5,right:-5,background:'#f43f5e',width:18,height:18,borderRadius:9999,display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:900,color:'white',border:'2px solid #111827'}},products.length)
+        ),
+        h('div',{style:{flex:1,height:40,background:'rgba(0,0,0,0.4)',borderRadius:9999,display:'flex',alignItems:'center',padding:'0 14px',border:'1px solid rgba(255,255,255,0.15)'}},
+          h('input',{value:msg,onChange:e=>setMsg(e.target.value),onKeyDown:e=>e.key==='Enter'&&send(),type:'text',placeholder:'메시지 입력',style:{background:'transparent',border:'none',outline:'none',fontSize:12,color:'white',width:'100%',fontWeight:700,fontFamily:'inherit'}})
+        ),
+        h('button',{onClick:()=>setLiked(l=>!l),style:{background:'none',border:'none',cursor:'pointer',padding:0}},
+          h(Icon.Heart,{fill:liked?'#f43f5e':'none',color:liked?'#f43f5e':'white',size:24})
+        )
+      ),
+      h('div',{style:{background:'rgba(17,24,39,0.8)',height:32}})
+    ),
+    h(ProductListPopup,{isOpen:listOpen,onClose:()=>setListOpen(false),initialTab:listTab,products,cartItems,cartQty,onProductSelect:p=>{setListOpen(false);setOptProd(p);},onQtyChange,onCartRemove,onCheckout:()=>setCheckoutOpen(true)}),
+    h(OptionPopup,{isOpen:!!optProd,onClose:()=>setOptProd(null),product:optProd,onAddToCart:addCart,onDirectBuy:directBuy}),
+    h(CartToast,{isOpen:toastOpen,onClose:()=>setToastOpen(false),onGoToCart:()=>{setToastOpen(false);openList('cart');}}),
+    h(CheckoutPage,{isOpen:checkoutOpen,onClose:()=>setCheckoutOpen(false),cartItems,cartQty})
+  );
+}
+
+function PhoneMockup({label,labelColor,children}){
+  return h('div',{style:{display:'flex',flexDirection:'column',alignItems:'center',gap:10}},
+    h('div',{style:{background:labelColor,color:'white',fontSize:12,fontWeight:900,padding:'6px 18px',borderRadius:9999}},label),
+    h('div',{style:{position:'relative',width:320,height:650}},
+      h('div',{style:{position:'absolute',top:10,left:'50%',transform:'translateX(-50%)',width:96,height:20,background:'#000',borderRadius:9999,zIndex:50,display:'flex',alignItems:'center',justifyContent:'center',gap:6}},
+        h('div',{style:{width:7,height:7,borderRadius:9999,background:'#1a1a1a'}}),
+        h('div',{style:{width:50,height:4,borderRadius:9999,background:'#1a1a1a'}})
+      ),
+      h('div',{style:{position:'absolute',inset:0,borderRadius:40,background:'#000',boxShadow:'0 24px 60px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.06)'}}),
+      h('div',{style:{position:'absolute',inset:3,borderRadius:38,overflow:'hidden',background:'#000'}},children),
+      h('div',{style:{position:'absolute',bottom:10,left:'50%',transform:'translateX(-50%)',width:80,height:4,background:'rgba(255,255,255,0.25)',borderRadius:9999,zIndex:50}})
+    )
+  );
+}
+
+function App(){
+  const[phase,setPhase]=useState('setup');
+  const[products]=useState(PRODUCTS);
+  const[upProduct,setUpProduct]=useState(null);
+  const[cartItems,setCartItems]=useState([]);
+  const[cartQty,setCartQty]=useState({});
+  const toggleUp=p=>setUpProduct(prev=>prev&&prev.id===p.id?null:p);
+  const addToCart=(product,qty)=>{
+    setCartItems(prev=>prev.find(i=>i.id===product.id)?prev:[...prev,product]);
+    setCartQty(prev=>({...prev,[product.id]:(prev[product.id]||0)+qty}));
+  };
+  const changeQty=(id,delta)=>setCartQty(prev=>({...prev,[id]:Math.max(1,(prev[id]||1)+delta)}));
+  const removeCart=id=>{setCartItems(prev=>prev.filter(i=>i.id!==id));setCartQty(prev=>{const n={...prev};delete n[id];return n;});};
+  const hints=phase==='setup'
+    ?[{icon:'①',text:'셀러: 판매상품 클릭 → 상품 선택 팝업',color:'#0f172a'}]
+    :[{icon:'①',text:'셀러: 쇼핑백 → NOW 버튼으로 상품 강조',color:'#0f172a'}];
+  hints.push({icon:'②',text:'고객: 상품보기 → 구매 → 바로구매 클릭',color:'#6366f1'});
+  hints.push({icon:'③',text:'결제 풀페이지: X버튼으로 닫기',color:'#f43f5e'});
+  return h('div',{style:{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minHeight:'100vh',background:'linear-gradient(135deg,#e2e8f0 0%,#cbd5e1 100%)',padding:'24px 16px',gap:20}},
+    h('div',{style:{textAlign:'center'}},
+      h('h1',{style:{fontSize:18,fontWeight:900,color:'#0f172a',letterSpacing:'-0.5px'}},'🎬 스토어 라이브 프로토타입'),
+      h('p',{style:{fontSize:12,color:'#64748b',fontWeight:600,marginTop:4}},'셀러와 고객 화면을 동시에 확인하세요')
+    ),
+    h('div',{style:{display:'flex',gap:24,alignItems:'flex-start',flexWrap:'wrap',justifyContent:'center'}},
+      h(PhoneMockup,{label:'🛍️ 고객 뷰',labelColor:'#f43f5e'},
+        h(CustomerLiveView,{isLive:phase==='live',upProduct,products,cartItems,cartQty,onAddToCart:addToCart,onQtyChange:changeQty,onCartRemove:removeCart})
+      ),
+      h(PhoneMockup,{label:'📹 셀러 뷰',labelColor:'#0f172a'},
+        phase==='setup'
+          ?h(SellerSetupView,{onStart:()=>setPhase('live'),products})
+          :h(SellerLiveView,{upProduct,onToggleUp:toggleUp,products})
+      )
+    ),
+    h('div',{style:{display:'flex',gap:10,flexWrap:'wrap',justifyContent:'center'}},
+      hints.map(({icon,text,color})=>h('div',{key:icon,style:{background:'white',borderRadius:12,padding:'8px 14px',display:'flex',alignItems:'center',gap:8,boxShadow:'0 2px 8px rgba(0,0,0,0.08)'}},
+        h('span',{style:{width:22,height:22,borderRadius:9999,background:color,color:'white',fontSize:10,fontWeight:900,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},icon),
+        h('span',{style:{fontSize:11,fontWeight:700,color:'#475569'}},text)
+      ))
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+</script>
+</body>
+</html>
