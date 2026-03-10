@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>라이브 솔루션 서비스 신청</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #f4f6fb; color: #222; font-size: 14px; }
+
+  .top-bar { background: #1a1a2e; color: #fff; padding: 16px 32px; display: flex; align-items: center; gap: 12px; }
+  .top-bar .logo { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+  .top-bar .logo span { color: #e94560; }
+  .top-bar .badge { background: #e94560; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+
+  .container { max-width: 760px; margin: 40px auto 80px; padding: 0 16px; }
+
+  .page-title { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  .page-sub { color: #666; margin-bottom: 32px; font-size: 13px; }
+
+  /* Steps */
+  .steps { display: flex; align-items: center; margin-bottom: 40px; }
+  .step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+  .step-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; background: #ddd; color: #999; }
+  .step.active .step-circle { background: #e94560; color: #fff; }
+  .step.done .step-circle { background: #1a1a2e; color: #fff; }
+  .step-label { font-size: 11px; color: #999; white-space: nowrap; }
+  .step.active .step-label { color: #e94560; font-weight: 600; }
+  .step.done .step-label { color: #1a1a2e; }
+  .step-line { flex: 1; height: 2px; background: #ddd; margin-bottom: 18px; }
+  .step-line.done { background: #1a1a2e; }
+
+  /* Card */
+  .card { background: #fff; border-radius: 16px; padding: 32px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  .card-title { font-size: 15px; font-weight: 700; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #f0f0f0; display: flex; align-items: center; gap: 8px; }
+  .card-title .dot { width: 8px; height: 8px; border-radius: 50%; background: #e94560; display: inline-block; }
+
+  /* Form */
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: #444; margin-bottom: 6px; }
+  .field label .req { color: #e94560; margin-left: 2px; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 10px 14px; border: 1.5px solid #e0e0e0; border-radius: 8px;
+    font-size: 13px; color: #222; background: #fafafa; transition: border .2s;
+    outline: none; font-family: inherit;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: #e94560; background: #fff; }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .field .hint { font-size: 11px; color: #999; margin-top: 4px; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* Radio / Checkbox group */
+  .radio-group, .check-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  .radio-group label, .check-group label {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border: 1.5px solid #e0e0e0; border-radius: 8px;
+    cursor: pointer; font-size: 12px; font-weight: 500; background: #fafafa;
+    transition: all .15s;
+  }
+  .radio-group input, .check-group input { accent-color: #e94560; }
+  .radio-group label:has(input:checked), .check-group label:has(input:checked) {
+    border-color: #e94560; background: #fff5f7; color: #e94560;
+  }
+
+  /* File upload */
+  .file-box {
+    border: 2px dashed #ddd; border-radius: 10px; padding: 24px;
+    text-align: center; cursor: pointer; background: #fafafa; transition: border .2s;
+    position: relative;
+  }
+  .file-box:hover { border-color: #e94560; }
+  .file-box input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .file-box .icon { font-size: 28px; margin-bottom: 6px; }
+  .file-box p { font-size: 12px; color: #888; }
+  .file-box strong { color: #e94560; }
+  .file-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .file-tag { background: #f0f0f0; border-radius: 6px; padding: 4px 10px; font-size: 11px; display: flex; align-items: center; gap: 4px; }
+  .file-tag .badge-req { background: #e94560; color: #fff; border-radius: 4px; padding: 1px 5px; font-size: 10px; }
+
+  /* Info box */
+  .info-box { background: #f0f4ff; border-left: 3px solid #4a6cf7; border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 12px; color: #444; margin-bottom: 18px; line-height: 1.6; }
+  .info-box b { color: #4a6cf7; }
+
+  /* Notice box */
+  .notice-box { background: #fff8f0; border-left: 3px solid #ff9900; border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 12px; color: #666; }
+  .notice-box b { color: #ff9900; }
+
+  /* Submit */
+  .btn-wrap { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
+  .btn { padding: 13px 32px; border-radius: 10px; font-size: 14px; font-weight: 700; border: none; cursor: pointer; transition: all .15s; }
+  .btn-primary { background: #e94560; color: #fff; }
+  .btn-primary:hover { background: #c73652; }
+  .btn-outline { background: #fff; color: #666; border: 1.5px solid #ddd; }
+  .btn-outline:hover { background: #f5f5f5; }
+
+  /* Approval badge */
+  .approval-badge { display: inline-flex; align-items: center; gap: 6px; background: #e8f5e9; color: #2e7d32; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 600; }
+  .approval-badge::before { content: '✓'; font-weight: 800; }
+
+  /* Chip */
+  .chip-group { display: flex; gap: 10px; flex-wrap: wrap; }
+  .chip { padding: 10px 24px; border-radius: 50px; border: 2px solid #e0e0e0; background: #fafafa; font-size: 13px; font-weight: 600; color: #888; cursor: pointer; transition: all .15s; font-family: inherit; }
+  .chip:hover { border-color: #e94560; color: #e94560; background: #fff5f7; }
+  .chip.active { border-color: #e94560; background: #e94560; color: #fff; }
+
+  /* Input + Button row */
+  .input-btn-row { display: flex; gap: 8px; }
+  .input-btn-row input { flex: 1; }
+  .btn-verify { padding: 10px 16px; background: #1a1a2e; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; font-family: inherit; transition: background .15s; }
+  .btn-verify:hover { background: #2d2d4e; }
+  .btn-verify.verified { background: #2e7d32; }
+
+  /* Carrier buttons */
+  .carrier-btn { flex: 1; padding: 8px 4px; border: 1.5px solid #e0e0e0; border-radius: 8px; background: #fafafa; font-size: 12px; font-weight: 600; color: #888; cursor: pointer; font-family: inherit; transition: all .15s; }
+  .carrier-btn.active { border-color: #005bea; background: #005bea; color: #fff; }
+
+  @media (max-width: 520px) {
+    .row2 { grid-template-columns: 1fr; }
+    .card { padding: 20px; }
+    .steps { gap: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo">Grip <span>SE</span></div>
+  <div class="badge">BETA</div>
+</div>
+
+<div class="container">
+  <div class="page-title">서비스 신청</div>
+  <div class="page-sub">라이브 솔루션 이용을 위한 기본 정보를 입력해 주세요.</div>
+
+  <!-- Step indicator -->
+  <div class="steps">
+    <div class="step active">
+      <div class="step-circle">1</div>
+      <div class="step-label">기본 정보</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-circle">2</div>
+      <div class="step-label">서류 제출</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-circle">3</div>
+      <div class="step-label">카테고리</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-circle">4</div>
+      <div class="step-label">판매 정보</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-circle">5</div>
+      <div class="step-label">승인 완료</div>
+    </div>
+  </div>
+
+  <!-- STEP 1: 사업자 유형 -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span> 판매자 유형 선택</div>
+    <div class="field">
+      <label>판매자 유형 <span class="req">*</span></label>
+      <div class="chip-group">
+        <button type="button" class="chip active" onclick="selectChip(this)">🏢 사업자 판매자</button>
+        <button type="button" class="chip" onclick="selectChip(this)">👤 개인 판매자</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 1: 필수 입력 -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span> 사업자 정보</div>
+
+    <!-- 사업자 판매자 폼 -->
+    <div id="form-biz">
+      <div class="row2">
+        <div class="field">
+          <label>사업자등록번호 <span class="req">*</span></label>
+          <input type="text" placeholder="000-00-00000">
+        </div>
+        <div class="field">
+          <label>상호명 <span class="req">*</span></label>
+          <input type="text" placeholder="상호명 입력">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>대표자명 <span class="req">*</span></label>
+          <input type="text" placeholder="대표자 이름">
+        </div>
+        <div class="field">
+          <label>담당자 연락처 <span class="req">*</span></label>
+          <input type="tel" placeholder="010-0000-0000">
+        </div>
+      </div>
+      <div class="field">
+        <label>담당자 이메일 <span class="req">*</span></label>
+        <input type="email" placeholder="example@company.com">
+      </div>
+    </div>
+
+    <!-- 개인 판매자 폼 -->
+    <div id="form-personal" style="display:none;">
+      <div class="field">
+        <label>이름 <span class="req">*</span></label>
+        <div class="input-btn-row">
+          <input type="text" placeholder="실명 입력" id="personal-name" readonly>
+          <button type="button" class="btn-verify" onclick="openPassModal()">본인인증</button>
+        </div>
+        <div class="hint">PASS 인증을 통해 본인 확인이 필요합니다.</div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>상호명 <span class="req">*</span></label>
+          <input type="text" placeholder="상호명 입력">
+        </div>
+        <div class="field">
+          <label>대표자명 <span class="req">*</span></label>
+          <input type="text" placeholder="대표자 이름">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>담당자 연락처 <span class="req">*</span></label>
+          <input type="tel" placeholder="010-0000-0000">
+        </div>
+        <div class="field">
+          <label>담당자 이메일 <span class="req">*</span></label>
+          <input type="email" placeholder="example@company.com">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 완료 모달 -->
+  <div id="complete-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:20px; width:360px; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,.2); text-align:center;">
+      <div style="background: linear-gradient(135deg,#1a1a2e,#e94560); padding:36px 24px 28px;">
+        <div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:28px;">✓</div>
+        <div style="color:#fff;font-size:18px;font-weight:800;">신청 접수 완료</div>
+      </div>
+      <div style="padding:28px 28px 32px;">
+        <p style="font-size:14px;font-weight:700;color:#222;margin-bottom:10px;">신청 접수가 완료되었습니다.</p>
+        <p style="font-size:13px;color:#666;line-height:1.7;">영업일 기준 <b style="color:#e94560;">3일 이내</b>에<br>신청 내역에 대한 결과를<br>이메일로 안내해 드립니다.</p>
+        <button type="button" class="btn btn-primary" style="width:100%;margin-top:24px;" onclick="document.getElementById('complete-modal').style.display='none'">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASS 인증 모달 -->
+  <div id="pass-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:20px; width:340px; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,.2);">
+      <!-- 모달 헤더 -->
+      <div style="background:#005bea; padding:24px; text-align:center;">
+        <div style="color:#fff; font-size:22px; font-weight:800; letter-spacing:-0.5px;">PASS</div>
+        <div style="color:rgba(255,255,255,.8); font-size:12px; margin-top:4px;">본인인증 서비스</div>
+      </div>
+      <!-- 모달 바디 -->
+      <div style="padding:24px;">
+        <div style="font-size:13px; font-weight:600; color:#222; margin-bottom:16px;">휴대폰 번호로 인증하기</div>
+        <div class="field" style="margin-bottom:12px;">
+          <label>통신사 선택 <span class="req">*</span></label>
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="carrier-btn active" onclick="selectCarrier(this)">SKT</button>
+            <button type="button" class="carrier-btn" onclick="selectCarrier(this)">KT</button>
+            <button type="button" class="carrier-btn" onclick="selectCarrier(this)">LGU+</button>
+            <button type="button" class="carrier-btn" onclick="selectCarrier(this)">알뜰폰</button>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:12px;">
+          <label>이름 <span class="req">*</span></label>
+          <input type="text" id="modal-name" placeholder="실명 입력">
+        </div>
+        <div class="field" style="margin-bottom:12px;">
+          <label>생년월일 <span class="req">*</span></label>
+          <input type="text" id="modal-birth" placeholder="YYYYMMDD">
+        </div>
+        <div class="field" style="margin-bottom:20px;">
+          <label>휴대폰 번호 <span class="req">*</span></label>
+          <input type="tel" id="modal-phone" placeholder="010-0000-0000">
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn btn-outline" style="flex:1; padding:11px;" onclick="closePassModal()">취소</button>
+          <button type="button" class="btn btn-primary" style="flex:2; padding:11px; background:#005bea;" onclick="completePass()">인증하기</button>
+        </div>
+        <div style="font-size:11px; color:#999; text-align:center; margin-top:14px; line-height:1.5;">
+          인증 정보는 본인확인 목적으로만 사용되며<br>별도로 저장되지 않습니다.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: 서류 -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span> 서류 제출</div>
+
+    <div class="field">
+      <label>사업자등록증 <span class="req">*</span></label>
+      <div class="file-box">
+        <input type="file" accept=".pdf,.jpg,.png">
+        <div class="icon">📄</div>
+        <p><strong>클릭하여 파일 업로드</strong> 또는 드래그 앤 드롭</p>
+        <p>PDF, JPG, PNG (최대 10MB)</p>
+      </div>
+      <div class="file-tags">
+        <span class="file-tag"><span class="badge-req">필수</span> 사업자등록증</span>
+        <span class="file-tag">통신판매업 등록증 (해당 시)</span>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:20px;">
+      <label>통신판매업 등록증 <span style="color:#999; font-weight:400;">(선택)</span></label>
+      <div class="file-box">
+        <input type="file" accept=".pdf,.jpg,.png">
+        <div class="icon">📋</div>
+        <p><strong>클릭하여 파일 업로드</strong> 또는 드래그 앤 드롭</p>
+        <p>PDF, JPG, PNG (최대 10MB)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: 카테고리 -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span> 취급 카테고리</div>
+    <div class="notice-box" style="margin-bottom:16px;">
+      <b>⚠ MVP 제외 카테고리:</b> 무형상품은 현재 신청이 제한됩니다.
+    </div>
+    <div class="field">
+      <label>주요 취급 카테고리 <span class="req">*</span> <span style="color:#999;font-weight:400;">(중복 선택 가능)</span></label>
+      <div class="check-group">
+        <label><input type="checkbox"> 패션/의류</label>
+        <label><input type="checkbox"> 식품/건강</label>
+        <label><input type="checkbox"> 뷰티/화장품</label>
+        <label><input type="checkbox"> 생활/가전</label>
+        <label><input type="checkbox"> 유아/완구</label>
+        <label><input type="checkbox"> 스포츠/레저</label>
+        <label><input type="checkbox"> 반려동물</label>
+        <label><input type="checkbox"> 기타</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>주요 상품군 설명</label>
+      <textarea placeholder="취급하시는 주요 상품을 간략히 설명해 주세요."></textarea>
+    </div>
+  </div>
+
+  <!-- STEP 4: 판매 정보 -->
+  <div class="card">
+    <div class="card-title"><span class="dot"></span> 판매 구조 및 거래 정보</div>
+
+    <div class="field">
+      <label>현재 판매 채널 <span class="req">*</span> <span style="color:#999;font-weight:400;">(중복 선택 가능)</span></label>
+      <div class="check-group">
+        <label><input type="checkbox"> 자사몰</label>
+        <label><input type="checkbox"> 오프라인 매장</label>
+        <label><input type="checkbox"> SNS 마켓</label>
+        <label><input type="checkbox"> 오픈마켓</label>
+        <label><input type="checkbox"> 홈쇼핑</label>
+        <label><input type="checkbox"> 기타</label>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>월 평균 거래액 <span class="req">*</span></label>
+        <select>
+          <option value="">선택해 주세요</option>
+          <option>1,000만원 미만</option>
+          <option>1,000만원 ~ 5,000만원</option>
+          <option>5,000만원 ~ 1억원</option>
+          <option>1억원 ~ 5억원</option>
+          <option>5억원 이상</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>주간 방송 예상 횟수 <span class="req">*</span></label>
+        <select>
+          <option value="">선택해 주세요</option>
+          <option>주 1~2회</option>
+          <option>주 3~5회</option>
+          <option>주 6~10회</option>
+          <option>주 10회 이상</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>추가 메모 <span style="color:#999;font-weight:400;">(선택)</span></label>
+      <textarea placeholder="서비스 신청 관련 추가적으로 전달하고 싶은 내용을 입력해 주세요."></textarea>
+    </div>
+  </div>
+
+  <!-- 약관 동의 -->
+  <div class="card" style="padding:20px 32px;">
+    <div class="check-group" style="flex-direction:column; gap:10px;">
+      <label style="border:none; padding:0; background:none;">
+        <input type="checkbox"> <span style="font-size:13px;">[필수] 서비스 이용약관에 동의합니다.</span>
+      </label>
+      <label style="border:none; padding:0; background:none;">
+        <input type="checkbox"> <span style="font-size:13px;">[필수] 개인정보 수집 및 이용에 동의합니다.</span>
+      </label>
+      <label style="border:none; padding:0; background:none;">
+        <input type="checkbox"> <span style="font-size:13px;">[선택] 마케팅 정보 수신에 동의합니다.</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="btn-wrap">
+    <button class="btn btn-outline">임시 저장</button>
+    <button class="btn btn-primary" onclick="document.getElementById('complete-modal').style.display='flex'">신청서 제출하기 →</button>
+  </div>
+</div>
+
+</body>
+<script>
+function selectChip(el) {
+  el.closest('.chip-group').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const isPersonal = el.textContent.includes('개인');
+  document.getElementById('form-biz').style.display = isPersonal ? 'none' : 'block';
+  document.getElementById('form-personal').style.display = isPersonal ? 'block' : 'none';
+}
+
+function openPassModal() {
+  const modal = document.getElementById('pass-modal');
+  modal.style.display = 'flex';
+}
+
+function closePassModal() {
+  document.getElementById('pass-modal').style.display = 'none';
+}
+
+function completePass() {
+  const name = document.getElementById('modal-name').value.trim();
+  if (!name) { alert('이름을 입력해 주세요.'); return; }
+  document.getElementById('personal-name').value = name;
+  const btn = document.querySelector('.btn-verify');
+  btn.textContent = '✓ 인증완료';
+  btn.classList.add('verified');
+  btn.disabled = true;
+  closePassModal();
+}
+
+function selectCarrier(el) {
+  el.closest('div').querySelectorAll('.carrier-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+</html>
