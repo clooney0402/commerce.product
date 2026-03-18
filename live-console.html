@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Grip SE · 라이브 콘솔</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',Arial,sans-serif;background:#f4f5f7;color:#111;display:flex;height:100vh;overflow:hidden;font-size:13px}
+
+/* ── Sidebar ── */
+.sidebar{width:220px;background:#0d0f14;color:#ccc;display:flex;flex-direction:column;flex-shrink:0;height:100vh;overflow-y:auto}
+.sidebar-logo{padding:22px 20px 18px;border-bottom:1px solid #1f2230}
+.logo-badge{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:8px;padding:7px 12px}
+.logo-badge .brand{font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.5px}
+.logo-badge .tag{background:#7c3aed;color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;letter-spacing:.5px}
+.nav-section{padding:14px 0 6px}
+.nav-label{font-size:9px;font-weight:700;color:#555;letter-spacing:1px;padding:0 20px 6px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:#aaa;cursor:pointer;border-left:3px solid transparent;transition:all .15s;text-decoration:none}
+.nav-item:hover{background:#1e2330;color:#e5e7eb}
+.nav-item.active{background:#1a1260;color:#a78bfa;border-left-color:#7c3aed;font-weight:600}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── Global Live Banner ── */
+.global-live-bar{background:linear-gradient(90deg,#1a0533,#2d1060);border-bottom:1px solid #4c1d95;padding:0 28px;height:44px;display:none;align-items:center;justify-content:space-between;flex-shrink:0}
+.global-live-bar.visible{display:flex}
+.on-air-pill{display:inline-flex;align-items:center;gap:5px;background:#ef4444;color:#fff;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;letter-spacing:.5px}
+.on-air-pip{width:6px;height:6px;border-radius:50%;background:#fff;animation:pip 1s infinite}
+@keyframes pip{0%,100%{opacity:1}50%{opacity:.3}}
+.glb-id{font-size:12px;color:#c4b5fd;font-weight:600}
+.glb-timer{font-size:13px;font-weight:800;color:#fff;letter-spacing:1px;font-variant-numeric:tabular-nums}
+.glb-title{font-size:12px;color:#a78bfa}
+.btn-open-console{display:inline-flex;align-items:center;gap:6px;background:#7c3aed;color:#fff;border:none;border-radius:7px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.btn-open-console:hover{opacity:.85}
+.pulse-dot{width:7px;height:7px;border-radius:50%;background:#ff6b6b;animation:pip 1s infinite}
+
+/* ── Topbar ── */
+.topbar{background:#fff;border-bottom:1px solid #e8eaee;padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-title{font-size:17px;font-weight:700;color:#111}
+.topbar-right{display:flex;align-items:center;gap:14px}
+.topbar-date{font-size:12px;color:#888}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer}
+
+/* ── Page Content ── */
+.content{flex:1;overflow-y:auto;padding:24px 28px;display:flex;flex-direction:column;gap:18px}
+.stats-row{display:flex;gap:14px}
+.stat-card{flex:1;background:#fff;border-radius:10px;padding:16px 20px;border:1px solid #e8eaee;display:flex;flex-direction:column;gap:4px;transition:box-shadow .15s}
+.stat-card.clickable{cursor:pointer}
+.stat-card.clickable:hover{box-shadow:0 0 0 2px #c4b5fd}
+.stat-label{font-size:11px;color:#888;font-weight:500}
+.stat-value{font-size:22px;font-weight:800;color:#111}
+.stat-card.accent .stat-value{color:#7c3aed}
+/* Dual-value stat card */
+.stat-dual-row{display:flex;gap:16px;margin-top:6px}
+.stat-dual-item{display:flex;flex-direction:column;gap:2px}
+.stat-dual-item-label{font-size:10px;color:#bbb;font-weight:500}
+.stat-dual-item-value{font-size:18px;font-weight:800;color:#111}
+.stat-dual-item-value.c-purple{color:#7c3aed}
+.stat-dual-item-value.c-red{color:#ef4444}
+.stat-dual-divider{width:1px;background:#f0f0f0;align-self:stretch;margin:2px 0}
+.list-card{background:#fff;border-radius:10px;border:1px solid #e8eaee}
+
+/* ── No Live / Active card ── */
+.no-live-card{background:#fff;border-radius:12px;border:1.5px dashed #d1d5db;padding:24px;display:flex;align-items:center;gap:20px}
+.no-live-icon{font-size:36px}
+.no-live-title{font-size:14px;font-weight:700;color:#374151;margin-bottom:4px}
+.no-live-sub{font-size:12px;color:#9ca3af;line-height:1.6}
+.simulate-btn{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.simulate-btn:hover{opacity:.88}
+.live-active-card{background:linear-gradient(135deg,#f3f0ff,#ede9fe);border-radius:12px;border:1.5px solid #c4b5fd;padding:20px 24px;display:none;align-items:center;gap:16px}
+
+/* ── Section header ── */
+.sec-header{display:flex;align-items:center;justify-content:space-between}
+.sec-title{font-size:13px;font-weight:700;color:#111}
+.sec-link{display:flex;align-items:center;gap:4px;background:none;border:none;color:#7c3aed;font-size:12px;font-weight:600;cursor:pointer;padding:4px 0}
+.sec-link:hover{text-decoration:underline}
+
+/* ── History table ── */
+.ht{width:100%;border-collapse:collapse;font-size:12px}
+.ht th{background:#f8f9fb;color:#888;font-weight:600;padding:10px 14px;border-bottom:1px solid #f0f0f0;text-align:center;white-space:nowrap}
+.ht th:nth-child(2){text-align:left}
+.ht td{padding:11px 14px;border-bottom:1px solid #f8f9f8;color:#444;text-align:center;white-space:nowrap;vertical-align:middle}
+.ht td:nth-child(2){text-align:left;font-weight:600;color:#111}
+.ht tr:last-child td{border-bottom:none}
+.ht tr:hover td{background:#faf8ff}
+.ht-link{color:#7c3aed;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.ht-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.ht-ended{background:#f1f5f9;color:#64748b}
+.empty-state{text-align:center;padding:52px 20px}
+.empty-state .ei{font-size:28px;margin-bottom:8px}
+.empty-state .et{font-size:13px;font-weight:600;color:#bbb}
+.empty-state .es{font-size:12px;color:#ccc;margin-top:4px}
+
+/* ════════════════════════════
+   MODAL
+════════════════════════════ */
+.modal-backdrop{position:fixed;inset:0;background:rgba(10,8,20,.72);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.modal-backdrop.open{display:flex}
+.modal{width:92vw;max-width:1320px;height:90vh;background:#f4f5f7;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.45);animation:modalIn .2s cubic-bezier(.34,1.26,.64,1)}
+@keyframes modalIn{from{transform:scale(.96) translateY(12px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+
+.modal-header{background:#0d0f14;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid #1f2230}
+.mh-left{display:flex;align-items:center;gap:14px}
+.mh-logo{display:inline-flex;align-items:center;gap:6px;background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.4);border-radius:7px;padding:5px 10px}
+.mh-logo span{font-size:13px;font-weight:800;color:#a78bfa}
+.mh-live-id{font-size:12px;color:#c4b5fd;font-weight:600}
+.mh-sep{color:#333;font-size:14px}
+.mh-title{font-size:13px;color:#9ca3af;font-weight:500}
+.mh-on-air{display:inline-flex;align-items:center;gap:5px;background:#ef4444;color:#fff;font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px}
+.mh-on-pip{width:6px;height:6px;border-radius:50%;background:#fff;animation:pip 1s infinite}
+.mh-timer{font-size:14px;font-weight:800;color:#fff;letter-spacing:1.5px;font-variant-numeric:tabular-nums;min-width:72px}
+.mh-right{display:flex;align-items:center;gap:10px}
+.mh-start-info{font-size:11px;color:#6b7280}
+.btn-end-live{display:inline-flex;align-items:center;gap:6px;background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.3);border-radius:7px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-end-live:hover{background:rgba(239,68,68,.28);border-color:#f87171}
+.btn-modal-close{width:32px;height:32px;border-radius:7px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#9ca3af;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;line-height:1}
+.btn-modal-close:hover{background:rgba(255,255,255,.12);color:#fff}
+
+.modal-subnav{background:#fff;border-bottom:1px solid #e8eaee;padding:0 24px;display:flex;align-items:center;gap:0;flex-shrink:0}
+.m-tab{padding:13px 16px;font-size:13px;color:#888;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;font-weight:500}
+.m-tab:hover{color:#7c3aed}
+.m-tab.active{color:#7c3aed;font-weight:700;border-bottom-color:#7c3aed}
+
+.modal-body{flex:1;overflow:hidden;display:flex;flex-direction:column}
+
+/* ── Console tab layout ── */
+#mtConsole{flex:1;display:flex;flex-direction:row;overflow:hidden;min-height:0}
+#mtHistory{flex:1;overflow-y:auto;padding:20px 24px}
+
+/* ── Left column (video + products + game) ── */
+.mc-left{width:256px;flex-shrink:0;background:#0d0f14;display:flex;flex-direction:column;overflow-y:auto;border-right:1px solid #1f2230}
+
+/* Video Preview */
+.vid-offline{width:100%;height:188px;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;flex-shrink:0}
+.vid-offline-icon{font-size:26px;opacity:.25}
+.vid-offline-text{font-size:10px;color:#444;font-weight:600;letter-spacing:.5px}
+.vid-inner{width:100%;height:188px;background:linear-gradient(175deg,#0f0520 0%,#1a0533 55%,#070010 100%);position:relative;overflow:hidden;display:none;flex-direction:column;justify-content:space-between;padding:10px;flex-shrink:0}
+.vid-inner::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.012) 2px,rgba(255,255,255,.012) 4px);pointer-events:none}
+.vid-top{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.vid-live-pill{display:inline-flex;align-items:center;gap:4px;background:#ef4444;color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px}
+.vid-pip{width:5px;height:5px;border-radius:50%;background:#fff;animation:pip 1s infinite}
+.vid-timer-txt{font-size:10px;font-weight:800;color:rgba(255,255,255,.75);letter-spacing:1px;font-variant-numeric:tabular-nums}
+.vid-mid{flex:1;display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+.vid-bars{display:flex;align-items:flex-end;gap:3px;height:44px}
+.vid-bar{width:4px;background:rgba(124,58,237,.55);border-radius:2px;animation:vbar var(--d,1.2s) ease-in-out infinite alternate}
+@keyframes vbar{from{height:20%}to{height:100%}}
+.vid-bottom{position:relative;z-index:1}
+.vid-show-title{font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.9);line-height:1.3;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vid-show-id{font-size:9px;color:rgba(255,255,255,.35)}
+
+/* Left sections */
+.mc-left-sec{border-top:1px solid #1f2230}
+.mc-left-sec-hd{display:flex;align-items:center;justify-content:space-between;padding:9px 14px 5px;font-size:9px;font-weight:700;color:#6b7280;letter-spacing:.8px;text-transform:uppercase}
+.mc-left-sec-act{font-size:10px;color:#7c3aed;cursor:pointer;font-weight:600;text-transform:none;letter-spacing:0}
+.mc-left-sec-act:hover{color:#a78bfa}
+
+/* Left product mini-list */
+.lp-row{display:flex;align-items:center;gap:8px;padding:6px 14px;cursor:pointer;transition:background .12s}
+.lp-row:hover{background:#141728}
+.lp-row.on{background:#1a1260}
+.lp-thumb{width:28px;height:28px;border-radius:5px;background:#1f2230;border:1px solid #2d3148;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.lp-info{flex:1;min-width:0}
+.lp-name{font-size:10px;color:#d1d5db;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
+.lp-price{font-size:10px;color:#a78bfa;font-weight:700;margin-top:1px}
+.lp-on-dot{width:6px;height:6px;border-radius:50%;background:#ef4444;flex-shrink:0;animation:pip 1s infinite}
+
+/* Left game quick */
+.lg-body{padding:8px 14px 12px}
+.lg-types{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.lg-btn{padding:3px 8px;border-radius:10px;border:1px solid #2d3148;font-size:10px;color:#9ca3af;cursor:pointer;background:transparent;transition:all .12s;font-family:inherit}
+.lg-btn:hover{border-color:#7c3aed;color:#a78bfa}
+.lg-btn.active{background:#7c3aed;color:#fff;border-color:#7c3aed;font-weight:700}
+.lg-start{width:100%;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;border-radius:6px;padding:7px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+.lg-start:hover{opacity:.9}
+
+/* ── Right section ── */
+.mc-right{flex:1;display:flex;flex-direction:column;overflow:hidden;background:#f4f5f7;min-width:0}
+
+/* Stats bar */
+.mc-stats-bar{background:#fff;border-bottom:1px solid #e8eaee;padding:10px 16px;display:flex;gap:0;flex-shrink:0;overflow-x:auto}
+.mc-stat-item{flex:1;min-width:76px;padding:0 10px;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;gap:1px}
+.mc-stat-item:first-child{padding-left:0}
+.mc-stat-item:last-child{border-right:none}
+.mc-stat-lbl{font-size:10px;color:#888;font-weight:500;white-space:nowrap}
+.mc-stat-val{font-size:15px;font-weight:800;color:#111;font-variant-numeric:tabular-nums}
+.mc-stat-val.c-blue{color:#2563eb}
+.mc-stat-val.c-purple{color:#7c3aed}
+.mc-stat-val.c-red{color:#ef4444}
+.mc-stat-val.c-green{color:#16a34a}
+.mc-stat-unit{font-size:9px;color:#aaa}
+
+/* Content area */
+.mc-content{flex:1;display:flex;overflow:hidden;padding:12px;gap:10px;min-height:0}
+.mc-prod-col{flex:1;min-width:0;overflow-y:auto;display:flex;flex-direction:column}
+.mc-chat-col{width:272px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;overflow:hidden;min-height:0}
+
+/* ── Panel ── */
+.panel{background:#fff;border-radius:12px;border:1px solid #e8eaee;overflow:hidden;display:flex;flex-direction:column}
+.ph{padding:12px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ph-title{font-size:13px;font-weight:700;color:#111;display:flex;align-items:center;gap:7px}
+.ph-action{font-size:11px;color:#7c3aed;font-weight:600;cursor:pointer}
+.ph-action:hover{text-decoration:underline}
+.pb{padding:14px 16px;flex:1}
+
+/* Product table */
+.pt{width:100%;border-collapse:collapse;font-size:11px}
+.pt th{background:#f8f9fb;color:#888;font-weight:600;padding:8px 10px;border-bottom:1px solid #f0f0f0;text-align:center;white-space:nowrap;font-size:10px;position:sticky;top:0;z-index:1}
+.pt th:nth-child(2){text-align:left}
+.pt td{padding:9px 10px;border-bottom:1px solid #f8f9f8;color:#444;text-align:center;white-space:nowrap;vertical-align:middle}
+.pt td:nth-child(2){text-align:left;font-weight:600;color:#111}
+.pt tr:last-child td{border-bottom:none}
+.pt tr:hover td{background:#faf8ff}
+.pt-on-badge{display:inline-flex;align-items:center;gap:3px;background:#fee2e2;color:#b91c1c;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px}
+.pt-ready{background:#ede9fe;color:#6d28d9;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px;display:inline-block}
+.pt-sales{font-weight:700;color:#7c3aed}
+.pt-thumb{width:30px;height:30px;border-radius:6px;background:#f4f5f7;border:1px solid #e8eaee;display:flex;align-items:center;justify-content:center;font-size:16px;margin:0 auto}
+
+/* Chat */
+.chat-subtabs{display:flex;border-bottom:1px solid #f0f0f0;padding:0 12px;flex-shrink:0}
+.cst{padding:8px 10px;font-size:11px;color:#888;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.cst:hover{color:#7c3aed}
+.cst.active{color:#7c3aed;font-weight:700;border-bottom-color:#7c3aed}
+.chat-area{flex:1;overflow-y:auto}
+.chat-msg{padding:6px 12px;border-bottom:1px solid #f9f9f9;display:flex;align-items:flex-start;gap:7px}
+.chat-nick{font-size:11px;font-weight:700;color:#7c3aed;flex-shrink:0;min-width:52px}
+.chat-nick.seller{color:#ef4444}
+.chat-text{font-size:11px;color:#333;flex:1;line-height:1.4}
+.chat-time{font-size:10px;color:#d1d5db;flex-shrink:0}
+.chat-input-row{display:flex;gap:7px;padding:8px 12px;border-top:1px solid #f0f0f0;flex-shrink:0}
+.chat-input{flex:1;border:1px solid #e0e0e0;border-radius:7px;padding:6px 9px;font-size:11px;outline:none}
+.chat-input:focus{border-color:#7c3aed}
+.chat-send{background:#7c3aed;color:#fff;border:none;border-radius:7px;padding:0 12px;font-size:11px;font-weight:700;cursor:pointer}
+.notice-list{display:flex;flex-direction:column;gap:5px;padding:10px 12px;overflow-y:auto;flex:1}
+.notice-item{background:#f8f9fb;border-radius:7px;padding:8px 10px;border:1px solid #f0f0f0}
+.notice-text{font-size:11px;color:#333;line-height:1.5}
+.notice-meta{font-size:10px;color:#aaa;margin-top:2px}
+.notice-input-row{display:flex;gap:7px;padding:8px 12px;border-top:1px solid #f0f0f0;flex-shrink:0}
+.notice-input{flex:1;border:1px solid #e0e0e0;border-radius:7px;padding:6px 9px;font-size:11px;outline:none}
+.notice-input:focus{border-color:#7c3aed}
+.notice-post{background:#7c3aed;color:#fff;border:none;border-radius:7px;padding:0 12px;font-size:11px;font-weight:700;cursor:pointer}
+
+/* Memo */
+.memo-ta{width:100%;min-height:68px;border:1px solid #e8eaee;border-radius:8px;padding:9px 11px;font-size:12px;font-family:inherit;resize:none;outline:none}
+.memo-ta:focus{border-color:#7c3aed}
+.memo-foot{display:flex;justify-content:space-between;align-items:center;margin-top:5px}
+.memo-cnt{font-size:10px;color:#aaa}
+.memo-save{background:#f4f5f7;border:1px solid #e0e0e0;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-weight:600;color:#555}
+.memo-save:hover{border-color:#7c3aed;color:#7c3aed}
+
+/* Disabled overlay */
+.dis-wrap{position:relative}
+.dis-wrap.off::after{content:'앱에서 방송을 시작하면 활성화됩니다';position:absolute;inset:0;background:rgba(255,255,255,.88);display:flex;align-items:center;justify-content:center;font-size:11px;color:#aaa;font-weight:600;border-radius:inherit;backdrop-filter:blur(1px);z-index:10}
+
+/* History */
+.ht{width:100%;border-collapse:collapse;font-size:12px}
+.ht th{background:#f8f9fb;color:#888;font-weight:600;padding:10px 14px;border-bottom:1px solid #f0f0f0;text-align:center;white-space:nowrap}
+.ht th:nth-child(2){text-align:left}
+.ht td{padding:11px 14px;border-bottom:1px solid #f8f9f8;color:#444;text-align:center;white-space:nowrap;vertical-align:middle}
+.ht td:nth-child(2){text-align:left;font-weight:600;color:#111}
+.ht tr:last-child td{border-bottom:none}
+.ht tr:hover td{background:#faf8ff}
+.ht-link{color:#7c3aed;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.ht-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.ht-ended{background:#f1f5f9;color:#64748b}
+.list-card{background:#fff;border-radius:10px;border:1px solid #e8eaee}
+.empty-state{text-align:center;padding:52px 20px}
+.empty-state .ei{font-size:28px;margin-bottom:8px}
+.empty-state .et{font-size:13px;font-weight:600;color:#bbb}
+.empty-state .es{font-size:12px;color:#ccc;margin-top:4px}
+
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:#e0d9f7;border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- ══ Sidebar ══ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge"><span class="brand">Grip</span><span class="tag">SE</span></div>
+  </div>
+  <nav class="nav-section">
+    <div class="nav-label">메뉴</div>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>홈
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>기본정보
+    </a>
+    <a class="nav-item active" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.069A1 1 0 0121 8.914V15.086a1 1 0 01-1.447.893L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>라이브 콘솔
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>상품 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>쿠폰 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>주문 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>발주 / 배송 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>팔로우(회원) 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>1:1문의
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>정산관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>통계
+    </a>
+  </nav>
+</aside>
+
+<!-- ══ Main ══ -->
+<div class="main">
+
+  <!-- Global Live Banner -->
+  <div class="global-live-bar" id="globalBar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="on-air-pill"><span class="on-air-pip"></span>ON AIR</span>
+      <span class="glb-id" id="glbId"></span>
+      <span style="color:#4c1d95">|</span>
+      <span class="glb-title" id="glbTitle"></span>
+      <span style="color:#4c1d95">|</span>
+      <span class="glb-timer" id="glbTimer">00:00:00</span>
+    </div>
+    <button class="btn-open-console" onclick="openConsole()">
+      <span class="pulse-dot"></span> 콘솔 열기
+    </button>
+  </div>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <span class="topbar-title">라이브 콘솔</span>
+    <div class="topbar-right">
+      <span class="topbar-date" id="todayLabel"></span>
+      <div class="avatar">S</div>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+  <div class="content">
+
+    <!-- No live / Live active card -->
+    <div class="no-live-card" id="noLiveCard">
+      <span class="no-live-icon">📡</span>
+      <div style="flex:1">
+        <div class="no-live-title">현재 진행 중인 라이브가 없습니다</div>
+        <div class="no-live-sub">셀러 앱에서 방송을 시작하면 라이브 콘솔이 활성화됩니다.</div>
+      </div>
+      <button class="simulate-btn" onclick="simulateLiveStart()">📲 앱 방송 시작 시뮬레이션</button>
+    </div>
+
+    <div class="live-active-card" id="liveActiveCard">
+      <span style="font-size:28px">🔴</span>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:800;color:#6d28d9;margin-bottom:3px" id="activeTitle"></div>
+        <div style="font-size:12px;color:#8b5cf6">방송 ID: <strong id="activeId"></strong> · 시작: <span id="activeStart"></span></div>
+      </div>
+      <button class="btn-open-console" onclick="openConsole()" style="background:linear-gradient(135deg,#7c3aed,#4f46e5)">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        라이브 콘솔 열기
+      </button>
+    </div>
+
+    <!-- 라이브 콘솔 Stats -->
+    <div>
+      <span style="font-size:13px;font-weight:700;color:#111">라이브 현황</span>
+    </div>
+    <div class="stats-row">
+      <!-- 실시간 접속 -->
+      <div class="stat-card clickable" onclick="openConsole()">
+        <div class="stat-label">실시간 접속</div>
+        <div class="stat-value" id="pg-access" style="color:#2563eb">-</div>
+        <div style="font-size:10px;color:#aaa">명</div>
+      </div>
+      <!-- 누적 시청수 -->
+      <div class="stat-card clickable" onclick="openConsole()">
+        <div class="stat-label">누적 시청수</div>
+        <div class="stat-value" id="pg-cumul">-</div>
+        <div style="font-size:10px;color:#aaa">명</div>
+      </div>
+      <!-- 팔로우수 신규/누적 -->
+      <div class="stat-card clickable" onclick="openConsole()">
+        <div class="stat-label">팔로우수</div>
+        <div class="stat-dual-row">
+          <div class="stat-dual-item">
+            <div class="stat-dual-item-label">신규</div>
+            <div class="stat-dual-item-value c-purple" id="pg-follow-new">-</div>
+          </div>
+          <div class="stat-dual-divider"></div>
+          <div class="stat-dual-item">
+            <div class="stat-dual-item-label">누적</div>
+            <div class="stat-dual-item-value" id="pg-follow-total">-</div>
+          </div>
+        </div>
+      </div>
+      <!-- 라이브 주문 건수/금액 -->
+      <div class="stat-card clickable" onclick="openConsole()">
+        <div class="stat-label">라이브 주문</div>
+        <div class="stat-dual-row">
+          <div class="stat-dual-item">
+            <div class="stat-dual-item-label">건수</div>
+            <div class="stat-dual-item-value c-red" id="pg-orders">-</div>
+          </div>
+          <div class="stat-dual-divider"></div>
+          <div class="stat-dual-item">
+            <div class="stat-dual-item-label">금액</div>
+            <div class="stat-dual-item-value c-purple" id="pg-sales">-</div>
+          </div>
+        </div>
+      </div>
+      <!-- 결제완료 주문건 건수/금액 -->
+      <div class="stat-card clickable" onclick="openConsole()">
+        <div class="stat-label">결제완료 주문건</div>
+        <div class="stat-dual-row">
+          <div class="stat-dual-item">
+            <div class="stat-dual-item-label">건수</div>
+            <div class="stat-dual-item-value" id="pg-paid-orders">-</div>
+          </div>
+          <div class="stat-dual-divider"></div>
+          <div class="stat-dual-item">
+            <div class="stat-dual-item-label">금액</div>
+            <div class="stat-dual-item-value c-purple" id="pg-paid-sales">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 방송 이력 -->
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:13px;font-weight:700;color:#111">방송 이력</span>
+      <button class="sec-link" onclick="openConsoleHistory()">전체 보기 <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+    <div class="list-card">
+      <div style="overflow-x:auto">
+        <table class="ht"><thead><tr>
+          <th>방송 ID</th><th>방송 제목</th><th>시작일시</th><th>종료일시</th>
+          <th>방송시간</th><th>최대 접속</th><th>누적 시청</th><th>매출</th><th>주문</th><th>상태</th>
+        </tr></thead><tbody id="pageHistBody"></tbody></table>
+      </div>
+      <div id="pageHistEmpty" class="empty-state" style="display:none">
+        <div class="ei">📋</div><div class="et">방송 이력이 없습니다</div><div class="es">첫 라이브를 시작해 보세요!</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ MODAL ══ -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="handleBackdropClick(event)">
+  <div class="modal" id="theModal">
+
+    <div class="modal-header">
+      <div class="mh-left">
+        <div class="mh-logo"><span>Grip SE</span></div>
+        <span class="mh-sep">·</span>
+        <span class="mh-live-id" id="mhId">-</span>
+        <span class="mh-sep">·</span>
+        <span class="mh-title" id="mhTitle">-</span>
+        <span class="mh-on-air" id="mhStatus" style="display:none"><span class="mh-on-pip"></span>ON AIR</span>
+        <span id="mhStatusOff" style="display:none;background:#374151;color:#9ca3af;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px">방송 없음</span>
+      </div>
+      <div class="mh-right">
+        <span class="mh-timer" id="mhTimer">00:00:00</span>
+        <span class="mh-start-info" id="mhStart"></span>
+        <button class="btn-end-live" id="btnEndLive" onclick="confirmEndLive()" style="display:none">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor"/><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor"/></svg>방송 종료
+        </button>
+        <button class="btn-modal-close" onclick="closeConsole()" title="콘솔 닫기 (방송 유지)">✕</button>
+      </div>
+    </div>
+
+    <div class="modal-subnav">
+      <div class="m-tab active" onclick="setMTab(this,'console')">라이브 콘솔</div>
+      <div class="m-tab" onclick="setMTab(this,'history')">방송 이력</div>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- ══ console tab ══ -->
+      <div id="mtConsole">
+
+        <!-- ── Left column: Video + Products + Game ── -->
+        <div class="mc-left">
+
+          <!-- Video area -->
+          <div class="vid-offline" id="vidOffline">
+            <div class="vid-offline-icon">📡</div>
+            <div class="vid-offline-text">방송 대기 중</div>
+          </div>
+          <div class="vid-inner" id="vidInner">
+            <div class="vid-top">
+              <span class="vid-live-pill"><span class="vid-pip"></span>LIVE</span>
+              <span class="vid-timer-txt" id="vidTimer">00:00:00</span>
+            </div>
+            <div class="vid-mid">
+              <div class="vid-bars" id="vidBars"></div>
+            </div>
+            <div class="vid-bottom">
+              <div class="vid-show-title" id="vidTitle2">-</div>
+              <div class="vid-show-id" id="vidId2">-</div>
+            </div>
+          </div>
+
+          <!-- Product mini list -->
+          <div class="mc-left-sec">
+            <div class="mc-left-sec-hd">
+              <span>한정판매</span>
+              <span class="mc-left-sec-act">+ 추가</span>
+            </div>
+            <div id="leftProdList"></div>
+          </div>
+
+          <!-- Game quick controls -->
+          <div class="mc-left-sec">
+            <div class="mc-left-sec-hd"><span>게임 / 이벤트</span></div>
+            <div class="lg-body">
+              <div class="lg-types">
+                <button class="lg-btn active" onclick="setLG(this)">선착순</button>
+                <button class="lg-btn" onclick="setLG(this)">경매</button>
+                <button class="lg-btn" onclick="setLG(this)">OX</button>
+                <button class="lg-btn" onclick="setLG(this)">조성</button>
+                <button class="lg-btn" onclick="setLG(this)">주사위</button>
+              </div>
+              <button class="lg-start" onclick="startGame()">▶ 게임 시작</button>
+            </div>
+          </div>
+
+        </div><!-- /mc-left -->
+
+        <!-- ── Right section ── -->
+        <div class="mc-right">
+
+          <!-- No live notice banner -->
+          <div id="mNoLive" style="background:linear-gradient(90deg,#f8f9fb,#f3f4f6);border-bottom:1.5px dashed #d1d5db;padding:11px 18px;display:flex;align-items:center;gap:14px;flex-shrink:0">
+            <span style="font-size:22px">📲</span>
+            <div>
+              <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:2px">앱에서 방송을 시작해 주세요</div>
+              <div style="font-size:11px;color:#9ca3af">셀러 앱에서 방송을 시작하면 콘솔이 자동으로 활성화됩니다.</div>
+            </div>
+          </div>
+
+          <!-- Stats bar -->
+          <div class="mc-stats-bar dis-wrap" id="dpStats">
+            <div class="mc-stat-item">
+              <div class="mc-stat-lbl">실시간 접속</div>
+              <div><span class="mc-stat-val c-blue" id="st-access">-</span><span class="mc-stat-unit"> 명</span></div>
+            </div>
+            <div class="mc-stat-item">
+              <div class="mc-stat-lbl">누적 시청수</div>
+              <div><span class="mc-stat-val" id="st-cumul">-</span><span class="mc-stat-unit"> 명</span></div>
+            </div>
+            <div class="mc-stat-item">
+              <div class="mc-stat-lbl">시청 유지율</div>
+              <div><span class="mc-stat-val c-purple" id="st-retain">-</span><span class="mc-stat-unit"> %</span></div>
+            </div>
+            <div class="mc-stat-item">
+              <div class="mc-stat-lbl">팔로우 신규</div>
+              <div><span class="mc-stat-val" id="st-follow-new">-</span><span class="mc-stat-unit"> 명</span></div>
+            </div>
+            <div class="mc-stat-item">
+              <div class="mc-stat-lbl">팔로우 누적</div>
+              <div><span class="mc-stat-val" id="st-follow-total">-</span><span class="mc-stat-unit"> 명</span></div>
+            </div>
+            <div class="mc-stat-item">
+              <div class="mc-stat-lbl">라이브 주문</div>
+              <div><span class="mc-stat-val c-red" id="st-orders">-</span><span class="mc-stat-unit"> 건</span></div>
+            </div>
+            <div class="mc-stat-item">
+              <div class="mc-stat-lbl">라이브 주문 금액</div>
+              <div><span class="mc-stat-val c-purple" id="st-sales">-</span><span class="mc-stat-unit"> 원</span></div>
+            </div>
+            <div class="mc-stat-item">
+              <div class="mc-stat-lbl">결제완료</div>
+              <div><span class="mc-stat-val" id="st-paid-orders">-</span><span class="mc-stat-unit"> 건</span></div>
+            </div>
+            <div class="mc-stat-item">
+              <div class="mc-stat-lbl">결제완료 금액</div>
+              <div><span class="mc-stat-val c-green" id="st-paid-sales">-</span><span class="mc-stat-unit"> 원</span></div>
+            </div>
+          </div>
+
+          <!-- Content: product table + chat/memo -->
+          <div class="mc-content">
+
+            <!-- Product detail table -->
+            <div class="mc-prod-col">
+              <div class="panel dis-wrap" id="dpProd" style="flex:1;min-height:0">
+                <div class="ph">
+                  <span class="ph-title">🛒 한정판매 상품</span>
+                  <span class="ph-action">+ 상품 추가</span>
+                </div>
+                <div style="overflow-y:auto;flex:1">
+                  <table class="pt">
+                    <thead><tr>
+                      <th style="width:40px"></th>
+                      <th>상품명</th>
+                      <th>판매가</th>
+                      <th>재고수량</th>
+                      <th>실주문수량</th>
+                      <th>라이브 매출</th>
+                      <th>상태</th>
+                      <th>노출</th>
+                    </tr></thead>
+                    <tbody id="prodTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat + Memo column -->
+            <div class="mc-chat-col">
+
+              <!-- Chat panel -->
+              <div class="panel dis-wrap" id="dpChat" style="flex:1;min-height:0;overflow:hidden">
+                <div class="chat-subtabs">
+                  <div class="cst active" onclick="setChatTab(this,'chat')">채팅</div>
+                  <div class="cst" onclick="setChatTab(this,'notice')">공지</div>
+                  <div class="cst" onclick="setChatTab(this,'qna')">Q&amp;A</div>
+                </div>
+                <div id="ctChat" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0">
+                  <div class="chat-area" id="chatArea"></div>
+                  <div class="chat-input-row">
+                    <input class="chat-input" id="chatInp" placeholder="메시지 입력 (Enter)" maxlength="80" onkeydown="if(event.key==='Enter')sendChat()"/>
+                    <button class="chat-send" onclick="sendChat()">등록</button>
+                  </div>
+                </div>
+                <div id="ctNotice" style="display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0">
+                  <div class="notice-list" id="noticeList"></div>
+                  <div class="notice-input-row">
+                    <input class="notice-input" id="noticeInp" placeholder="공지 입력" onkeydown="if(event.key==='Enter')postNotice()"/>
+                    <button class="notice-post" onclick="postNotice()">등록</button>
+                  </div>
+                </div>
+                <div id="ctQna" style="display:none;flex:1;overflow:hidden;min-height:0">
+                  <div class="notice-list" id="qnaList"></div>
+                </div>
+              </div>
+
+              <!-- Memo panel -->
+              <div class="panel" style="flex-shrink:0">
+                <div class="ph"><span class="ph-title">📝 메모</span><span style="font-size:10px;color:#aaa">화면 표시 가능</span></div>
+                <div class="pb">
+                  <textarea class="memo-ta" id="memoTa" placeholder="방송 중 메모 (최대 100자)" maxlength="100"></textarea>
+                  <div class="memo-foot"><span class="memo-cnt" id="memoCnt">0 / 100</span><button class="memo-save" onclick="alert('저장되었습니다.')">저장</button></div>
+                </div>
+              </div>
+
+            </div><!-- /mc-chat-col -->
+
+          </div><!-- /mc-content -->
+
+        </div><!-- /mc-right -->
+
+      </div><!-- /mtConsole -->
+
+      <!-- ══ history tab ══ -->
+      <div id="mtHistory" style="display:none">
+        <div class="list-card">
+          <div style="padding:13px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between">
+            <span style="font-size:13px;font-weight:700;color:#111">📋 방송 이력</span>
+            <span style="font-size:11px;color:#aaa">최근 30일</span>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="ht"><thead><tr>
+              <th>방송 ID</th><th>방송 제목</th><th>시작일시</th><th>종료일시</th>
+              <th>방송시간</th><th>최대 접속</th><th>누적 시청</th><th>매출</th><th>주문</th><th>상태</th>
+            </tr></thead><tbody id="histBody"></tbody></table>
+            <div id="histEmpty" class="empty-state" style="display:none"><div class="ei">📋</div><div class="et">방송 이력이 없습니다</div><div class="es">첫 라이브를 시작해 보세요!</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function pad2(n){return String(n).padStart(2,'0')}
+function fmtDT(d){return`${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`}
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+
+const now0=new Date();
+document.getElementById('todayLabel').textContent=
+  `${now0.getFullYear()}.${pad2(now0.getMonth()+1)}.${pad2(now0.getDate())} (${['일','월','화','수','목','금','토'][now0.getDay()]})`;
+
+let isLive=false,liveStart=null,timerIv=null,statsIv=null,chatIv=null;
+const LIVE_ID='LIVE-20260317-001', LIVE_TITLE='일본 현지 방송 꼭 사세요!!';
+let sd={access:0,cumul:0,retain:0,sales:0,orders:0,follow:0};
+
+function simulateLiveStart(){
+  isLive=true; liveStart=new Date();
+  document.getElementById('globalBar').classList.add('visible');
+  document.getElementById('glbId').textContent=LIVE_ID;
+  document.getElementById('glbTitle').textContent=LIVE_TITLE;
+  document.getElementById('noLiveCard').style.display='none';
+  const ac=document.getElementById('liveActiveCard');
+  ac.style.display='flex';
+  document.getElementById('activeTitle').textContent=LIVE_TITLE;
+  document.getElementById('activeId').textContent=LIVE_ID;
+  document.getElementById('activeStart').textContent=fmtDT(liveStart);
+  // activate video preview
+  document.getElementById('vidOffline').style.display='none';
+  const vi=document.getElementById('vidInner');vi.style.display='flex';
+  document.getElementById('vidTitle2').textContent=LIVE_TITLE;
+  document.getElementById('vidId2').textContent=LIVE_ID;
+  timerIv=setInterval(tickTimer,1000);
+  statsIv=setInterval(updateStats,3500);
+  chatIv=setInterval(autoChat,4500);
+  updateStats(); setConsoleActive(true); renderPageHistory(); openConsole();
+}
+
+function tickTimer(){
+  if(!liveStart)return;
+  const s=Math.floor((Date.now()-liveStart)/1000);
+  const str=`${pad2(Math.floor(s/3600))}:${pad2(Math.floor(s/60)%60)}:${pad2(s%60)}`;
+  document.getElementById('glbTimer').textContent=str;
+  document.getElementById('mhTimer').textContent=str;
+  const vt=document.getElementById('vidTimer');if(vt)vt.textContent=str;
+}
+
+function confirmEndLive(){
+  if(!confirm('방송을 종료하시겠습니까?\n종료 후에는 다시 시작할 수 없습니다.'))return;
+  endLive();
+}
+function endLive(){
+  isLive=false;
+  clearInterval(timerIv);clearInterval(statsIv);clearInterval(chatIv);
+  const bar=document.getElementById('globalBar');
+  bar.style.background='#1f2937';bar.style.borderColor='#374151';
+  const pill=bar.querySelector('.on-air-pill');pill.innerHTML='● 방송 종료';pill.style.background='#6b7280';
+  document.getElementById('glbTimer').style.color='#9ca3af';
+  document.getElementById('mhStatus').style.display='none';
+  const off=document.getElementById('mhStatusOff');off.textContent='방송 종료';off.style.display='inline-flex';
+  document.getElementById('btnEndLive').style.display='none';
+  document.getElementById('liveActiveCard').style.display='none';
+  const nl=document.getElementById('noLiveCard');nl.style.display='flex';
+  nl.querySelector('.no-live-title').textContent='방송이 종료되었습니다';
+  nl.querySelector('.no-live-sub').textContent='방송 이력에서 상세 성과를 확인하세요.';
+  nl.querySelector('.simulate-btn').style.display='none';
+  // deactivate video preview
+  document.getElementById('vidOffline').style.display='flex';
+  document.getElementById('vidInner').style.display='none';
+  setConsoleActive(false); addHistory();
+  setMTab(document.querySelectorAll('.m-tab')[1],'history');
+}
+
+/* ── Modal ── */
+function openConsole(e){
+  if(e)e.preventDefault();
+  document.getElementById('modalBackdrop').classList.add('open');
+  if(isLive){
+    document.getElementById('mhId').textContent=LIVE_ID;
+    document.getElementById('mhTitle').textContent=LIVE_TITLE;
+    document.getElementById('mhStatus').style.display='inline-flex';
+    document.getElementById('mhStatusOff').style.display='none';
+    document.getElementById('mhStart').textContent='시작 '+fmtDT(liveStart);
+    document.getElementById('btnEndLive').style.display='inline-flex';
+    document.getElementById('mNoLive').style.display='none';
+  } else {
+    document.getElementById('mhId').textContent='방송 없음';
+    document.getElementById('mhTitle').textContent='셀러 앱에서 방송을 시작하세요';
+    document.getElementById('mhStatus').style.display='none';
+    document.getElementById('mhStatusOff').style.display='inline-flex';
+    document.getElementById('btnEndLive').style.display='none';
+    document.getElementById('mhStart').textContent='';
+    document.getElementById('mNoLive').style.display='flex';
+  }
+}
+function closeConsole(){document.getElementById('modalBackdrop').classList.remove('open');}
+function handleBackdropClick(e){if(e.target===document.getElementById('modalBackdrop'))closeConsole();}
+
+function setMTab(el,tab){
+  document.querySelectorAll('.m-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  document.getElementById('mtConsole').style.display=tab==='console'?'flex':'none';
+  document.getElementById('mtHistory').style.display=tab==='history'?'block':'none';
+  if(tab==='history')renderHistory();
+}
+
+function setConsoleActive(on){
+  ['dpStats','dpProd','dpChat'].forEach(id=>document.getElementById(id).classList.toggle('off',!on));
+  document.getElementById('mNoLive').style.display=on?'none':'flex';
+}
+setConsoleActive(false);
+
+/* ── Stats ── */
+function updateStats(){
+  if(!isLive)return;
+  sd.access     = rand(8,22);
+  sd.cumul      = (sd.cumul||0)+rand(1,6);
+  sd.retain     = rand(62,94);
+  sd.followNew  = (sd.followNew||0)+rand(0,2);
+  sd.followTotal= (sd.followTotal||0)+rand(0,2);
+  sd.orders     = (sd.orders||0)+rand(0,4);
+  sd.sales      = (sd.sales||0)+rand(0,200000);
+  sd.paidOrders = (sd.paidOrders||0)+rand(0,3);
+  sd.paidSales  = (sd.paidSales||0)+rand(0,150000);
+
+  // 모달 mini stats
+  const set=( id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('st-access',      sd.access.toLocaleString());
+  set('st-cumul',       sd.cumul.toLocaleString());
+  set('st-retain',      sd.retain);
+  set('st-follow-new',  '+'+sd.followNew.toLocaleString());
+  set('st-follow-total',sd.followTotal.toLocaleString());
+  set('st-orders',      sd.orders.toLocaleString());
+  set('st-sales',       sd.sales.toLocaleString());
+  set('st-paid-orders', sd.paidOrders.toLocaleString());
+  set('st-paid-sales',  sd.paidSales.toLocaleString());
+
+  // 페이지 카드
+  set('pg-access',      sd.access.toLocaleString());
+  set('pg-cumul',       sd.cumul.toLocaleString());
+  set('pg-follow-new',  '+'+sd.followNew.toLocaleString());
+  set('pg-follow-total',sd.followTotal.toLocaleString());
+  set('pg-orders',      sd.orders.toLocaleString());
+  set('pg-sales',       sd.sales.toLocaleString());
+  set('pg-paid-orders', sd.paidOrders.toLocaleString());
+  set('pg-paid-sales',  sd.paidSales.toLocaleString());
+
+}
+
+/* ── Products ── */
+const PRODS=[
+  {img:'🍊',name:'[단독] 제주 한라봉 5kg 특품',price:23000,orig:25556,stock:45,orders:12,on:true},
+  {img:'🥩',name:'국내산 갈비세트 선물용',price:79000,orig:85000,stock:20,orders:0,on:false},
+  {img:'🐷',name:'제주 흑돼지 삼겹살 1kg',price:27800,orig:29800,stock:50,orders:0,on:false},
+  {img:'🫙',name:'수제 들기름 400ml 2병',price:19800,orig:22000,stock:8,orders:0,on:false},
+];
+function renderProds(){
+  // Left mini list
+  document.getElementById('leftProdList').innerHTML=PRODS.map((p,i)=>`
+    <div class="lp-row${p.on?' on':''}" onclick="toggleProd(${i})">
+      <div class="lp-thumb">${p.img}</div>
+      <div class="lp-info">
+        <div class="lp-name">${p.name}</div>
+        <div class="lp-price">${p.price.toLocaleString()}원</div>
+      </div>
+      ${p.on?'<span class="lp-on-dot"></span>':''}
+    </div>`).join('');
+  // Right product table
+  document.getElementById('prodTableBody').innerHTML=PRODS.map((p,i)=>`
+    <tr>
+      <td><div class="pt-thumb">${p.img}</div></td>
+      <td>${p.name}</td>
+      <td style="color:#7c3aed;font-weight:700">${p.price.toLocaleString()}원<br><span style="font-size:10px;color:#ccc;text-decoration:line-through;font-weight:400">${p.orig.toLocaleString()}원</span></td>
+      <td>${p.stock}</td>
+      <td>${p.on?p.orders:0}</td>
+      <td class="pt-sales">${p.on?(p.orders*p.price).toLocaleString()+'원':'0원'}</td>
+      <td>${p.on?'<span class="pt-on-badge"><span style="width:4px;height:4px;border-radius:50%;background:#ef4444;display:inline-block;animation:pip 1s infinite;margin-right:1px"></span>판매중</span>':'<span class="pt-ready">판매대기</span>'}</td>
+      <td><button onclick="toggleProd(${i})" style="font-size:10px;padding:3px 8px;border-radius:6px;border:1px solid ${p.on?'#ef4444':'#c4b5fd'};background:${p.on?'#fee2e2':'#ede9fe'};color:${p.on?'#b91c1c':'#6d28d9'};cursor:pointer;font-family:inherit;font-weight:700">${p.on?'OFF':'ON'}</button></td>
+    </tr>`).join('');
+}
+function toggleProd(i){if(!isLive)return;PRODS[i].on=!PRODS[i].on;if(PRODS[i].on&&PRODS[i].orders===0)PRODS[i].orders=rand(1,8);renderProds();}
+renderProds();
+
+/* ── Chat ── */
+const NICKS=['감자맘','라이브팬','구매왕','먹방러버','살림고수','뷰티퀸','육아맘','다이어터'];
+const MSGS=['장바구니 담았어요!','지금 주문했어요~','가격 너무 좋다 ㅠ','재고 얼마 남았나요?','오늘만 이 가격인가요?','구매완료!','후회할까봐 지금 주문합니다 ㅋㅋ','이거 선물용으로도 좋겠다'];
+let chats=[];
+function addChat(nick,text,seller){
+  const t=new Date();chats.push({nick,text,seller,time:`${pad2(t.getHours())}:${pad2(t.getMinutes())}`});
+  if(chats.length>60)chats.shift();renderChat();
+}
+function renderChat(){
+  const el=document.getElementById('chatArea');
+  el.innerHTML=chats.map(c=>`<div class="chat-msg"><span class="chat-nick${c.seller?' seller':''}">${c.nick}</span><span class="chat-text">${c.text}</span><span class="chat-time">${c.time}</span></div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+function autoChat(){if(!isLive)return;addChat(NICKS[rand(0,NICKS.length-1)],MSGS[rand(0,MSGS.length-1)],false);}
+function sendChat(){const inp=document.getElementById('chatInp');if(!inp.value.trim())return;addChat('판매자',inp.value.trim(),true);inp.value='';}
+function setChatTab(el,tab){
+  document.querySelectorAll('.cst').forEach(t=>t.classList.remove('active'));el.classList.add('active');
+  document.getElementById('ctChat').style.display=tab==='chat'?'flex':'none';
+  document.getElementById('ctNotice').style.display=tab==='notice'?'flex':'none';
+  document.getElementById('ctQna').style.display=tab==='qna'?'flex':'none';
+}
+
+/* ── Notice ── */
+let notices=[{text:'한정 수량 특가 진행 중입니다! 빠르게 주문해 주세요 🔥',time:'10:12'}];
+function renderNotice(){document.getElementById('noticeList').innerHTML=notices.map(n=>`<div class="notice-item"><div class="notice-text">${n.text}</div><div class="notice-meta">${n.time}</div></div>`).join('');}
+function postNotice(){const inp=document.getElementById('noticeInp');if(!inp.value.trim())return;const t=new Date();notices.unshift({text:inp.value.trim(),time:`${pad2(t.getHours())}:${pad2(t.getMinutes())}`});inp.value='';renderNotice();}
+renderNotice();
+document.getElementById('qnaList').innerHTML=[
+  {nick:'살림왕',q:'배송비 무료인가요?',a:'3만원 이상 구매 시 무료배송입니다!',time:'10:08'},
+  {nick:'육아맘',q:'제주도 배송 가능한가요?',a:'가능하지만 추가 배송비 3,000원이 발생합니다.',time:'10:05'},
+].map(q=>`<div class="notice-item"><div style="font-size:10px;font-weight:700;color:#7c3aed;margin-bottom:2px">${q.nick}</div><div class="notice-text">Q. ${q.q}</div><div class="notice-text" style="color:#555;margin-top:2px">A. ${q.a}</div><div class="notice-meta">${q.time}</div></div>`).join('');
+
+/* ── Memo ── */
+document.getElementById('memoTa').addEventListener('input',function(){document.getElementById('memoCnt').textContent=`${this.value.length} / 100`;});
+
+/* ── Left game quick ── */
+function setLG(btn){document.querySelectorAll('.lg-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+
+/* ── Video bars init ── */
+(function(){
+  const bars=document.getElementById('vidBars');
+  if(!bars)return;
+  const ds=[1.1,0.8,1.3,0.9,0.7,1.2,1.4,0.6,1.0,0.85,1.25,0.95];
+  bars.innerHTML=ds.map((d,i)=>`<div class="vid-bar" style="--d:${d}s;animation-delay:${(i*0.08).toFixed(2)}s"></div>`).join('');
+})();
+
+/* ── Game ── */
+const GCFG={
+  '선착순':`<div class="cfg-row"><span class="cfg-lbl">게임명</span><input class="cfg-inp" value="선착순" style="width:110px"/></div><div class="cfg-row"><span class="cfg-lbl">가격</span><input class="cfg-inp" value="2000"/><span class="cfg-unit">원</span></div><div class="cfg-row"><span class="cfg-lbl">인원</span><input class="cfg-inp" id="gcP" value="10"/><span class="cfg-unit">명</span><div class="preset-row"><button class="ps-btn" onclick="sp('gcP',5,this)">5명</button><button class="ps-btn on" onclick="sp('gcP',10,this)">10명</button><button class="ps-btn" onclick="sp('gcP',20,this)">20명</button><button class="ps-btn" onclick="sp('gcP',50,this)">50명</button></div></div>`,
+  '경매':`<div class="cfg-row"><span class="cfg-lbl">시작가</span><input class="cfg-inp" value="1000"/><span class="cfg-unit">원</span></div><div class="cfg-row"><span class="cfg-lbl">최소입찰</span><input class="cfg-inp" value="500"/><span class="cfg-unit">원</span></div><div class="cfg-row"><span class="cfg-lbl">시간</span><input class="cfg-inp" value="60"/><span class="cfg-unit">초</span></div>`,
+  'OX':`<div class="cfg-row"><span class="cfg-lbl">질문</span><input class="cfg-inp" placeholder="질문 입력" style="width:160px"/></div><div class="cfg-row"><span class="cfg-lbl">정답</span><div class="preset-row"><button class="ps-btn on" onclick="oxSel(this)">O</button><button class="ps-btn" onclick="oxSel(this)">X</button></div></div>`,
+  '조성':`<div class="cfg-row"><span class="cfg-lbl">목표금액</span><input class="cfg-inp" value="500000"/><span class="cfg-unit">원</span></div><div class="cfg-row"><span class="cfg-lbl">참여단위</span><input class="cfg-inp" value="1000"/><span class="cfg-unit">원</span></div>`,
+  '주사위':`<div class="cfg-row"><span class="cfg-lbl">면수</span><div class="preset-row"><button class="ps-btn on" onclick="pBtn(this)">6면</button><button class="ps-btn" onclick="pBtn(this)">10면</button><button class="ps-btn" onclick="pBtn(this)">20면</button></div></div><div class="cfg-row"><span class="cfg-lbl">인원</span><input class="cfg-inp" value="1"/><span class="cfg-unit">명</span></div>`,
+};
+function startGame(){if(!isLive){alert('라이브 중에만 게임을 시작할 수 있습니다.');return;}alert('게임을 시작합니다!');}
+
+/* ── History ── */
+const HIST=[
+  {id:'LIVE-20260310-003',title:'봄맞이 특가 라이브',start:'2026.03.10 19:00',end:'2026.03.10 21:12',dur:'2h 12m',peak:32,cumul:280,sales:1840000,orders:47},
+  {id:'LIVE-20260305-002',title:'제주 한라봉 단독 특가',start:'2026.03.05 20:00',end:'2026.03.05 21:45',dur:'1h 45m',peak:19,cumul:155,sales:920000,orders:29},
+  {id:'LIVE-20260228-001',title:'2월 마지막 특가 세일',start:'2026.02.28 19:30',end:'2026.02.28 21:00',dur:'1h 30m',peak:24,cumul:198,sales:1250000,orders:38},
+];
+function addHistory(){
+  HIST.unshift({id:LIVE_ID,title:LIVE_TITLE,start:fmtDT(liveStart),end:fmtDT(new Date()),dur:'방금 종료',peak:sd.access||rand(10,25),cumul:sd.cumul||rand(80,200),sales:sd.sales||rand(500000,2000000),orders:sd.orders||rand(20,60)});
+  renderPageHistory();
+}
+function renderHistory(){
+  const body=document.getElementById('histBody'),empty=document.getElementById('histEmpty');
+  if(!HIST.length){body.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  const liveRow=isLive?`<tr style="background:#fdf4ff">
+    <td><span class="ht-link" onclick="setMTab(document.querySelectorAll('.m-tab')[0],'console')">${LIVE_ID}</span></td>
+    <td>${LIVE_TITLE}</td><td>${fmtDT(liveStart)}</td><td style="color:#aaa">-</td><td>진행중</td>
+    <td>${sd.access||0}명</td><td>${sd.cumul||0}명</td>
+    <td style="font-weight:700;color:#7c3aed">${(sd.sales||0).toLocaleString()}원</td>
+    <td>${sd.orders||0}건</td>
+    <td><span style="display:inline-flex;align-items:center;gap:4px;background:#fee2e2;color:#b91c1c;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px"><span style="width:5px;height:5px;border-radius:50%;background:#ef4444;display:inline-block;animation:pip 1s infinite"></span>ON AIR</span></td>
+  </tr>`:'';
+  body.innerHTML=liveRow+HIST.map(h=>`<tr>
+    <td><span class="ht-link">${h.id}</span></td><td>${h.title}</td>
+    <td>${h.start}</td><td>${h.end}</td><td>${h.dur}</td>
+    <td>${h.peak}명</td><td>${h.cumul}명</td>
+    <td style="font-weight:700;color:#7c3aed">${h.sales.toLocaleString()}원</td>
+    <td>${h.orders}건</td><td><span class="ht-badge ht-ended">종료</span></td>
+  </tr>`).join('');
+}
+function renderPageHistory(){
+  const body=document.getElementById('pageHistBody'),empty=document.getElementById('pageHistEmpty');
+  if(!HIST.length&&!isLive){body.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  const liveRow=isLive?`<tr style="background:#fdf4ff">
+    <td><span class="ht-link" onclick="openConsole()">${LIVE_ID}</span></td>
+    <td>${LIVE_TITLE}</td><td>${fmtDT(liveStart)}</td><td style="color:#aaa">-</td><td>진행중</td>
+    <td>${sd.access||0}명</td><td>${sd.cumul||0}명</td>
+    <td style="font-weight:700;color:#7c3aed">${(sd.sales||0).toLocaleString()}원</td>
+    <td>${sd.orders||0}건</td>
+    <td><span style="display:inline-flex;align-items:center;gap:4px;background:#fee2e2;color:#b91c1c;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px"><span style="width:5px;height:5px;border-radius:50%;background:#ef4444;display:inline-block;animation:pip 1s infinite"></span>ON AIR</span></td>
+  </tr>`:'';
+  body.innerHTML=liveRow+HIST.map(h=>`<tr>
+    <td><span class="ht-link" onclick="openConsoleHistory()">${h.id}</span></td><td>${h.title}</td>
+    <td>${h.start}</td><td>${h.end}</td><td>${h.dur}</td>
+    <td>${h.peak}명</td><td>${h.cumul}명</td>
+    <td style="font-weight:700;color:#7c3aed">${h.sales.toLocaleString()}원</td>
+    <td>${h.orders}건</td><td><span class="ht-badge ht-ended">종료</span></td>
+  </tr>`).join('');
+}
+function openConsoleHistory(){openConsole();setTimeout(()=>setMTab(document.querySelectorAll('.m-tab')[1],'history'),100);}
+renderPageHistory();
+</script>
+</body>
+</html>

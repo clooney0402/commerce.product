@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grip SE · 쿠폰 관리</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',Arial,sans-serif;background:#f4f5f7;color:#111;font-size:13px;display:flex;height:100vh;overflow:hidden}
+
+/* ── Sidebar ── */
+.sidebar{width:220px;background:#0d0f14;color:#ccc;display:flex;flex-direction:column;flex-shrink:0;height:100vh;overflow-y:auto}
+.sidebar-logo{padding:22px 20px 18px;border-bottom:1px solid #1f2230}
+.logo-badge{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:8px;padding:7px 12px}
+.logo-badge .brand{font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.5px}
+.logo-badge .tag{background:rgba(255,255,255,.22);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;letter-spacing:.5px}
+.nav-section{padding:14px 0 6px}
+.nav-label{font-size:9px;font-weight:700;color:#555;letter-spacing:1px;padding:0 20px 6px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:#aaa;cursor:pointer;border-left:3px solid transparent;transition:all .15s;text-decoration:none}
+.nav-item:hover{background:#1e2330;color:#e5e7eb}
+.nav-item.active{background:#1a1260;color:#a78bfa;border-left-color:#7c3aed;font-weight:600}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── Topbar ── */
+.topbar{background:#fff;border-bottom:1px solid #e8eaee;padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-title{font-size:17px;font-weight:700;color:#111}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-date{font-size:12px;color:#888}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer}
+
+/* ── Buttons ── */
+.btn{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:#7c3aed;color:#fff}
+.btn-primary:hover{background:#6d28d9}
+.btn-outline{background:#fff;color:#444;border:1px solid #e0e2ea}
+.btn-outline:hover{background:#f4f5f7}
+.btn-ghost{background:none;color:#7c3aed;border:none;font-weight:600;font-size:12px;cursor:pointer;padding:4px 0;font-family:inherit}
+.btn-ghost:hover{text-decoration:underline}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-danger:hover{background:#dc2626}
+
+/* ── Content ── */
+.content{flex:1;overflow-y:auto;padding:24px 28px;display:flex;flex-direction:column;gap:16px}
+
+/* ── Summary cards ── */
+.summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.scard{background:#fff;border-radius:10px;border:1px solid #e8eaee;padding:16px 18px}
+.scard-label{font-size:11px;color:#888;font-weight:500;margin-bottom:6px}
+.scard-value{font-size:22px;font-weight:800;color:#111}
+.scard-value.accent{color:#7c3aed}
+.scard-sub{font-size:11px;color:#aaa;margin-top:3px}
+
+/* ── Tabs ── */
+.tab-wrap{display:flex;align-items:center;justify-content:space-between}
+.tabs{display:flex;gap:2px;background:#eef0f7;border-radius:8px;padding:3px}
+.tab{padding:7px 18px;border-radius:6px;font-size:13px;cursor:pointer;color:#666;transition:all .15s;font-weight:500}
+.tab.active{background:#fff;color:#111;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+/* ── Tab panels ── */
+.tab-panel{display:none;flex-direction:column;gap:14px}
+.tab-panel.active{display:flex}
+
+/* ── Filter bar ── */
+.filter-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.search-box{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e0e2ea;border-radius:7px;padding:7px 12px;min-width:220px}
+.search-box input{border:none;outline:none;font-size:13px;color:#111;background:transparent;font-family:inherit}
+.search-box input::placeholder{color:#aaa}
+.filter-chip{padding:6px 12px;border-radius:20px;font-size:12px;border:1px solid #e0e2ea;background:#fff;cursor:pointer;color:#555;transition:all .15s;font-weight:500}
+.filter-chip.on{background:#7c3aed;color:#fff;border-color:#7c3aed}
+select.sel{padding:7px 10px;border-radius:7px;border:1px solid #e0e2ea;font-size:12px;color:#444;background:#fff;outline:none;font-family:inherit}
+
+/* ── Coupon table ── */
+.table-card{background:#fff;border-radius:10px;border:1px solid #e8eaee;overflow:hidden}
+.ct{width:100%;border-collapse:collapse;font-size:12px}
+.ct thead tr{background:#f9fafb;border-bottom:1px solid #eef0f7}
+.ct th{padding:10px 14px;font-size:11px;font-weight:600;color:#888;text-align:left;white-space:nowrap}
+.ct td{padding:12px 14px;border-bottom:1px solid #f4f5f7;color:#444;vertical-align:middle}
+.ct tr:last-child td{border-bottom:none}
+.ct tr:hover td{background:#faf8ff}
+.coupon-name{font-size:13px;font-weight:600;color:#111}
+.coupon-sub{font-size:11px;color:#aaa;margin-top:2px}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-purple{background:#ede9fe;color:#6d28d9}
+.badge-green{background:#dcfce7;color:#166534}
+.badge-orange{background:#ffedd5;color:#9a3412}
+.badge-gray{background:#f1f5f9;color:#64748b}
+.badge-red{background:#fef2f2;color:#b91c1c}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+
+/* ── Discount pill ── */
+.disc-pill{display:inline-flex;align-items:center;gap:4px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:6px;padding:3px 9px;font-size:12px;font-weight:700;color:#7c3aed}
+.disc-pill.fixed{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
+
+/* ── Progress bar (쿠폰 사용률) ── */
+.use-bar-wrap{width:80px;height:5px;background:#f0f0f0;border-radius:3px;margin-top:4px}
+.use-bar{height:5px;background:#7c3aed;border-radius:3px}
+
+/* ── Auto-issue cards ── */
+.auto-card{background:#fff;border-radius:12px;border:1px solid #e8eaee;padding:20px 22px;display:flex;gap:20px;align-items:flex-start}
+.auto-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.auto-body{flex:1}
+.auto-title{font-size:14px;font-weight:700;color:#111;margin-bottom:4px}
+.auto-desc{font-size:12px;color:#888;line-height:1.6;margin-bottom:12px}
+.auto-config{background:#f9fafb;border-radius:8px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.auto-field{display:flex;flex-direction:column;gap:4px}
+.auto-field label{font-size:11px;color:#888;font-weight:500}
+.auto-field input,.auto-field select{padding:6px 9px;border:1px solid #e0e2ea;border-radius:6px;font-size:12px;color:#111;background:#fff;outline:none;font-family:inherit;width:130px}
+.auto-field input:focus,.auto-field select:focus{border-color:#7c3aed}
+.toggle-wrap{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0}
+.toggle{width:40px;height:22px;border-radius:11px;background:#e0e2ea;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle.on{background:#7c3aed}
+.toggle::after{content:'';width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle.on::after{transform:translateX(18px)}
+.toggle-lbl{font-size:12px;font-weight:600;color:#888}
+.toggle.on+.toggle-lbl{color:#7c3aed}
+
+/* ── Quick issue (상시 발행) ── */
+.quick-issue{background:#fff;border-radius:12px;border:1px solid #e8eaee;padding:20px 22px}
+.qi-title{font-size:14px;font-weight:700;color:#111;margin-bottom:4px}
+.qi-desc{font-size:12px;color:#888;margin-bottom:16px;line-height:1.6}
+.qi-form{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;background:#f9fafb;border-radius:8px;padding:14px 16px}
+.qi-field{display:flex;flex-direction:column;gap:5px}
+.qi-field label{font-size:11px;color:#888;font-weight:500}
+.qi-field input,.qi-field select{padding:8px 10px;border:1px solid #e0e2ea;border-radius:7px;font-size:13px;color:#111;background:#fff;outline:none;font-family:inherit}
+.qi-field input:focus,.qi-field select:focus{border-color:#7c3aed}
+.qi-field input{width:200px}
+.qi-field select{width:180px}
+
+/* ── Recent issuance list ── */
+.issue-log{background:#fff;border-radius:10px;border:1px solid #e8eaee;overflow:hidden}
+.issue-log-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #f4f5f7}
+.issue-log-hd span{font-size:13px;font-weight:700;color:#111}
+.log-row{display:grid;grid-template-columns:160px 1fr 120px 110px 90px;align-items:center;padding:10px 16px;border-bottom:1px solid #f4f5f7;font-size:12px}
+.log-row:last-child{border-bottom:none}
+.log-row:hover{background:#faf8ff}
+.log-header{background:#f9fafb;font-size:11px;color:#888;font-weight:600}
+.log-header:hover{background:#f9fafb}
+
+/* ── CRM section ── */
+.crm-grid{display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start}
+.seg-select-card{background:#fff;border-radius:12px;border:1px solid #e8eaee;padding:20px 22px}
+.seg-select-title{font-size:14px;font-weight:700;color:#111;margin-bottom:4px}
+.seg-select-desc{font-size:12px;color:#888;margin-bottom:16px;line-height:1.6}
+.seg-list{display:flex;flex-direction:column;gap:8px}
+.seg-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:8px;border:1.5px solid #e8eaee;cursor:pointer;transition:all .15s}
+.seg-row:hover{border-color:#c4b5fd;background:#faf8ff}
+.seg-row.selected{border-color:#7c3aed;background:#f5f3ff}
+.seg-row-left{display:flex;align-items:center;gap:10px}
+.seg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.seg-row-name{font-size:13px;font-weight:600;color:#111}
+.seg-row-count{font-size:11px;color:#aaa;margin-top:1px}
+.seg-row-check{width:18px;height:18px;border-radius:50%;border:2px solid #e0e2ea;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.seg-row.selected .seg-row-check{background:#7c3aed;border-color:#7c3aed}
+
+.crm-issue-panel{background:#fff;border-radius:12px;border:1px solid #e8eaee;padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+.crm-panel-title{font-size:14px;font-weight:700;color:#111}
+.crm-field{display:flex;flex-direction:column;gap:5px}
+.crm-field label{font-size:12px;color:#888;font-weight:500}
+.crm-field select,.crm-field input,.crm-field textarea{width:100%;padding:8px 10px;border:1px solid #e0e2ea;border-radius:7px;font-size:13px;color:#111;background:#fff;outline:none;font-family:inherit}
+.crm-field select:focus,.crm-field input:focus,.crm-field textarea:focus{border-color:#7c3aed}
+.crm-preview{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:12px 14px;font-size:12px;color:#555;line-height:1.7}
+.crm-preview strong{color:#6d28d9;font-weight:600}
+.crm-target-chip{display:inline-flex;align-items:center;gap:4px;background:#ede9fe;color:#6d28d9;font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;margin-bottom:8px}
+
+/* ── Modals ── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(2px)}
+.modal-backdrop.hidden{display:none}
+.modal{background:#fff;border-radius:16px;width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.18);animation:mIn .18s cubic-bezier(.34,1.26,.64,1)}
+@keyframes mIn{from{transform:scale(.96) translateY(10px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.modal-header{padding:22px 24px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:700;color:#111}
+.modal-close{width:30px;height:30px;border-radius:7px;background:#f4f5f7;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#888;font-size:16px;transition:background .15s}
+.modal-close:hover{background:#e8eaee}
+.modal-body{padding:20px 24px;display:flex;flex-direction:column;gap:14px}
+.modal-footer{padding:16px 24px;border-top:1px solid #f0f0f0;display:flex;gap:8px;justify-content:flex-end}
+.mrow{display:flex;flex-direction:column;gap:5px}
+.mrow label{font-size:12px;color:#888;font-weight:500}
+.mrow input,.mrow select,.mrow textarea{width:100%;padding:8px 10px;border:1px solid #e0e2ea;border-radius:7px;font-size:13px;color:#111;background:#fff;outline:none;font-family:inherit}
+.mrow input:focus,.mrow select:focus,.mrow textarea:focus{border-color:#7c3aed}
+.mrow-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mrow-hint{font-size:11px;color:#aaa;margin-top:3px}
+.type-toggle{display:flex;gap:6px}
+.type-btn{flex:1;padding:9px;border-radius:7px;border:1.5px solid #e0e2ea;background:#fff;font-size:13px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;font-family:inherit;color:#666}
+.type-btn.on{border-color:#7c3aed;background:#f5f3ff;color:#7c3aed}
+.divider{height:1px;background:#f4f5f7;margin:2px 0}
+.info-box{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:10px 12px;font-size:12px;color:#6d28d9;line-height:1.7}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:48px 20px;color:#aaa}
+.empty svg{margin-bottom:10px;opacity:.4}
+.empty p{font-size:13px;font-weight:500;color:#bbb;margin-bottom:4px}
+.empty span{font-size:12px;color:#ccc}
+
+/* ── Pagination ── */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid #eef0f7;background:#fafafa}
+.page-info{font-size:12px;color:#888}
+.page-btns{display:flex;gap:4px}
+.page-btn{width:28px;height:28px;border-radius:5px;border:1px solid #e0e2ea;background:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555}
+.page-btn.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#0d0f14;color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- ══ Sidebar ══ -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">
+      <span class="brand">Grip</span>
+      <span class="tag">SE</span>
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">메뉴</div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      홈
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      기본정보
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      라이브 콘솔
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      상품 관리
+    </div>
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      쿠폰 관리
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      주문 관리
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h6v13a1 1 0 0 1-1 1h-5"/><path d="M1 16h15"/><path d="M5 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M18 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+      발주 / 배송 관리
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      팔로우(회원) 관리
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      1:1문의
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13V5l5-3 5 3v8M2 13h12"/><line x1="3" y1="21" x2="21" y2="21"/></svg>
+      정산관리
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      통계
+    </div>
+  </div>
+</div>
+
+<!-- ══ Main ══ -->
+<div class="main">
+  <div class="topbar">
+    <span class="topbar-title">쿠폰 관리</span>
+    <div class="topbar-right">
+      <span class="topbar-date" id="todayLabel"></span>
+      <button class="btn btn-primary" onclick="openModal('modal-create')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        쿠폰 생성
+      </button>
+      <div class="avatar">S</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- 요약 카드 -->
+    <div class="summary-row">
+      <div class="scard">
+        <div class="scard-label">발행된 쿠폰 종류</div>
+        <div class="scard-value accent">14종</div>
+        <div class="scard-sub">활성 9 · 만료 5</div>
+      </div>
+      <div class="scard">
+        <div class="scard-label">이번 달 발행 수</div>
+        <div class="scard-value">2,841장</div>
+        <div class="scard-sub">지난달 대비 +18%</div>
+      </div>
+      <div class="scard">
+        <div class="scard-label">이번 달 사용 수</div>
+        <div class="scard-value">1,204장</div>
+        <div class="scard-sub">평균 사용률 42.4%</div>
+      </div>
+      <div class="scard">
+        <div class="scard-label">쿠폰 할인 총액</div>
+        <div class="scard-value accent">₩1,820,000</div>
+        <div class="scard-sub">연결 매출 ₩18,400,000</div>
+      </div>
+    </div>
+
+    <!-- 탭 -->
+    <div class="tab-wrap">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(this,'all')">전체 쿠폰</div>
+        <div class="tab" onclick="switchTab(this,'quick')">상시 발행</div>
+        <div class="tab" onclick="switchTab(this,'auto')">자동 발행</div>
+        <div class="tab" onclick="switchTab(this,'crm')">CRM 발행</div>
+      </div>
+    </div>
+
+    <!-- ══ 전체 쿠폰 ══ -->
+    <div id="tab-all" class="tab-panel active">
+      <div class="filter-bar">
+        <div class="search-box">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="쿠폰명 검색">
+        </div>
+        <select class="sel">
+          <option>발행 방식 전체</option>
+          <option>상시 발행</option>
+          <option>자동 발행</option>
+          <option>CRM 발행</option>
+        </select>
+        <select class="sel">
+          <option>할인 유형 전체</option>
+          <option>정률 (%)</option>
+          <option>정액 (원)</option>
+        </select>
+        <div class="filter-chip on" onclick="toggleChip(this)">전체</div>
+        <div class="filter-chip" onclick="toggleChip(this)">활성</div>
+        <div class="filter-chip" onclick="toggleChip(this)">비활성</div>
+        <div class="filter-chip" onclick="toggleChip(this)">만료</div>
+      </div>
+
+      <div class="table-card">
+        <table class="ct">
+          <thead>
+            <tr>
+              <th>쿠폰명</th>
+              <th>할인</th>
+              <th>최소 주문</th>
+              <th>유효기간</th>
+              <th>발행 방식</th>
+              <th style="text-align:center">발행 / 사용</th>
+              <th>상태</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="coupon-name">신규 가입 웰컴 쿠폰</div><div class="coupon-sub">팔로우 자동 지급</div></td>
+              <td><span class="disc-pill">10%</span></td>
+              <td style="color:#888">₩20,000</td>
+              <td style="font-size:11px;color:#888">발급 후 14일</td>
+              <td><span class="badge badge-purple">자동 발행</span></td>
+              <td style="text-align:center">
+                <div style="font-size:12px;font-weight:600">1,240 / 486</div>
+                <div class="use-bar-wrap" style="margin:4px auto 0"><div class="use-bar" style="width:39%"></div></div>
+              </td>
+              <td><span class="badge badge-green">활성</span></td>
+              <td><button class="btn btn-outline btn-sm" onclick="openModal('modal-create')">수정</button></td>
+            </tr>
+            <tr>
+              <td><div class="coupon-name">주문완료 감사 쿠폰</div><div class="coupon-sub">주문 완료 후 자동 지급</div></td>
+              <td><span class="disc-pill fixed">₩3,000</span></td>
+              <td style="color:#888">₩30,000</td>
+              <td style="font-size:11px;color:#888">발급 후 7일</td>
+              <td><span class="badge badge-purple">자동 발행</span></td>
+              <td style="text-align:center">
+                <div style="font-size:12px;font-weight:600">842 / 601</div>
+                <div class="use-bar-wrap" style="margin:4px auto 0"><div class="use-bar" style="width:71%"></div></div>
+              </td>
+              <td><span class="badge badge-green">활성</span></td>
+              <td><button class="btn btn-outline btn-sm" onclick="openModal('modal-create')">수정</button></td>
+            </tr>
+            <tr>
+              <td><div class="coupon-name">봄 시즌 VIP 특가</div><div class="coupon-sub">VIP 팔로워 대상 CRM 발행</div></td>
+              <td><span class="disc-pill">15%</span></td>
+              <td style="color:#888">₩50,000</td>
+              <td style="font-size:11px;color:#888">2026.03.31 까지</td>
+              <td><span class="badge badge-blue">CRM 발행</span></td>
+              <td style="text-align:center">
+                <div style="font-size:12px;font-weight:600">483 / 214</div>
+                <div class="use-bar-wrap" style="margin:4px auto 0"><div class="use-bar" style="width:44%"></div></div>
+              </td>
+              <td><span class="badge badge-green">활성</span></td>
+              <td><button class="btn btn-outline btn-sm" onclick="openModal('modal-create')">수정</button></td>
+            </tr>
+            <tr>
+              <td><div class="coupon-name">라이브 방송 현장 쿠폰</div><div class="coupon-sub">방송 중 수동 즉시 발행</div></td>
+              <td><span class="disc-pill">5%</span></td>
+              <td style="color:#888">제한 없음</td>
+              <td style="font-size:11px;color:#888">발급 후 3일</td>
+              <td><span class="badge badge-orange">상시 발행</span></td>
+              <td style="text-align:center">
+                <div style="font-size:12px;font-weight:600">192 / 155</div>
+                <div class="use-bar-wrap" style="margin:4px auto 0"><div class="use-bar" style="width:81%"></div></div>
+              </td>
+              <td><span class="badge badge-green">활성</span></td>
+              <td><button class="btn btn-outline btn-sm" onclick="openModal('modal-create')">수정</button></td>
+            </tr>
+            <tr>
+              <td><div class="coupon-name">이탈 방지 리텐션 쿠폰</div><div class="coupon-sub">60일 미방문 대상 CRM 발행</div></td>
+              <td><span class="disc-pill fixed">₩5,000</span></td>
+              <td style="color:#888">₩20,000</td>
+              <td style="font-size:11px;color:#888">발급 후 30일</td>
+              <td><span class="badge badge-blue">CRM 발행</span></td>
+              <td style="text-align:center">
+                <div style="font-size:12px;font-weight:600">429 / 88</div>
+                <div class="use-bar-wrap" style="margin:4px auto 0"><div class="use-bar" style="width:21%"></div></div>
+              </td>
+              <td><span class="badge badge-orange">발행 예정</span></td>
+              <td><button class="btn btn-outline btn-sm" onclick="openModal('modal-create')">수정</button></td>
+            </tr>
+            <tr>
+              <td><div class="coupon-name">설 연휴 감사 쿠폰</div><div class="coupon-sub">전체 팔로워 대상 CRM 발행</div></td>
+              <td><span class="disc-pill">10%</span></td>
+              <td style="color:#888">₩15,000</td>
+              <td style="font-size:11px;color:#888">2026.02.15 만료</td>
+              <td><span class="badge badge-blue">CRM 발행</span></td>
+              <td style="text-align:center">
+                <div style="font-size:12px;font-weight:600">4,812 / 1,924</div>
+                <div class="use-bar-wrap" style="margin:4px auto 0"><div class="use-bar" style="width:40%;background:#aaa"></div></div>
+              </td>
+              <td><span class="badge badge-gray">만료</span></td>
+              <td><button class="btn btn-outline btn-sm" style="opacity:.5;cursor:default" disabled>수정</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pagination">
+          <div class="page-info">총 14개 쿠폰 중 1 – 6</div>
+          <div class="page-btns">
+            <div class="page-btn">‹</div>
+            <div class="page-btn active">1</div>
+            <div class="page-btn">2</div>
+            <div class="page-btn">3</div>
+            <div class="page-btn">›</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 상시 발행 ══ -->
+    <div id="tab-quick" class="tab-panel">
+      <div class="quick-issue">
+        <div class="qi-title">특정 고객 즉시 발행</div>
+        <div class="qi-desc">방송 중 또는 고객 응대 시 특정 회원에게 즉시 쿠폰을 발행합니다. 회원번호 또는 닉네임으로 검색해 선택하세요.</div>
+        <div class="qi-form">
+          <div class="qi-field">
+            <label>회원 검색</label>
+            <input type="text" placeholder="닉네임 또는 #회원번호" id="qi-user">
+          </div>
+          <div class="qi-field">
+            <label>발행할 쿠폰 선택</label>
+            <select id="qi-coupon">
+              <option value="">쿠폰을 선택하세요</option>
+              <option>라이브 방송 현장 쿠폰 (5%)</option>
+              <option>신규 가입 웰컴 쿠폰 (10%)</option>
+              <option>봄 시즌 VIP 특가 (15%)</option>
+            </select>
+          </div>
+          <div class="qi-field">
+            <label>메모 (선택)</label>
+            <input type="text" placeholder="발행 사유 입력" style="width:180px">
+          </div>
+          <button class="btn btn-primary" style="align-self:flex-end" onclick="quickIssue()">즉시 발행</button>
+        </div>
+      </div>
+
+      <div class="issue-log">
+        <div class="issue-log-hd">
+          <span>최근 발행 이력</span>
+          <button class="btn-ghost btn-sm">전체 보기</button>
+        </div>
+        <div class="log-row log-header">
+          <span>회원</span><span>쿠폰명</span><span>발행일시</span><span>유효기간</span><span>상태</span>
+        </div>
+        <div id="issue-log-body">
+          <div class="log-row">
+            <div><div style="font-size:12px;font-weight:600">파인애플맛</div><div style="font-size:11px;color:#aaa">#U00291</div></div>
+            <div style="font-size:12px;color:#555">라이브 방송 현장 쿠폰 (5%)</div>
+            <div style="font-size:12px;color:#888">03.17 14:32</div>
+            <div style="font-size:12px;color:#888">03.20 까지</div>
+            <div><span class="badge badge-orange">미사용</span></div>
+          </div>
+          <div class="log-row">
+            <div><div style="font-size:12px;font-weight:600">그린사과09</div><div style="font-size:11px;color:#aaa">#U00304</div></div>
+            <div style="font-size:12px;color:#555">라이브 방송 현장 쿠폰 (5%)</div>
+            <div style="font-size:12px;color:#888">03.17 14:15</div>
+            <div style="font-size:12px;color:#888">03.20 까지</div>
+            <div><span class="badge badge-green">사용완료</span></div>
+          </div>
+          <div class="log-row">
+            <div><div style="font-size:12px;font-weight:600">달콤한쇼핑</div><div style="font-size:11px;color:#aaa">#U00521</div></div>
+            <div style="font-size:12px;color:#555">봄 시즌 VIP 특가 (15%)</div>
+            <div style="font-size:12px;color:#888">03.16 19:04</div>
+            <div style="font-size:12px;color:#888">03.31 까지</div>
+            <div><span class="badge badge-orange">미사용</span></div>
+          </div>
+          <div class="log-row">
+            <div><div style="font-size:12px;font-weight:600">별빛쇼핑러</div><div style="font-size:11px;color:#aaa">#U00388</div></div>
+            <div style="font-size:12px;color:#555">라이브 방송 현장 쿠폰 (5%)</div>
+            <div style="font-size:12px;color:#888">03.16 18:52</div>
+            <div style="font-size:12px;color:#888">03.19 까지</div>
+            <div><span class="badge badge-gray">만료</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 자동 발행 ══ -->
+    <div id="tab-auto" class="tab-panel">
+      <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:14px 16px;font-size:12px;color:#6d28d9;line-height:1.7;display:flex;align-items:center;gap:10px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        자동 발행 쿠폰은 설정된 트리거 조건이 충족될 때 고객에게 자동으로 지급됩니다. 쿠폰을 먼저 생성한 후 연결하세요.
+      </div>
+
+      <!-- 트리거 1: 팔로우 웰컴 -->
+      <div class="auto-card">
+        <div class="auto-icon" style="background:#ede9fe">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        </div>
+        <div class="auto-body">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <div class="auto-title">팔로우 웰컴 쿠폰</div>
+            <div class="toggle-wrap">
+              <div class="toggle on" id="toggle-follow" onclick="toggleSwitch(this,'toggle-follow')"></div>
+              <span class="toggle-lbl" id="lbl-follow">운영 중</span>
+            </div>
+          </div>
+          <div class="auto-desc">셀러를 팔로우하는 즉시 웰컴 쿠폰이 자동 지급됩니다. 첫 구매를 유도하는 데 효과적입니다.</div>
+          <div class="auto-config">
+            <div class="auto-field">
+              <label>연결 쿠폰</label>
+              <select>
+                <option selected>신규 가입 웰컴 쿠폰 (10%)</option>
+                <option>라이브 방송 현장 쿠폰 (5%)</option>
+              </select>
+            </div>
+            <div class="auto-field">
+              <label>팔로워당 발급 제한</label>
+              <select>
+                <option selected>1회 (최초 팔로우 시)</option>
+                <option>재팔로우 시 재발급</option>
+              </select>
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+              <div style="font-size:11px;color:#aaa">이번 달 발급</div>
+              <div style="font-size:16px;font-weight:800;color:#7c3aed">312장</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 트리거 2: 첫 구매 완료 -->
+      <div class="auto-card">
+        <div class="auto-icon" style="background:#dcfce7">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </div>
+        <div class="auto-body">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <div class="auto-title">첫 구매 완료 감사 쿠폰</div>
+            <div class="toggle-wrap">
+              <div class="toggle on" id="toggle-first" onclick="toggleSwitch(this,'toggle-first')"></div>
+              <span class="toggle-lbl" id="lbl-first">운영 중</span>
+            </div>
+          </div>
+          <div class="auto-desc">고객이 첫 번째 구매를 완료하면 자동으로 감사 쿠폰이 지급됩니다. 재구매율 향상에 효과적입니다.</div>
+          <div class="auto-config">
+            <div class="auto-field">
+              <label>연결 쿠폰</label>
+              <select>
+                <option selected>주문완료 감사 쿠폰 (₩3,000)</option>
+                <option>신규 가입 웰컴 쿠폰 (10%)</option>
+              </select>
+            </div>
+            <div class="auto-field">
+              <label>발급 조건</label>
+              <select>
+                <option selected>첫 구매 완료 시 1회</option>
+                <option>매 구매 완료 시</option>
+              </select>
+            </div>
+            <div class="auto-field">
+              <label>최소 주문금액 조건</label>
+              <input type="text" value="₩10,000 이상">
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+              <div style="font-size:11px;color:#aaa">이번 달 발급</div>
+              <div style="font-size:16px;font-weight:800;color:#16a34a">138장</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 트리거 3: 재구매 감사 -->
+      <div class="auto-card">
+        <div class="auto-icon" style="background:#dbeafe">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </div>
+        <div class="auto-body">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <div class="auto-title">N회 구매 달성 쿠폰</div>
+            <div class="toggle-wrap">
+              <div class="toggle" id="toggle-repeat" onclick="toggleSwitch(this,'toggle-repeat')"></div>
+              <span class="toggle-lbl" id="lbl-repeat" style="color:#888">중지 중</span>
+            </div>
+          </div>
+          <div class="auto-desc">설정한 구매 횟수를 달성하면 자동 쿠폰이 지급됩니다. 충성 고객 보상에 활용하세요.</div>
+          <div class="auto-config">
+            <div class="auto-field">
+              <label>연결 쿠폰</label>
+              <select>
+                <option selected>쿠폰을 선택하세요</option>
+                <option>봄 시즌 VIP 특가 (15%)</option>
+              </select>
+            </div>
+            <div class="auto-field">
+              <label>달성 기준 횟수</label>
+              <input type="number" value="5" min="1" style="width:80px">
+            </div>
+            <div class="auto-field">
+              <label>반복 지급</label>
+              <select>
+                <option selected>5회 단위마다 지급</option>
+                <option>최초 달성 시 1회만</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CRM 발행 ══ -->
+    <div id="tab-crm" class="tab-panel">
+      <div class="crm-grid">
+        <div class="seg-select-card">
+          <div class="seg-select-title">발행 대상 세그먼트 선택</div>
+          <div class="seg-select-desc">쿠폰을 지급할 팔로워 세그먼트를 선택하세요. 복수 선택 시 합산 대상에게 발행됩니다.</div>
+          <div class="seg-list">
+            <div class="seg-row" onclick="toggleSeg(this)">
+              <div class="seg-row-left">
+                <div class="seg-dot" style="background:#7c3aed"></div>
+                <div>
+                  <div class="seg-row-name">전체 팔로워</div>
+                  <div class="seg-row-count">4,812명</div>
+                </div>
+              </div>
+              <div class="seg-row-check"></div>
+            </div>
+            <div class="seg-row selected" onclick="toggleSeg(this)">
+              <div class="seg-row-left">
+                <div class="seg-dot" style="background:#5b21b6"></div>
+                <div>
+                  <div class="seg-row-name">VIP 팔로워</div>
+                  <div class="seg-row-count">483명 · 누적 구매 100만원 이상</div>
+                </div>
+              </div>
+              <div class="seg-row-check">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+            <div class="seg-row" onclick="toggleSeg(this)">
+              <div class="seg-row-left">
+                <div class="seg-dot" style="background:#16a34a"></div>
+                <div>
+                  <div class="seg-row-name">활성 팔로워</div>
+                  <div class="seg-row-count">2,104명 · 최근 30일 내 방문</div>
+                </div>
+              </div>
+              <div class="seg-row-check"></div>
+            </div>
+            <div class="seg-row" onclick="toggleSeg(this)">
+              <div class="seg-row-left">
+                <div class="seg-dot" style="background:#7c3aed"></div>
+                <div>
+                  <div class="seg-row-name">신규 팔로워</div>
+                  <div class="seg-row-count">312명 · 팔로우 30일 이내</div>
+                </div>
+              </div>
+              <div class="seg-row-check"></div>
+            </div>
+            <div class="seg-row" onclick="toggleSeg(this)">
+              <div class="seg-row-left">
+                <div class="seg-dot" style="background:#64748b"></div>
+                <div>
+                  <div class="seg-row-name">미구매 팔로워</div>
+                  <div class="seg-row-count">2,878명 · 구매 이력 없음</div>
+                </div>
+              </div>
+              <div class="seg-row-check"></div>
+            </div>
+            <div class="seg-row" onclick="toggleSeg(this)">
+              <div class="seg-row-left">
+                <div class="seg-dot" style="background:#f97316"></div>
+                <div>
+                  <div class="seg-row-name">이탈 위험</div>
+                  <div class="seg-row-count">429명 · 60일 이상 미방문</div>
+                </div>
+              </div>
+              <div class="seg-row-check"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="crm-issue-panel">
+          <div class="crm-panel-title">쿠폰 발행 설정</div>
+          <div id="crm-target-display" style="display:block">
+            <div class="crm-target-chip">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              VIP 팔로워 483명 선택됨
+            </div>
+          </div>
+          <div class="crm-field">
+            <label>발행할 쿠폰</label>
+            <select id="crm-coupon" onchange="updateCrmPreview()">
+              <option value="">쿠폰을 선택하세요</option>
+              <option value="vip">봄 시즌 VIP 특가 (15%, 5만원 이상)</option>
+              <option value="retention">이탈 방지 리텐션 쿠폰 (₩5,000, 2만원 이상)</option>
+              <option value="welcome">신규 가입 웰컴 쿠폰 (10%, 2만원 이상)</option>
+            </select>
+          </div>
+          <div class="crm-field">
+            <label>발행 예약 (선택)</label>
+            <input type="datetime-local" id="crm-schedule">
+          </div>
+          <div class="crm-field">
+            <label>발행 메모</label>
+            <textarea rows="2" placeholder="내부 참고용 메모 입력" style="resize:none"></textarea>
+          </div>
+          <div class="crm-preview" id="crm-preview">
+            <strong>VIP 팔로워 483명</strong>에게<br>
+            선택한 쿠폰을 발행합니다.<br>
+            <span style="color:#aaa">↑ 쿠폰을 선택하면 미리보기가 업데이트됩니다</span>
+          </div>
+          <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="issueCrm()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="22 2 11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            쿠폰 발행하기
+          </button>
+          <div style="font-size:11px;color:#aaa;text-align:center;line-height:1.6">발행 후에는 취소가 불가합니다. 대상과 쿠폰을 다시 확인해주세요.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ 쿠폰 생성 Modal ══ -->
+<div class="modal-backdrop hidden" id="modal-create">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">새 쿠폰 생성</div>
+      <button class="modal-close" onclick="closeModal('modal-create')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="mrow">
+        <label>쿠폰명 <span style="color:#ef4444">*</span></label>
+        <input type="text" placeholder="예: 봄 시즌 특가 쿠폰" id="m-name">
+      </div>
+
+      <div class="mrow">
+        <label>발행 방식 <span style="color:#ef4444">*</span></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">
+          <div class="type-btn on" onclick="selectType(this,'issue')">상시 발행</div>
+          <div class="type-btn" onclick="selectType(this,'issue')">자동 발행</div>
+          <div class="type-btn" onclick="selectType(this,'issue')">CRM 발행</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="mrow">
+        <label>할인 유형 <span style="color:#ef4444">*</span></label>
+        <div class="type-toggle">
+          <div class="type-btn on" id="t-pct" onclick="selectDiscType('pct')">정률 (%)</div>
+          <div class="type-btn" id="t-fix" onclick="selectDiscType('fix')">정액 (원)</div>
+        </div>
+      </div>
+
+      <div class="mrow-2">
+        <div class="mrow">
+          <label id="disc-val-lbl">할인율 <span style="color:#ef4444">*</span></label>
+          <input type="number" id="m-disc" placeholder="예: 10" min="1" max="100">
+          <div class="mrow-hint" id="disc-hint">최대 할인 한도를 설정하면 고액 구매자 과다 할인을 방지할 수 있습니다.</div>
+        </div>
+        <div class="mrow" id="m-maxdisc-wrap">
+          <label>최대 할인 한도 (선택)</label>
+          <input type="text" placeholder="예: ₩10,000">
+        </div>
+      </div>
+
+      <div class="mrow-2">
+        <div class="mrow">
+          <label>최소 주문금액</label>
+          <input type="text" placeholder="₩0 (제한 없음)">
+        </div>
+        <div class="mrow">
+          <label>1인당 사용 제한</label>
+          <select>
+            <option>1회</option>
+            <option>2회</option>
+            <option>3회</option>
+            <option>제한 없음</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="mrow">
+        <label>유효기간 유형</label>
+        <div class="type-toggle">
+          <div class="type-btn on" id="v-rel" onclick="selectValType('rel')">발급 후 N일</div>
+          <div class="type-btn" id="v-abs" onclick="selectValType('abs')">날짜 지정</div>
+        </div>
+      </div>
+
+      <div class="mrow-2" id="v-rel-wrap">
+        <div class="mrow">
+          <label>유효 기간</label>
+          <input type="number" placeholder="예: 7" min="1">
+        </div>
+        <div class="mrow" style="justify-content:flex-end;padding-top:22px">
+          <span style="font-size:13px;color:#888">일 이내 사용 가능</span>
+        </div>
+      </div>
+      <div class="mrow-2" id="v-abs-wrap" style="display:none">
+        <div class="mrow">
+          <label>시작일</label>
+          <input type="date">
+        </div>
+        <div class="mrow">
+          <label>종료일</label>
+          <input type="date">
+        </div>
+      </div>
+
+      <div class="mrow">
+        <label>총 발행 수량 (선택)</label>
+        <input type="number" placeholder="미입력 시 무제한">
+        <div class="mrow-hint">설정 시 해당 수량 소진 후 자동 비활성화됩니다.</div>
+      </div>
+
+      <div class="info-box">
+        💡 쿠폰 생성 후 <strong>자동 발행</strong>에서 트리거를 연결하거나, <strong>CRM 발행</strong>에서 세그먼트를 선택해 즉시 배포할 수 있습니다.
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-create')">취소</button>
+      <button class="btn btn-primary" onclick="createCoupon()">쿠폰 생성</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// Date label
+(function(){
+  const d=new Date();
+  const days=['일','월','화','수','목','금','토'];
+  const el=document.getElementById('todayLabel');
+  if(el)el.textContent=`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+})();
+
+// Tab switching
+function switchTab(el,id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+}
+
+// Modal
+function openModal(id){document.getElementById(id).classList.remove('hidden')}
+function closeModal(id){document.getElementById(id).classList.add('hidden')}
+document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.add('hidden')}));
+
+// Chips
+function toggleChip(el){
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+}
+
+// Type toggles in modal
+function selectType(el){
+  el.closest('div').querySelectorAll('.type-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+function selectDiscType(t){
+  document.getElementById('t-pct').classList.toggle('on',t==='pct');
+  document.getElementById('t-fix').classList.toggle('on',t==='fix');
+  document.getElementById('disc-val-lbl').innerHTML=t==='pct'?'할인율 <span style="color:#ef4444">*</span>':'할인 금액 <span style="color:#ef4444">*</span>';
+  document.getElementById('m-disc').placeholder=t==='pct'?'예: 10':'예: 3000';
+  document.getElementById('m-maxdisc-wrap').style.display=t==='pct'?'':'none';
+  document.getElementById('disc-hint').style.display=t==='pct'?'':'none';
+}
+function selectValType(t){
+  document.getElementById('v-rel').classList.toggle('on',t==='rel');
+  document.getElementById('v-abs').classList.toggle('on',t==='abs');
+  document.getElementById('v-rel-wrap').style.display=t==='rel'?'':'none';
+  document.getElementById('v-abs-wrap').style.display=t==='abs'?'':'none';
+}
+
+// Toggle switches (자동 발행)
+function toggleSwitch(el,id){
+  el.classList.toggle('on');
+  const on=el.classList.contains('on');
+  const lbl=document.getElementById('lbl-'+id.replace('toggle-',''));
+  if(lbl){lbl.textContent=on?'운영 중':'중지 중';lbl.style.color=on?'#7c3aed':'#888';}
+}
+
+// Segment toggle (CRM)
+function toggleSeg(el){
+  el.classList.toggle('selected');
+  const check=el.querySelector('.seg-row-check');
+  if(el.classList.contains('selected')){
+    check.innerHTML='<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+  } else {
+    check.innerHTML='';
+  }
+  updateCrmTarget();
+}
+function updateCrmTarget(){
+  const selected=[...document.querySelectorAll('.seg-row.selected')].map(r=>r.querySelector('.seg-row-name').textContent);
+  const counts=[...document.querySelectorAll('.seg-row.selected')].map(r=>{
+    const t=r.querySelector('.seg-row-count').textContent;
+    return parseInt(t.replace(/,/g,''))||0;
+  });
+  const total=counts.reduce((a,b)=>a+b,0);
+  const display=document.getElementById('crm-target-display');
+  if(selected.length===0){
+    display.innerHTML='<div style="font-size:12px;color:#aaa">세그먼트를 선택해주세요</div>';
+  } else {
+    display.innerHTML=`<div class="crm-target-chip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>${selected.join(' + ')} 총 ${total.toLocaleString()}명 선택됨</div>`;
+  }
+  updateCrmPreview();
+}
+function updateCrmPreview(){
+  const selected=[...document.querySelectorAll('.seg-row.selected')].map(r=>r.querySelector('.seg-row-name').textContent);
+  const counts=[...document.querySelectorAll('.seg-row.selected')].map(r=>parseInt(r.querySelector('.seg-row-count').textContent.replace(/,/g,''))||0);
+  const total=counts.reduce((a,b)=>a+b,0);
+  const coupon=document.getElementById('crm-coupon');
+  const couponName=coupon.options[coupon.selectedIndex].text;
+  const preview=document.getElementById('crm-preview');
+  if(selected.length===0||!coupon.value){
+    preview.innerHTML='<span style="color:#aaa">↑ 세그먼트와 쿠폰을 선택하면 미리보기가 업데이트됩니다</span>';
+    return;
+  }
+  preview.innerHTML=`<strong>${selected.join(', ')} 총 ${total.toLocaleString()}명</strong>에게<br><strong>${couponName}</strong><br>을(를) 즉시 발행합니다.`;
+}
+
+// Quick issue
+function quickIssue(){
+  const user=document.getElementById('qi-user').value.trim();
+  const coupon=document.getElementById('qi-coupon');
+  if(!user||!coupon.value){showToast('회원과 쿠폰을 선택해주세요.');return;}
+  const log=document.getElementById('issue-log-body');
+  const now=new Date();
+  const ts=`${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const row=document.createElement('div');
+  row.className='log-row';
+  row.innerHTML=`<div><div style="font-size:12px;font-weight:600">${user}</div></div><div style="font-size:12px;color:#555">${coupon.options[coupon.selectedIndex].text}</div><div style="font-size:12px;color:#888">${ts}</div><div style="font-size:12px;color:#888">3일 후</div><div><span class="badge badge-orange">미사용</span></div>`;
+  log.insertBefore(row,log.firstChild);
+  document.getElementById('qi-user').value='';
+  coupon.selectedIndex=0;
+  showToast(`${user}님에게 쿠폰이 발행되었습니다.`);
+}
+
+// CRM issue
+function issueCrm(){
+  const selected=document.querySelectorAll('.seg-row.selected');
+  const coupon=document.getElementById('crm-coupon');
+  if(!selected.length||!coupon.value){showToast('세그먼트와 쿠폰을 모두 선택해주세요.');return;}
+  showToast('쿠폰이 성공적으로 발행되었습니다.');
+}
+
+// Create coupon
+function createCoupon(){
+  const name=document.getElementById('m-name').value.trim();
+  if(!name){showToast('쿠폰명을 입력해주세요.');return;}
+  closeModal('modal-create');
+  showToast(`'${name}' 쿠폰이 생성되었습니다.`);
+}
+
+// Toast
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2600);
+}
+</script>
+</body>
+</html>
