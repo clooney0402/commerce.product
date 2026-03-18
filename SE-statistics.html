@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>통계 — Grip SE</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard',sans-serif;background:#f4f5f7;color:#1a1a2e;display:flex;height:100vh;overflow:hidden}
+
+/* ── SIDEBAR ── */
+aside{width:220px;min-width:220px;background:#0d0f14;display:flex;flex-direction:column;height:100vh}
+.logo{height:56px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid #1e2030}
+.logo-mark{width:28px;height:28px;background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-right:10px}
+.logo-mark svg{width:16px;height:16px;stroke:#fff;fill:none}
+.logo-text{font-size:15px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.logo-text span{color:#a78bfa}
+nav{flex:1;overflow-y:auto;padding:12px 0}
+nav::-webkit-scrollbar{width:3px}
+nav::-webkit-scrollbar-thumb{background:#2a2d3e;border-radius:2px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:#9ca3af;font-size:13px;cursor:pointer;border-left:3px solid transparent;transition:all .15s;text-decoration:none;white-space:nowrap}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.nav-item:hover{background:#161824;color:#e5e7eb}
+.nav-item.active{background:#1a1260;color:#a78bfa;border-left-color:#7c3aed;font-weight:600}
+.nav-section{padding:16px 20px 6px;font-size:10px;font-weight:600;color:#4b5563;letter-spacing:.8px;text-transform:uppercase}
+.sidebar-bottom{padding:16px;border-top:1px solid #1e2030}
+.seller-row{display:flex;align-items:center;gap:10px}
+.av-side{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0}
+.s-name{font-size:12px;font-weight:600;color:#e5e7eb}
+.s-id{font-size:10px;color:#6b7280;margin-top:1px}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:56px;background:#fff;border-bottom:1px solid #e8eaf0;display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.page-title{font-size:17px;font-weight:700;color:#1a1a2e}
+.topbar-date{font-size:12px;color:#888}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;cursor:pointer}
+.content{flex:1;overflow-y:auto;padding:24px 28px}
+
+/* ── DATE RANGE BAR ── */
+.range-bar{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.range-btn{padding:7px 16px;border:1px solid #d1d5db;border-radius:8px;background:#fff;font-size:13px;color:#374151;cursor:pointer;font-family:inherit;transition:all .15s}
+.range-btn:hover{border-color:#7c3aed;color:#7c3aed}
+.range-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff;font-weight:600}
+.range-custom{display:flex;align-items:center;gap:6px;margin-left:4px}
+.range-custom input{padding:6px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:12px;font-family:inherit;color:#374151;width:120px}
+.range-custom span{font-size:12px;color:#888}
+.apply-btn{padding:7px 14px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+
+/* ── TABS ── */
+.tab-bar{display:flex;background:#eef0f7;border-radius:10px;padding:4px;gap:2px;width:fit-content;margin-bottom:24px}
+.tab{padding:8px 20px;border-radius:7px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;transition:all .15s;white-space:nowrap}
+.tab.active{background:#fff;color:#1a1a2e;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+/* ── KPI CARDS ── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi-card{background:#fff;border-radius:12px;padding:20px;border:1px solid #e8eaf0}
+.kpi-label{font-size:12px;color:#888;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.kpi-label svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.kpi-val{font-size:24px;font-weight:700;color:#1a1a2e;line-height:1;margin-bottom:6px}
+.kpi-val.purple{color:#7c3aed}
+.kpi-sub{font-size:12px;display:flex;align-items:center;gap:4px}
+.kpi-sub.up{color:#16a34a}
+.kpi-sub.down{color:#ef4444}
+.kpi-sub.flat{color:#888}
+.badge-pct{display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
+.badge-pct.up{background:#dcfce7;color:#16a34a}
+.badge-pct.down{background:#fee2e2;color:#ef4444}
+
+/* ── CHART PANELS ── */
+.chart-row{display:grid;gap:16px;margin-bottom:20px}
+.chart-row.col2{grid-template-columns:1fr 1fr}
+.chart-row.col3{grid-template-columns:2fr 1fr}
+.chart-panel{background:#fff;border-radius:12px;padding:20px;border:1px solid #e8eaf0}
+.chart-panel.full{grid-column:1/-1}
+.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.panel-title{font-size:14px;font-weight:600;color:#1a1a2e}
+.panel-sub{font-size:11px;color:#888}
+.legend{display:flex;gap:12px;align-items:center}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#888}
+.leg-dot{width:10px;height:10px;border-radius:2px}
+
+/* ── TABLE ── */
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{padding:10px 12px;background:#f8f9fc;color:#888;font-weight:600;font-size:11px;text-align:left;border-bottom:1px solid #e8eaf0;white-space:nowrap}
+.data-table td{padding:11px 12px;border-bottom:1px solid #f0f1f5;color:#374151;vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:#fafbff}
+.rank-num{width:24px;height:24px;background:#f0f1f5;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#888}
+.rank-num.top{background:#7c3aed;color:#fff}
+
+/* ── HEATMAP ── */
+.heatmap-wrap{overflow-x:auto}
+.heatmap-grid{display:grid;grid-template-columns:40px repeat(24,1fr);gap:3px;min-width:600px}
+.hm-label{font-size:10px;color:#888;display:flex;align-items:center;justify-content:center}
+.hm-cell{height:22px;border-radius:3px;cursor:pointer;transition:opacity .15s}
+.hm-cell:hover{opacity:.7}
+
+/* ── DONUT ── */
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut-legend{flex:1}
+.donut-leg-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:12px}
+.donut-leg-color{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-right:6px}
+.donut-leg-name{color:#374151;flex:1}
+.donut-leg-pct{font-weight:600;color:#1a1a2e}
+
+/* ── PROGRESS BAR ── */
+.prog-row{margin-bottom:12px}
+.prog-meta{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+.prog-name{color:#374151}
+.prog-val{font-weight:600;color:#1a1a2e}
+.prog-track{height:8px;background:#f0f1f5;border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px;transition:width .5s}
+
+/* ── BROADCAST TABLE ── */
+.bc-badge{padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.bc-badge.done{background:#dcfce7;color:#16a34a}
+.bc-badge.live{background:#fee2e2;color:#ef4444}
+.bc-badge.sched{background:#e0e7ff;color:#4f46e5}
+
+/* ── TABS PANEL HIDDEN ── */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── SCROLL ── */
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:2px}
+
+/* ── RETENTION AXIS ── */
+.ret-axis{font-size:10px;fill:#888}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside>
+  <div class="logo">
+    <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+    <div class="logo-text">Grip <span>SE</span></div>
+  </div>
+  <nav>
+    <div class="nav-item" onclick="location.href='seller_console_home.html'">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>홈
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>기본 정보
+    </div>
+    <div class="nav-item" onclick="location.href='live-console.html'">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>라이브 콘솔
+    </div>
+    <div class="nav-item" onclick="location.href='product-management.html'">
+      <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>상품 관리
+    </div>
+    <div class="nav-item" onclick="location.href='coupon-management.html'">
+      <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>쿠폰 관리
+    </div>
+    <div class="nav-item" onclick="location.href='order-management.html'">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>주문 관리
+    </div>
+    <div class="nav-item" onclick="location.href='order-delivery-management.html'">
+      <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>발주/배송 관리
+    </div>
+    <div class="nav-item" onclick="location.href='follow-management.html'">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>팔로우(회원) 관리
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>1:1 문의
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>정산관리
+    </div>
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>통계
+    </div>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="seller-row">
+      <div class="av-side">브</div>
+      <div><div class="s-name">브랜드마켓</div><div class="s-id">seller_1042</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-title">통계</div>
+      <div class="topbar-date" id="topbar-date"></div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-avatar">브</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- DATE RANGE -->
+    <div class="range-bar">
+      <button class="range-btn" onclick="setRange('week',this)">이번 주</button>
+      <button class="range-btn active" onclick="setRange('month',this)">이번 달</button>
+      <button class="range-btn" onclick="setRange('last',this)">지난 달</button>
+      <button class="range-btn" onclick="setRange('custom',this)">직접 설정</button>
+      <div class="range-custom" id="range-custom-box" style="display:none">
+        <input type="date" id="date-from" value="2026-02-01">
+        <span>~</span>
+        <input type="date" id="date-to" value="2026-02-28">
+        <button class="apply-btn" onclick="applyCustom()">적용</button>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tab-bar">
+      <div class="tab active" onclick="switchTab('sales',this)">📊 매출 지표</div>
+      <div class="tab" onclick="switchTab('broadcast',this)">📡 방송 지표</div>
+      <div class="tab" onclick="switchTab('member',this)">👥 회원 지표</div>
+      <div class="tab" onclick="switchTab('marketing',this)">🎯 마케팅 지표</div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         TAB 1: 매출 지표
+    ════════════════════════════════════════════════════ -->
+    <div class="tab-panel active" id="panel-sales">
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>총 매출액</div>
+          <div class="kpi-val purple">48,320,000</div>
+          <div class="kpi-sub up"><span class="badge-pct up">▲ 18.4%</span> 전월 대비</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>총 주문 건수</div>
+          <div class="kpi-val">1,284건</div>
+          <div class="kpi-sub up"><span class="badge-pct up">▲ 12.1%</span> 전월 대비</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>평균 주문 단가</div>
+          <div class="kpi-val">37,630원</div>
+          <div class="kpi-sub up"><span class="badge-pct up">▲ 5.6%</span> 전월 대비</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>결제 전환율</div>
+          <div class="kpi-val">4.2%</div>
+          <div class="kpi-sub down"><span class="badge-pct down">▼ 0.3%p</span> 전월 대비</div>
+        </div>
+      </div>
+
+      <!-- 월별 매출 콤보차트 + 매출 구성 -->
+      <div class="chart-row col3">
+        <div class="chart-panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">월별 매출 추이</div>
+              <div class="panel-sub">매출액(막대) · 주문 건수(선)</div>
+            </div>
+            <div class="legend">
+              <div class="leg-item"><div class="leg-dot" style="background:#7c3aed"></div>매출액</div>
+              <div class="leg-item"><div class="leg-dot" style="background:#f59e0b;border-radius:50%"></div>주문수</div>
+            </div>
+          </div>
+          <svg id="chart-monthly" width="100%" height="220" viewBox="0 0 560 220" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="chart-panel">
+          <div class="panel-header">
+            <div class="panel-title">카테고리별 매출 비중</div>
+          </div>
+          <div class="donut-wrap">
+            <svg id="donut-cat" width="120" height="120" viewBox="0 0 120 120"></svg>
+            <div class="donut-legend" id="donut-cat-legend"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 판매 TOP5 + 시간대별 -->
+      <div class="chart-row col2">
+        <div class="chart-panel">
+          <div class="panel-header">
+            <div class="panel-title">상품별 매출 TOP 10</div>
+            <div class="panel-sub">이번 달 기준</div>
+          </div>
+          <div id="top-products"></div>
+        </div>
+        <div class="chart-panel">
+          <div class="panel-header">
+            <div class="panel-title">시간대별 주문 히트맵</div>
+            <div class="panel-sub">요일 × 시간대</div>
+          </div>
+          <div id="heatmap-wrap"></div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:#888">
+            <span>낮음</span>
+            <div id="heatmap-legend" style="display:flex;gap:2px"></div>
+            <span>높음</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         TAB 2: 방송 지표
+    ════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-broadcast">
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">방송 횟수</div>
+          <div class="kpi-val">14회</div>
+          <div class="kpi-sub up"><span class="badge-pct up">▲ 2회</span> 전월 대비</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">누적 시청자 수</div>
+          <div class="kpi-val purple">38,420명</div>
+          <div class="kpi-sub up"><span class="badge-pct up">▲ 22.8%</span> 전월 대비</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">평균 시청 시간</div>
+          <div class="kpi-val">14분 32초</div>
+          <div class="kpi-sub down"><span class="badge-pct down">▼ 1분 04초</span> 전월 대비</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">방송→구매 전환율</div>
+          <div class="kpi-val">6.8%</div>
+          <div class="kpi-sub up"><span class="badge-pct up">▲ 0.9%p</span> 전월 대비</div>
+        </div>
+      </div>
+
+      <div class="chart-row col3">
+        <div class="chart-panel">
+          <div class="panel-header">
+            <div><div class="panel-title">방송별 시청자 · 구매 전환</div><div class="panel-sub">최근 10회 방송</div></div>
+            <div class="legend">
+              <div class="leg-item"><div class="leg-dot" style="background:#7c3aed"></div>시청자</div>
+              <div class="leg-item"><div class="leg-dot" style="background:#16a34a"></div>구매자</div>
+            </div>
+          </div>
+          <svg id="chart-bc-bar" width="100%" height="200" viewBox="0 0 520 200" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="chart-panel">
+          <div class="panel-header">
+            <div class="panel-title">시청 이탈 커브</div>
+            <div class="panel-sub">평균 잔류율</div>
+          </div>
+          <svg id="chart-retention" width="100%" height="200" viewBox="0 0 220 200" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
+
+      <div class="chart-panel">
+        <div class="panel-header">
+          <div class="panel-title">방송 상세 목록</div>
+          <div class="panel-sub">이번 달 전체 방송</div>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th><th>방송 제목</th><th>날짜</th><th>방송 시간</th><th>시청자</th><th>최고동접</th><th>구매자</th><th>매출액</th><th>전환율</th><th>상태</th>
+            </tr>
+          </thead>
+          <tbody id="bc-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         TAB 3: 회원 지표
+    ════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-member">
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">전체 팔로워</div>
+          <div class="kpi-val purple">12,840명</div>
+          <div class="kpi-sub up"><span class="badge-pct up">▲ 8.3%</span> 전월 대비</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">신규 팔로워</div>
+          <div class="kpi-val">+982명</div>
+          <div class="kpi-sub up"><span class="badge-pct up">▲ 14.2%</span> 전월 대비</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">이탈 팔로워</div>
+          <div class="kpi-val">-231명</div>
+          <div class="kpi-sub down"><span class="badge-pct down">▲ 31명</span> 전월 대비</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">팔로워 구매 전환율</div>
+          <div class="kpi-val">10.3%</div>
+          <div class="kpi-sub up"><span class="badge-pct up">▲ 1.2%p</span> 전월 대비</div>
+        </div>
+      </div>
+
+      <div class="chart-row col3">
+        <div class="chart-panel">
+          <div class="panel-header">
+            <div><div class="panel-title">팔로워 순증 추이</div><div class="panel-sub">신규 − 이탈</div></div>
+            <div class="legend">
+              <div class="leg-item"><div class="leg-dot" style="background:#7c3aed"></div>신규</div>
+              <div class="leg-item"><div class="leg-dot" style="background:#ef4444;border-radius:50%"></div>이탈</div>
+            </div>
+          </div>
+          <svg id="chart-follower" width="100%" height="200" viewBox="0 0 520 200" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="chart-panel">
+          <div class="panel-header"><div class="panel-title">등급별 회원 분포</div></div>
+          <div class="donut-wrap">
+            <svg id="donut-grade" width="120" height="120" viewBox="0 0 120 120"></svg>
+            <div class="donut-legend" id="donut-grade-legend"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-row col2">
+        <div class="chart-panel">
+          <div class="panel-header">
+            <div class="panel-title">세그먼트별 매출 기여도</div>
+            <div class="panel-sub">이번 달 구매액 기준</div>
+          </div>
+          <div id="seg-contrib"></div>
+        </div>
+        <div class="chart-panel">
+          <div class="panel-header">
+            <div class="panel-title">구매 빈도 분포</div>
+            <div class="panel-sub">이번 달 구매 횟수 기준</div>
+          </div>
+          <svg id="chart-freq" width="100%" height="180" viewBox="0 0 260 180" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════
+         TAB 4: 마케팅 지표
+    ════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-marketing">
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">쿠폰 총 발행</div>
+          <div class="kpi-val">3,840장</div>
+          <div class="kpi-sub up"><span class="badge-pct up">▲ 24.5%</span> 전월 대비</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">쿠폰 사용</div>
+          <div class="kpi-val purple">1,126장</div>
+          <div class="kpi-sub up"><span class="badge-pct up">▲ 18.2%</span> 전월 대비</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">쿠폰 사용률</div>
+          <div class="kpi-val">29.3%</div>
+          <div class="kpi-sub down"><span class="badge-pct down">▼ 1.6%p</span> 전월 대비</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">쿠폰 연결 매출</div>
+          <div class="kpi-val purple">14,820,000</div>
+          <div class="kpi-sub up"><span class="badge-pct up">▲ 30.7%</span> 전월 대비</div>
+        </div>
+      </div>
+
+      <div class="chart-row col2">
+        <div class="chart-panel">
+          <div class="panel-header">
+            <div><div class="panel-title">발행 유형별 사용률 비교</div><div class="panel-sub">쿠폰 정책 효과 분석</div></div>
+          </div>
+          <svg id="chart-coupon-type" width="100%" height="200" viewBox="0 0 260 200" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="chart-panel">
+          <div class="panel-header">
+            <div><div class="panel-title">주간 쿠폰 사용 추이</div><div class="panel-sub">발행 vs 사용</div></div>
+            <div class="legend">
+              <div class="leg-item"><div class="leg-dot" style="background:#7c3aed"></div>발행</div>
+              <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>사용</div>
+            </div>
+          </div>
+          <svg id="chart-coupon-trend" width="100%" height="200" viewBox="0 0 260 200" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
+
+      <div class="chart-panel">
+        <div class="panel-header">
+          <div class="panel-title">쿠폰별 성과 상세</div>
+          <div class="panel-sub">이번 달 운영 중인 쿠폰</div>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr><th>쿠폰명</th><th>유형</th><th>할인</th><th>발행</th><th>사용</th><th>사용률</th><th>연결매출</th><th>ROI</th></tr>
+          </thead>
+          <tbody id="coupon-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+/* ── DATE ── */
+(function(){
+  const d=new Date();
+  const days=['일','월','화','수','목','금','토'];
+  document.getElementById('topbar-date').textContent=
+    `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+})();
+
+/* ── TABS ── */
+function switchTab(id,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-'+id).classList.add('active');
+  setTimeout(()=>drawAllCharts(),50);
+}
+
+/* ── RANGE ── */
+function setRange(type,el){
+  document.querySelectorAll('.range-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('range-custom-box').style.display=type==='custom'?'flex':'none';
+}
+function applyCustom(){ /* prototype: no-op */ }
+
+/* ── COLOR HELPERS ── */
+const C={purple:'#7c3aed',blue:'#3b82f6',green:'#16a34a',orange:'#f59e0b',red:'#ef4444',
+  pink:'#ec4899',indigo:'#4f46e5',teal:'#0d9488'};
+function hexToRgba(hex,a){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHART: Monthly Combo (bar + line)
+══════════════════════════════════════════════════════════ */
+function drawMonthlyCombo(){
+  const svg=document.getElementById('chart-monthly');
+  if(!svg)return;
+  const W=560,H=220,pad={t:20,r:20,b:36,l:60};
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+  const months=['8월','9월','10월','11월','12월','1월','2월','3월'];
+  const revenue=[28,32,38,35,42,30,41,48.32]; // 백만
+  const orders=[820,940,1080,1010,1180,870,1145,1284];
+  const maxRev=Math.max(...revenue)*1.15;
+  const maxOrd=Math.max(...orders)*1.15;
+  const bw=(cW/months.length)*0.55;
+  let html='';
+
+  // grid
+  for(let i=0;i<=4;i++){
+    const y=pad.t+cH*(i/4);
+    html+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#f0f1f5" stroke-width="1"/>`;
+    const v=((maxRev*(1-i/4))*10).toFixed(0)/10;
+    html+=`<text x="${pad.l-6}" y="${y+4}" text-anchor="end" fill="#888" font-size="10">${v}M</text>`;
+  }
+
+  // bars
+  months.forEach((m,i)=>{
+    const x=pad.l+i*(cW/months.length)+(cW/months.length-bw)/2;
+    const bh=(revenue[i]/maxRev)*cH;
+    const y=pad.t+cH-bh;
+    html+=`<rect x="${x}" y="${y}" width="${bw}" height="${bh}" fill="${C.purple}" rx="3" opacity="0.85"/>`;
+    html+=`<text x="${x+bw/2}" y="${H-pad.b+14}" text-anchor="middle" fill="#888" font-size="10">${m}</text>`;
+  });
+
+  // line (orders)
+  let pts=[];
+  orders.forEach((v,i)=>{
+    const cx=pad.l+i*(cW/months.length)+cW/months.length/2;
+    const cy=pad.t+cH-(v/maxOrd)*cH;
+    pts.push([cx,cy]);
+  });
+  // smooth bezier
+  let d='M'+pts[0][0]+','+pts[0][1];
+  for(let i=1;i<pts.length;i++){
+    const px=pts[i-1],cx=pts[i];
+    const cpx=(px[0]+cx[0])/2;
+    d+=` C${cpx},${px[1]} ${cpx},${cx[1]} ${cx[0]},${cx[1]}`;
+  }
+  html+=`<path d="${d}" fill="none" stroke="${C.orange}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  pts.forEach(([x,y])=>{
+    html+=`<circle cx="${x}" cy="${y}" r="4" fill="${C.orange}" stroke="#fff" stroke-width="1.5"/>`;
+  });
+
+  svg.innerHTML=html;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHART: Donut
+══════════════════════════════════════════════════════════ */
+function drawDonut(svgId,legendId,data){
+  const svg=document.getElementById(svgId);
+  const leg=document.getElementById(legendId);
+  if(!svg||!leg)return;
+  const cx=60,cy=60,r=42,ir=26;
+  const total=data.reduce((s,d)=>s+d.v,0);
+  let start=0,html='',lhtml='';
+  data.forEach(d=>{
+    const frac=d.v/total;
+    const angle=frac*Math.PI*2;
+    const x1=cx+r*Math.sin(start),y1=cy-r*Math.cos(start);
+    const x2=cx+r*Math.sin(start+angle),y2=cy-r*Math.cos(start+angle);
+    const ix1=cx+ir*Math.sin(start),iy1=cy-ir*Math.cos(start);
+    const ix2=cx+ir*Math.sin(start+angle),iy2=cy-ir*Math.cos(start+angle);
+    const lg=frac>0.5?1:0;
+    html+=`<path d="M${ix1},${iy1} L${x1},${y1} A${r},${r} 0 ${lg},1 ${x2},${y2} L${ix2},${iy2} A${ir},${ir} 0 ${lg},0 ${ix1},${iy1} Z" fill="${d.c}" opacity="0.9"/>`;
+    lhtml+=`<div class="donut-leg-row"><div style="display:flex;align-items:center"><div class="donut-leg-color" style="background:${d.c}"></div><span class="donut-leg-name">${d.n}</span></div><span class="donut-leg-pct">${Math.round(frac*100)}%</span></div>`;
+    start+=angle;
+  });
+  svg.innerHTML=html;
+  leg.innerHTML=lhtml;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHART: Top Products (horizontal bars)
+══════════════════════════════════════════════════════════ */
+function drawTopProducts(){
+  const el=document.getElementById('top-products');
+  if(!el)return;
+  const items=[
+    {n:'스탠다드 울 코트',v:8420000},
+    {n:'캐시미어 니트 2종',v:6830000},
+    {n:'레더 부츠 (블랙)',v:5920000},
+    {n:'트위드 재킷',v:4780000},
+    {n:'실크 블라우스',v:4210000},
+    {n:'데님 팬츠 (슬림)',v:3640000},
+    {n:'퍼프 패딩 숏',v:3290000},
+    {n:'앙고라 스웨터',v:2870000},
+    {n:'레이스 원피스',v:2340000},
+    {n:'폴리 셔츠 (화이트)',v:1980000},
+  ];
+  const max=items[0].v;
+  let html='';
+  items.forEach((it,i)=>{
+    const pct=(it.v/max*100).toFixed(1);
+    const colors=[C.purple,C.purple,C.purple,C.indigo,C.indigo,C.blue,C.blue,C.blue,C.teal,C.teal];
+    html+=`<div class="prog-row">
+      <div class="prog-meta">
+        <span class="prog-name"><span class="rank-num${i<3?' top':''}">${i+1}</span>&nbsp; ${it.n}</span>
+        <span class="prog-val">${it.v.toLocaleString()}원</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${colors[i]}"></div></div>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHART: Heatmap
+══════════════════════════════════════════════════════════ */
+function drawHeatmap(){
+  const el=document.getElementById('heatmap-wrap');
+  if(!el)return;
+  const days=['월','화','수','목','금','토','일'];
+  // synthetic data: [day][hour] 0~100
+  const data=days.map((d,di)=>Array.from({length:24},(_,h)=>{
+    const base=di>=5?60:40; // 주말 높음
+    const peak=h>=20&&h<=23?80:h>=12&&h<=14?50:h>=8&&h<=10?30:10;
+    return Math.min(100,base+peak+Math.floor(Math.random()*20));
+  }));
+  const shades=['#f5f3ff','#ede9fe','#ddd6fe','#c4b5fd','#a78bfa','#7c3aed','#5b21b6'];
+  function getColor(v){
+    const idx=Math.floor(v/100*(shades.length-1));
+    return shades[Math.min(idx,shades.length-1)];
+  }
+  let html='<div class="heatmap-grid">';
+  // hour header
+  html+='<div class="hm-label"></div>';
+  for(let h=0;h<24;h++) html+=`<div class="hm-label" style="font-size:9px">${h}</div>`;
+  // rows
+  days.forEach((d,di)=>{
+    html+=`<div class="hm-label">${d}</div>`;
+    for(let h=0;h<24;h++){
+      const v=data[di][h];
+      html+=`<div class="hm-cell" style="background:${getColor(v)}" title="${d} ${h}시 : ${v}건"></div>`;
+    }
+  });
+  html+='</div>';
+  el.innerHTML=html;
+
+  // legend
+  const legEl=document.getElementById('heatmap-legend');
+  if(legEl) legEl.innerHTML=shades.map(c=>`<div style="width:16px;height:12px;background:${c};border-radius:2px"></div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHART: Broadcast Grouped Bar
+══════════════════════════════════════════════════════════ */
+function drawBcBar(){
+  const svg=document.getElementById('chart-bc-bar');
+  if(!svg)return;
+  const W=520,H=200,pad={t:16,r:16,b:36,l:50};
+  const cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
+  const labels=['3/4','3/6','3/8','3/10','3/11','3/12','3/13','3/15','3/16','3/17'];
+  const viewers=[2840,3120,2560,4200,3680,2900,3440,5200,4120,3860];
+  const buyers=[182,224,168,310,256,188,248,412,298,262];
+  const maxV=Math.max(...viewers)*1.15;
+  const gbw=(cW/labels.length)*0.35;
+  let html='';
+  for(let i=0;i<=4;i++){
+    const y=pad.t+cH*i/4;
+    html+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#f0f1f5" stroke-width="1"/>`;
+    const v=Math.round(maxV*(1-i/4));
+    html+=`<text x="${pad.l-5}" y="${y+4}" text-anchor="end" fill="#888" font-size="10">${v>=1000?(v/1000).toFixed(1)+'k':v}</text>`;
+  }
+  labels.forEach((lb,i)=>{
+    const cx=pad.l+i*(cW/labels.length)+cW/labels.length/2;
+    // viewer bar
+    const vh=(viewers[i]/maxV)*cH;
+    html+=`<rect x="${cx-gbw-1}" y="${pad.t+cH-vh}" width="${gbw}" height="${vh}" fill="${C.purple}" rx="2" opacity="0.8"/>`;
+    // buyer bar (scaled x8 for visibility)
+    const scale=maxV/Math.max(...buyers)/1.2;
+    const bh=(buyers[i]*scale/maxV)*cH;
+    html+=`<rect x="${cx+1}" y="${pad.t+cH-bh}" width="${gbw}" height="${bh}" fill="${C.green}" rx="2" opacity="0.85"/>`;
+    html+=`<text x="${cx}" y="${H-pad.b+14}" text-anchor="middle" fill="#888" font-size="10">${lb}</text>`;
+  });
+  svg.innerHTML=html;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHART: Retention Curve
+══════════════════════════════════════════════════════════ */
+function drawRetention(){
+  const svg=document.getElementById('chart-retention');
+  if(!svg)return;
+  const W=220,H=200,pad={t:16,r:16,b:36,l:40};
+  const cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
+  // retention at 0,5,10,15,20,25,30,40,50,60 min
+  const timeLabels=['0','5','10','15','20','30','40','50','60'];
+  const retention=[100,88,74,62,52,44,36,28,20];
+  const pts=retention.map((v,i)=>[pad.l+(i/(retention.length-1))*cW, pad.t+cH-(v/100)*cH]);
+
+  let d='M'+pts[0][0]+','+pts[0][1];
+  for(let i=1;i<pts.length;i++){
+    const [px,py]=pts[i-1],[cx,cy]=pts[i];
+    const cpx=(px+cx)/2;
+    d+=` C${cpx},${py} ${cpx},${cy} ${cx},${cy}`;
+  }
+  let areaD=d+` L${pts[pts.length-1][0]},${pad.t+cH} L${pts[0][0]},${pad.t+cH} Z`;
+
+  let html='';
+  // grid
+  [0,25,50,75,100].forEach(v=>{
+    const y=pad.t+cH-(v/100)*cH;
+    html+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#f0f1f5" stroke-width="1"/>`;
+    html+=`<text x="${pad.l-4}" y="${y+4}" text-anchor="end" fill="#888" font-size="9">${v}%</text>`;
+  });
+  timeLabels.forEach((t,i)=>{
+    const x=pad.l+(i/(timeLabels.length-1))*cW;
+    html+=`<text x="${x}" y="${H-pad.b+14}" text-anchor="middle" fill="#888" font-size="9">${t}분</text>`;
+  });
+  html+=`<defs><linearGradient id="retGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${C.purple}" stop-opacity="0.3"/><stop offset="100%" stop-color="${C.purple}" stop-opacity="0.02"/></linearGradient></defs>`;
+  html+=`<path d="${areaD}" fill="url(#retGrad)"/>`;
+  html+=`<path d="${d}" fill="none" stroke="${C.purple}" stroke-width="2.5"/>`;
+  pts.forEach(([x,y],i)=>{
+    if(i%2===0) html+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${C.purple}" stroke="#fff" stroke-width="1.5"/>`;
+  });
+  svg.innerHTML=html;
+}
+
+/* ══════════════════════════════════════════════════════════
+   TABLE: Broadcast list
+══════════════════════════════════════════════════════════ */
+function drawBcTable(){
+  const tbody=document.getElementById('bc-table-body');
+  if(!tbody)return;
+  const rows=[
+    {t:'봄 신상 첫 공개 라이브',d:'3/17',dur:'1시간 22분',view:3860,peak:1240,buy:262,rev:9840000,cvr:6.8,st:'완료'},
+    {t:'주말 특가 라이브',d:'3/16',dur:'58분',view:4120,peak:1890,buy:298,rev:11200000,cvr:7.2,st:'완료'},
+    {t:'봄맞이 코디 제안',d:'3/15',dur:'1시간 45분',view:5200,peak:2340,buy:412,rev:15600000,cvr:7.9,st:'완료'},
+    {t:'니트 & 가디건 기획전',d:'3/13',dur:'1시간 10분',view:3440,peak:1020,buy:248,rev:8740000,cvr:7.2,st:'완료'},
+    {t:'화목 정기 라이브',d:'3/12',dur:'52분',view:2900,peak:840,buy:188,rev:6920000,cvr:6.5,st:'완료'},
+    {t:'방송 예정',d:'3/20',dur:'-',view:'-',peak:'-',buy:'-',rev:'-',cvr:'-',st:'예정'},
+  ];
+  tbody.innerHTML=rows.map((r,i)=>`<tr>
+    <td><span class="rank-num${i<3?' top':''}">${i+1}</span></td>
+    <td style="font-weight:500">${r.t}</td>
+    <td style="color:#888">${r.d}</td>
+    <td>${r.dur}</td>
+    <td>${typeof r.view==='number'?r.view.toLocaleString()+'명':r.view}</td>
+    <td>${typeof r.peak==='number'?r.peak.toLocaleString()+'명':r.peak}</td>
+    <td>${typeof r.buy==='number'?r.buy.toLocaleString()+'명':r.buy}</td>
+    <td style="font-weight:600;color:#7c3aed">${typeof r.rev==='number'?r.rev.toLocaleString()+'원':r.rev}</td>
+    <td>${typeof r.cvr==='number'?r.cvr+'%':r.cvr}</td>
+    <td><span class="bc-badge ${r.st==='완료'?'done':r.st==='예정'?'sched':'live'}">${r.st}</span></td>
+  </tr>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHART: Follower Area Chart
+══════════════════════════════════════════════════════════ */
+function drawFollowerChart(){
+  const svg=document.getElementById('chart-follower');
+  if(!svg)return;
+  const W=520,H=200,pad={t:16,r:16,b:36,l:50};
+  const cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
+  const months=['9월','10월','11월','12월','1월','2월','3월'];
+  const newF=[620,710,780,850,720,860,982];
+  const lostF=[180,210,190,240,195,200,231];
+  const maxV=Math.max(...newF)*1.2;
+
+  let html='<defs><linearGradient id="fGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7c3aed" stop-opacity="0.25"/><stop offset="100%" stop-color="#7c3aed" stop-opacity="0.02"/></linearGradient></defs>';
+  for(let i=0;i<=4;i++){
+    const y=pad.t+cH*i/4;
+    html+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#f0f1f5" stroke-width="1"/>`;
+    html+=`<text x="${pad.l-5}" y="${y+4}" text-anchor="end" fill="#888" font-size="10">${Math.round(maxV*(1-i/4))}</text>`;
+  }
+
+  // new followers area
+  const pts=newF.map((v,i)=>[pad.l+i*(cW/(newF.length-1)),pad.t+cH-(v/maxV)*cH]);
+  let d='M'+pts[0][0]+','+pts[0][1];
+  for(let i=1;i<pts.length;i++){
+    const [px,py]=pts[i-1],[cx,cy]=pts[i];
+    d+=` C${(px+cx)/2},${py} ${(px+cx)/2},${cy} ${cx},${cy}`;
+  }
+  html+=`<path d="${d} L${pts[pts.length-1][0]},${pad.t+cH} L${pts[0][0]},${pad.t+cH} Z" fill="url(#fGrad)"/>`;
+  html+=`<path d="${d}" fill="none" stroke="${C.purple}" stroke-width="2.5"/>`;
+
+  // lost followers line
+  const lpts=lostF.map((v,i)=>[pad.l+i*(cW/(lostF.length-1)),pad.t+cH-(v/maxV)*cH]);
+  let ld='M'+lpts[0][0]+','+lpts[0][1];
+  for(let i=1;i<lpts.length;i++){
+    const [px,py]=lpts[i-1],[cx,cy]=lpts[i];
+    ld+=` C${(px+cx)/2},${py} ${(px+cx)/2},${cy} ${cx},${cy}`;
+  }
+  html+=`<path d="${ld}" fill="none" stroke="${C.red}" stroke-width="2" stroke-dasharray="5,3"/>`;
+
+  months.forEach((m,i)=>{
+    const x=pad.l+i*(cW/(months.length-1));
+    html+=`<text x="${x}" y="${H-pad.b+14}" text-anchor="middle" fill="#888" font-size="10">${m}</text>`;
+  });
+  pts.forEach(([x,y])=>html+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${C.purple}" stroke="#fff" stroke-width="1.5"/>`);
+
+  svg.innerHTML=html;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHART: Segment Contribution
+══════════════════════════════════════════════════════════ */
+function drawSegContrib(){
+  const el=document.getElementById('seg-contrib');
+  if(!el)return;
+  const segs=[
+    {n:'VIP (100만원↑)',v:18420000,c:C.purple},
+    {n:'우수 (30만원↑)',v:13840000,c:C.indigo},
+    {n:'일반 활성',v:9260000,c:C.blue},
+    {n:'신규 팔로워',v:4820000,c:C.teal},
+    {n:'휴면 복귀',v:1680000,c:C.orange},
+    {n:'이탈 위험',v:300000,c:C.red},
+  ];
+  const max=segs[0].v;
+  el.innerHTML=segs.map(s=>`<div class="prog-row">
+    <div class="prog-meta">
+      <span class="prog-name">${s.n}</span>
+      <span class="prog-val">${(s.v/1000000).toFixed(1)}M</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" style="width:${(s.v/max*100).toFixed(1)}%;background:${s.c}"></div></div>
+  </div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHART: Purchase Frequency Bar
+══════════════════════════════════════════════════════════ */
+function drawFreqChart(){
+  const svg=document.getElementById('chart-freq');
+  if(!svg)return;
+  const W=260,H=180,pad={t:16,r:16,b:36,l:40};
+  const cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
+  const labels=['1회','2회','3회','4회','5회↑'];
+  const vals=[580,312,178,88,126];
+  const max=Math.max(...vals)*1.15;
+  const bw=cW/labels.length*0.55;
+  let html='';
+  for(let i=0;i<=4;i++){
+    const y=pad.t+cH*i/4;
+    html+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#f0f1f5" stroke-width="1"/>`;
+    html+=`<text x="${pad.l-4}" y="${y+4}" text-anchor="end" fill="#888" font-size="10">${Math.round(max*(1-i/4))}</text>`;
+  }
+  const colors=[C.purple,C.indigo,C.blue,C.teal,C.orange];
+  labels.forEach((lb,i)=>{
+    const x=pad.l+i*(cW/labels.length)+(cW/labels.length-bw)/2;
+    const bh=(vals[i]/max)*cH;
+    html+=`<rect x="${x}" y="${pad.t+cH-bh}" width="${bw}" height="${bh}" fill="${colors[i]}" rx="3" opacity="0.85"/>`;
+    html+=`<text x="${x+bw/2}" y="${H-pad.b+14}" text-anchor="middle" fill="#888" font-size="10">${lb}</text>`;
+    html+=`<text x="${x+bw/2}" y="${pad.t+cH-bh-4}" text-anchor="middle" fill="#555" font-size="10" font-weight="600">${vals[i]}</text>`;
+  });
+  svg.innerHTML=html;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHART: Coupon Type Horizontal Bars
+══════════════════════════════════════════════════════════ */
+function drawCouponType(){
+  const svg=document.getElementById('chart-coupon-type');
+  if(!svg)return;
+  const W=260,H=200,pad={t:16,r:60,b:16,l:60};
+  const cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
+  const types=[
+    {n:'팔로우 웰컴',rate:42,c:C.purple},
+    {n:'첫구매 감사',rate:68,c:C.green},
+    {n:'주문 완료',rate:35,c:C.blue},
+    {n:'CRM 발행',rate:29,c:C.orange},
+    {n:'상시 발행',rate:22,c:C.indigo},
+  ];
+  const bh=cH/types.length*0.55;
+  let html='';
+  types.forEach((t,i)=>{
+    const y=pad.t+i*(cH/types.length)+(cH/types.length-bh)/2;
+    const bw=(t.rate/100)*cW;
+    html+=`<rect x="${pad.l}" y="${y}" width="${bw}" height="${bh}" fill="${t.c}" rx="3" opacity="0.85"/>`;
+    html+=`<text x="${pad.l-6}" y="${y+bh/2+4}" text-anchor="end" fill="#555" font-size="11">${t.n}</text>`;
+    html+=`<text x="${pad.l+bw+5}" y="${y+bh/2+4}" fill="${t.c}" font-size="11" font-weight="700">${t.rate}%</text>`;
+  });
+  svg.innerHTML=html;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHART: Coupon Weekly Trend (dual line)
+══════════════════════════════════════════════════════════ */
+function drawCouponTrend(){
+  const svg=document.getElementById('chart-coupon-trend');
+  if(!svg)return;
+  const W=260,H=200,pad={t:16,r:16,b:36,l:50};
+  const cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
+  const weeks=['W1','W2','W3','W4'];
+  const issued=[820,1040,980,1000];
+  const used=[240,310,280,296];
+  const max=Math.max(...issued)*1.15;
+  let html='';
+  for(let i=0;i<=4;i++){
+    const y=pad.t+cH*i/4;
+    html+=`<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" stroke="#f0f1f5" stroke-width="1"/>`;
+    html+=`<text x="${pad.l-4}" y="${y+4}" text-anchor="end" fill="#888" font-size="10">${Math.round(max*(1-i/4))}</text>`;
+  }
+  weeks.forEach((w,i)=>{
+    const x=pad.l+i*(cW/(weeks.length-1));
+    html+=`<text x="${x}" y="${H-pad.b+14}" text-anchor="middle" fill="#888" font-size="10">${w}</text>`;
+  });
+  function drawLine(vals,color,dashed){
+    const pts=vals.map((v,i)=>[pad.l+i*(cW/(vals.length-1)),pad.t+cH-(v/max)*cH]);
+    let d='M'+pts[0][0]+','+pts[0][1];
+    for(let i=1;i<pts.length;i++){
+      const [px,py]=pts[i-1],[cx,cy]=pts[i];
+      d+=` C${(px+cx)/2},${py} ${(px+cx)/2},${cy} ${cx},${cy}`;
+    }
+    html+=`<path d="${d}" fill="none" stroke="${color}" stroke-width="2.5"${dashed?' stroke-dasharray="5,3"':''}/>`;
+    pts.forEach(([x,y])=>html+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${color}" stroke="#fff" stroke-width="1.5"/>`);
+  }
+  drawLine(issued,C.purple,false);
+  drawLine(used,C.orange,true);
+  svg.innerHTML=html;
+}
+
+/* ══════════════════════════════════════════════════════════
+   TABLE: Coupon performance
+══════════════════════════════════════════════════════════ */
+function drawCouponTable(){
+  const tbody=document.getElementById('coupon-table-body');
+  if(!tbody)return;
+  const rows=[
+    {n:'봄 신상 10% 할인',type:'정률',disc:'10%',issued:1200,used:384,rev:5840000,roi:3.2},
+    {n:'팔로우 웰컴 3,000원',type:'정액',disc:'3,000원',issued:840,used:352,rev:3240000,roi:2.8},
+    {n:'첫구매 5% 감사',type:'정률',disc:'5%',issued:620,used:218,rev:2180000,roi:4.1},
+    {n:'VIP 전용 15%',type:'정률',disc:'15%',issued:180,used:142,rev:2640000,roi:5.6},
+    {n:'주문완료 2,000원',type:'정액',disc:'2,000원',issued:600,used:180,rev:920000,roi:1.9},
+    {n:'CRM 휴면복귀 20%',type:'정률',disc:'20%',issued:400,used:50,rev:980000,roi:2.1},
+  ];
+  const typeColors={정률:C.purple,정액:C.blue};
+  tbody.innerHTML=rows.map(r=>{
+    const rate=(r.used/r.issued*100).toFixed(1);
+    const barW=Math.round(r.used/r.issued*100);
+    return `<tr>
+      <td style="font-weight:500">${r.n}</td>
+      <td><span style="background:${hexToRgba(typeColors[r.type],.12)};color:${typeColors[r.type]};padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600">${r.type}</span></td>
+      <td>${r.disc}</td>
+      <td>${r.issued.toLocaleString()}장</td>
+      <td>${r.used.toLocaleString()}장</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="width:60px;height:6px;background:#f0f1f5;border-radius:3px;overflow:hidden">
+            <div style="width:${barW}%;height:100%;background:${C.purple};border-radius:3px"></div>
+          </div>
+          <span style="font-size:12px;font-weight:600;color:#1a1a2e">${rate}%</span>
+        </div>
+      </td>
+      <td style="font-weight:600;color:#7c3aed">${r.rev.toLocaleString()}원</td>
+      <td><span style="font-weight:700;color:${r.roi>=4?C.green:r.roi>=3?C.blue:C.orange}">${r.roi}x</span></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════════
+   MAIN: Draw All
+══════════════════════════════════════════════════════════ */
+function drawAllCharts(){
+  drawMonthlyCombo();
+  drawDonut('donut-cat','donut-cat-legend',[
+    {n:'의류',v:58,c:C.purple},
+    {n:'액세서리',v:18,c:C.blue},
+    {n:'신발',v:14,c:C.teal},
+    {n:'기타',v:10,c:C.orange},
+  ]);
+  drawTopProducts();
+  drawHeatmap();
+  drawBcBar();
+  drawRetention();
+  drawBcTable();
+  drawFollowerChart();
+  drawDonut('donut-grade','donut-grade-legend',[
+    {n:'VIP',v:8,c:C.purple},
+    {n:'우수',v:22,c:C.indigo},
+    {n:'일반',v:45,c:C.blue},
+    {n:'신규',v:25,c:C.teal},
+  ]);
+  drawSegContrib();
+  drawFreqChart();
+  drawCouponType();
+  drawCouponTrend();
+  drawCouponTable();
+}
+
+window.addEventListener('load',()=>{
+  drawAllCharts();
+});
+window.addEventListener('resize',()=>{
+  drawAllCharts();
+});
+</script>
+</body>
+</html>
