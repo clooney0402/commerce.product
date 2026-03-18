@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Grip SE · 기본정보</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;background:#f4f5f7;color:#1a1d23;display:flex;height:100vh;overflow:hidden;font-size:13px}
+
+/* ── Sidebar ── */
+.sidebar{width:220px;background:#0d0f14;display:flex;flex-direction:column;flex-shrink:0;height:100vh}
+.sidebar-logo{padding:20px 20px 18px;border-bottom:1px solid #1e2330}
+.logo-badge{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:8px;padding:7px 12px}
+.logo-badge .brand{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.logo-badge .tag{background:rgba(255,255,255,.18);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;letter-spacing:.5px}
+.nav-section{padding:14px 0 6px;flex:1}
+.nav-label{font-size:9px;font-weight:700;color:#555;letter-spacing:1px;padding:0 20px 6px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:#9ca3af;cursor:pointer;border-left:3px solid transparent;transition:all .15s;text-decoration:none;white-space:nowrap}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.nav-item:hover{background:#161824;color:#e5e7eb}
+.nav-item.active{background:#1a1260;color:#a78bfa;border-left-color:#7c3aed;font-weight:600}
+.sidebar-footer{padding:14px 20px;border-top:1px solid #1e2330}
+.seller-row{display:flex;align-items:center;gap:10px}
+.av-side{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700}
+.s-name{font-size:12px;font-weight:600;color:#e5e7eb}
+.s-id{font-size:10px;color:#6b7280;margin-top:1px}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:56px;background:#fff;border-bottom:1px solid #e8eaf0;display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.page-title{font-size:17px;font-weight:700;color:#1a1a2e}
+.topbar-sub{font-size:12px;color:#9ca3af}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-date{font-size:12px;color:#9ca3af}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer}
+
+/* ── Content ── */
+.content{flex:1;overflow-y:auto;padding:28px;display:flex;flex-direction:column;gap:20px;padding-bottom:100px}
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:2px}
+
+/* ── Section card ── */
+.section-card{background:#fff;border-radius:14px;border:1px solid #e5e7eb}
+.section-head{padding:20px 24px 16px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between}
+.section-title{font-size:14px;font-weight:700;color:#111827;display:flex;align-items:center;gap:8px}
+.section-title .si{font-size:18px}
+.section-desc{font-size:12px;color:#9ca3af;margin-top:2px}
+.section-body{padding:22px 24px;display:flex;flex-direction:column;gap:20px}
+.section-footer{padding:14px 24px;border-top:1px solid #f3f4f6;display:flex;justify-content:flex-end;gap:8px}
+
+/* ── Form elements ── */
+.form-row{display:flex;flex-direction:column;gap:5px}
+.form-row label{font-size:12px;font-weight:500;color:#6b7280}
+.form-row label .req{color:#ef4444}
+.form-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-3col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.field-input{width:100%;padding:9px 12px;border:1.5px solid #e0e2ea;border-radius:8px;font-size:13px;color:#111;background:#fff;outline:none;font-family:inherit;transition:border-color .15s}
+.field-input:focus{border-color:#7c3aed}
+.field-input::placeholder{color:#bbb}
+.field-select{width:100%;padding:9px 12px;border:1.5px solid #e0e2ea;border-radius:8px;font-size:13px;color:#111;background:#fff;outline:none;font-family:inherit;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px;transition:border-color .15s}
+.field-select:focus{border-color:#7c3aed;outline:none}
+.field-textarea{width:100%;padding:10px 12px;border:1.5px solid #e0e2ea;border-radius:8px;font-size:13px;color:#111;background:#fff;outline:none;font-family:inherit;resize:vertical;min-height:80px;line-height:1.6;transition:border-color .15s}
+.field-textarea:focus{border-color:#7c3aed}
+.field-hint{font-size:11px;color:#aaa;margin-top:3px}
+
+/* ── Address row ── */
+.addr-row{display:flex;gap:8px}
+.addr-row .field-input{flex:1}
+.btn-addr{padding:9px 16px;background:#f4f5f7;border:1.5px solid #e0e2ea;border-radius:8px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s}
+.btn-addr:hover{border-color:#7c3aed;color:#7c3aed;background:#f5f3ff}
+.addr-detail{margin-top:6px}
+
+/* ── Type buttons (multi toggle) ── */
+.type-group{display:flex;gap:6px;flex-wrap:wrap}
+.type-toggle-btn{padding:8px 16px;border:1.5px solid #e0e2ea;border-radius:8px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;background:#fff;transition:all .15s;font-family:inherit}
+.type-toggle-btn:hover{border-color:#c4b5fd;color:#7c3aed}
+.type-toggle-btn.on{border-color:#7c3aed;background:#f5f3ff;color:#7c3aed;font-weight:600}
+
+/* ── Radio group ── */
+.radio-group{display:flex;gap:10px;flex-wrap:wrap}
+.radio-item{display:flex;align-items:center;gap:8px;padding:10px 16px;border:1.5px solid #e0e2ea;border-radius:8px;cursor:pointer;transition:all .15s;flex:1;min-width:100px}
+.radio-item:hover{border-color:#c4b5fd}
+.radio-item.on{border-color:#7c3aed;background:#f5f3ff}
+.radio-item input[type=radio]{accent-color:#7c3aed;width:15px;height:15px;cursor:pointer}
+.radio-item-label{font-size:13px;font-weight:500;color:#374151}
+.radio-item.on .radio-item-label{color:#6d28d9;font-weight:600}
+.radio-item-sub{font-size:11px;color:#aaa;margin-top:1px}
+
+/* ── Conditional field ── */
+.cond-field{background:#f9fafb;border:1px solid #f3f4f6;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.cond-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cond-row span{font-size:13px;color:#555;white-space:nowrap}
+.cond-row .field-input{width:140px;flex-shrink:0}
+
+/* ── Toggle switch ── */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+.toggle-row-label{display:flex;flex-direction:column;gap:2px}
+.toggle-row-title{font-size:13px;font-weight:600;color:#111}
+.toggle-row-sub{font-size:12px;color:#aaa}
+.toggle{width:42px;height:24px;border-radius:12px;background:#e0e2ea;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle.on{background:#7c3aed}
+.toggle::after{content:'';width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle.on::after{transform:translateX(18px)}
+.extra-toggle-wrap{margin-top:8px}
+
+/* ── Day selector ── */
+.day-selector{display:flex;gap:6px}
+.day-btn{width:36px;height:36px;border-radius:8px;border:1.5px solid #e0e2ea;background:#fff;font-size:12px;font-weight:600;color:#9ca3af;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:inherit}
+.day-btn:hover{border-color:#c4b5fd;color:#7c3aed}
+.day-btn.on{border-color:#7c3aed;background:#7c3aed;color:#fff}
+.day-btn.weekend{color:#ef4444}
+.day-btn.weekend.on{background:#ef4444;border-color:#ef4444;color:#fff}
+
+/* ── Chatbot disable ── */
+.chatbot-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb}
+.chatbot-toggle-info{display:flex;flex-direction:column;gap:3px}
+.chatbot-toggle-title{font-size:13px;font-weight:600;color:#1a1d23}
+.chatbot-toggle-sub{font-size:11px;color:#9ca3af}
+.chatbot-status-preview{margin-top:12px;padding:12px 14px;border-radius:10px;border:1px solid #e5e7eb;display:flex;align-items:center;gap:12px;background:#fff}
+.chatbot-status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.chatbot-status-dot.active{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.15)}
+.chatbot-status-dot.inactive{background:#ef4444;box-shadow:0 0 0 3px rgba(239,68,68,.15)}
+.chatbot-status-text{font-size:12px;color:#374151;flex:1}
+.chatbot-status-text strong{font-weight:700}
+.chatbot-status-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:.3px}
+.chatbot-status-badge.on{background:#dcfce7;color:#166534}
+.chatbot-status-badge.off{background:#fee2e2;color:#991b1b}
+.chatbot-disable-wrap{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.chatbot-disable-wrap label{font-size:12px;font-weight:600;color:#374151}
+.chatbot-schedule-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:4px}
+.chatbot-day-chip{padding:4px 0;text-align:center;font-size:11px;font-weight:600;border-radius:6px}
+.chatbot-day-chip.holiday{background:#fee2e2;color:#b91c1c}
+.chatbot-day-chip.workday{background:#f0fdf4;color:#166534}
+
+/* ── Holiday list ── */
+.holiday-add-row{display:flex;gap:8px}
+.holiday-add-row .field-input{flex:1}
+.holiday-list{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.holiday-chip{display:flex;align-items:center;justify-content:space-between;background:#f9fafb;border:1px solid #f0f0f0;border-radius:8px;padding:8px 12px;font-size:12px;color:#374151}
+.holiday-chip .hc-date{font-weight:600}
+.holiday-chip .hc-label{color:#888;margin-left:8px}
+.hc-del{width:22px;height:22px;border-radius:5px;border:none;background:#fee2e2;color:#dc2626;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;font-family:inherit}
+.hc-del:hover{background:#fecaca}
+
+/* ── Preset list ── */
+.preset-list{display:flex;flex-direction:column;gap:8px}
+.preset-item{border:1.5px solid #e8eaee;border-radius:10px;overflow:hidden;transition:border-color .15s}
+.preset-item:hover{border-color:#c4b5fd}
+.preset-item.active{border-color:#7c3aed}
+.preset-head{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;background:#fafafa}
+.preset-item.active .preset-head{background:#f5f3ff}
+.preset-type-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0}
+.pt-delivery{background:#dbeafe;color:#1d4ed8}
+.pt-return{background:#fee2e2;color:#dc2626}
+.pt-event{background:#fef3c7;color:#b45309}
+.pt-notice{background:#ede9fe;color:#6d28d9}
+.pt-etc{background:#f3f4f6;color:#6b7280}
+.preset-title-text{font-size:13px;font-weight:600;color:#111;flex:1}
+.preset-actions{display:flex;gap:6px;margin-left:auto}
+.p-btn{padding:4px 10px;border-radius:6px;border:1px solid #e0e2ea;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#555;font-family:inherit;transition:all .15s}
+.p-btn:hover{border-color:#7c3aed;color:#7c3aed}
+.p-btn.del:hover{border-color:#ef4444;color:#ef4444;background:#fff5f5}
+.preset-default-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;color:#059669;background:#d1fae5;padding:2px 7px;border-radius:10px;flex-shrink:0}
+.preset-body{padding:14px 16px;background:#fff;border-top:1px solid #f0f0f0;display:none}
+.preset-item.active .preset-body{display:block}
+.preset-body .field-textarea{min-height:72px}
+.preset-add-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border:1.5px dashed #d1d5db;border-radius:10px;font-size:13px;font-weight:600;color:#9ca3af;cursor:pointer;background:#fafafa;transition:all .15s}
+.preset-add-btn:hover{border-color:#7c3aed;color:#7c3aed;background:#f5f3ff}
+
+/* ── Divider ── */
+.form-divider{height:1px;background:#f3f4f6}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .15s}
+.btn-primary{background:#7c3aed;color:#fff}
+.btn-primary:hover{background:#6d28d9}
+.btn-outline{background:#fff;color:#374151;border:1.5px solid #e0e2ea}
+.btn-outline:hover{border-color:#9ca3af}
+.btn-sm{padding:6px 14px;font-size:12px}
+.btn-add{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:#f5f3ff;color:#7c3aed;border:1.5px solid #ddd6fe;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-add:hover{background:#ede9fe}
+
+/* ── Save toast ── */
+.save-bar{position:fixed;bottom:0;left:220px;right:0;background:#fff;border-top:1px solid #e5e7eb;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;z-index:100;transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+.save-bar.show{transform:translateY(0)}
+.save-bar-msg{font-size:13px;color:#6b7280;display:flex;align-items:center;gap:8px}
+.save-bar-msg::before{content:'';width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0}
+.save-bar-btns{display:flex;gap:8px}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0d0f14;color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:#e0d9f7;border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- ══ Sidebar ══ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge"><span class="brand">Grip</span><span class="tag">SE</span></div>
+  </div>
+  <nav class="nav-section">
+    <div class="nav-label">메뉴</div>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>홈
+    </a>
+    <a class="nav-item active" href="#">
+      <svg viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>기본정보
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>라이브 콘솔
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>상품 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>쿠폰 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>주문 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h2a2 2 0 012 2v2m0 0v3a2 2 0 01-2 2h-2"/><path d="M20 12h1a1 1 0 011 1v1a1 1 0 01-1 1h-1"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>발주/배송
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>팔로우 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>통계
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="seller-row">
+      <div class="av-side">김</div>
+      <div>
+        <div class="s-name">김그립셀러</div>
+        <div class="s-id">@grip_seller_01</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ Main ══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-title">기본정보</div>
+      <div class="topbar-sub" id="todayLabel"></div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="topbarDate"></div>
+      <div class="avatar">김</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ════════════════════════════════════
+         1. 배송비 정책
+    ════════════════════════════════════ -->
+    <div class="section-card" id="card-shipping">
+      <div class="section-head">
+        <div>
+          <div class="section-title"><span class="si">📦</span> 배송비 정책 설정</div>
+          <div class="section-desc">기본 배송 방식과 배송비를 설정합니다. 방송 중 상품에 공통 적용됩니다.</div>
+        </div>
+      </div>
+      <div class="section-body">
+
+        <!-- 출고지 -->
+        <div class="form-row">
+          <label>상품 출고지 <span class="req">*</span></label>
+          <div class="addr-row">
+            <input class="field-input" id="ship-zipcode" placeholder="우편번호" style="width:120px" readonly>
+            <button class="btn-addr" onclick="openAddrSearch('ship')">🔍 주소 찾기</button>
+          </div>
+          <input class="field-input addr-detail" id="ship-addr1" placeholder="기본 주소" readonly>
+          <input class="field-input addr-detail" id="ship-addr2" placeholder="상세 주소 입력" oninput="markDirty()">
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- 배송 방법 -->
+        <div class="form-row">
+          <label>배송 방법 <span class="req">*</span> <span style="color:#aaa;font-weight:400">(복수 선택 가능)</span></label>
+          <div class="type-group" id="delivery-method-group">
+            <button class="type-toggle-btn on" onclick="toggleMethod(this,'parcel')">🚚 택배배송</button>
+            <button class="type-toggle-btn" onclick="toggleMethod(this,'direct')">🏃 직접배송</button>
+            <button class="type-toggle-btn" onclick="toggleMethod(this,'abroad')">✈️ 해외배송</button>
+          </div>
+        </div>
+
+        <!-- 택배사 -->
+        <div class="form-row" id="parcel-co-wrap">
+          <label>기본 택배사</label>
+          <select class="field-select" style="max-width:280px" onchange="markDirty()">
+            <option>CJ대한통운</option>
+            <option>한진택배</option>
+            <option>로젠택배</option>
+            <option>우체국택배</option>
+            <option>롯데택배</option>
+            <option>경동택배</option>
+            <option>기타</option>
+          </select>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- 배송비 유형 -->
+        <div class="form-row">
+          <label>배송비 유형 <span class="req">*</span></label>
+          <div class="radio-group" id="fee-type-group">
+            <label class="radio-item on" onclick="selectFeeType('free',this)">
+              <input type="radio" name="fee-type" value="free" checked>
+              <div><div class="radio-item-label">무료 배송</div><div class="radio-item-sub">전 상품 무료</div></div>
+            </label>
+            <label class="radio-item" onclick="selectFeeType('cond',this)">
+              <input type="radio" name="fee-type" value="cond">
+              <div><div class="radio-item-label">조건부 무료</div><div class="radio-item-sub">기준 금액 이상 무료</div></div>
+            </label>
+            <label class="radio-item" onclick="selectFeeType('paid',this)">
+              <input type="radio" name="fee-type" value="paid">
+              <div><div class="radio-item-label">유료 배송</div><div class="radio-item-sub">고정 배송비 부과</div></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 조건부 무료 입력 -->
+        <div class="cond-field" id="cond-fee-wrap" style="display:none">
+          <div class="cond-row">
+            <span>주문금액</span>
+            <input class="field-input" placeholder="예: 30,000" oninput="markDirty()" style="width:140px">
+            <span>원 이상 구매 시 무료 배송</span>
+          </div>
+          <div class="cond-row">
+            <span>기준 미달 시 배송비</span>
+            <input class="field-input" placeholder="예: 3,000" oninput="markDirty()" style="width:140px">
+            <span>원</span>
+          </div>
+        </div>
+
+        <!-- 유료 배송 입력 -->
+        <div class="cond-field" id="paid-fee-wrap" style="display:none">
+          <div class="cond-row">
+            <span>배송비</span>
+            <input class="field-input" placeholder="예: 3,000" oninput="markDirty()" style="width:140px">
+            <span>원</span>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- 제주/도서산간 추가 배송비 -->
+        <div>
+          <div class="toggle-row">
+            <div class="toggle-row-label">
+              <div class="toggle-row-title">제주 · 도서산간 추가 배송비</div>
+              <div class="toggle-row-sub">해당 지역 배송 시 추가 금액을 별도 부과합니다</div>
+            </div>
+            <div class="toggle" id="island-toggle" onclick="toggleIsland()"></div>
+          </div>
+          <div class="cond-field extra-toggle-wrap" id="island-fee-wrap" style="display:none">
+            <div class="cond-row">
+              <span>제주 지역</span>
+              <input class="field-input" placeholder="예: 3,000" oninput="markDirty()" style="width:120px">
+              <span>원 추가</span>
+            </div>
+            <div class="cond-row">
+              <span>도서산간 지역</span>
+              <input class="field-input" placeholder="예: 5,000" oninput="markDirty()" style="width:120px">
+              <span>원 추가</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="section-footer">
+        <button class="btn btn-outline btn-sm" onclick="resetSection('card-shipping')">초기화</button>
+        <button class="btn btn-primary btn-sm" onclick="saveSection('배송비 정책')">저장</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════
+         2. 반품 / 교환 배송 설정
+    ════════════════════════════════════ -->
+    <div class="section-card" id="card-return">
+      <div class="section-head">
+        <div>
+          <div class="section-title"><span class="si">↩️</span> 반품 · 교환 배송 설정</div>
+          <div class="section-desc">반품/교환 접수 시 사용할 주소와 배송비를 설정합니다.</div>
+        </div>
+      </div>
+      <div class="section-body">
+
+        <!-- 반품/교환 주소 -->
+        <div class="form-row">
+          <label>반품 · 교환 주소 <span class="req">*</span></label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:#6b7280;margin-bottom:6px;cursor:pointer;width:fit-content">
+            <input type="checkbox" id="same-as-ship" onchange="copySameAddr()" style="accent-color:#7c3aed;width:14px;height:14px">
+            출고지 주소와 동일
+          </label>
+          <div class="addr-row">
+            <input class="field-input" id="ret-zipcode" placeholder="우편번호" style="width:120px" readonly>
+            <button class="btn-addr" onclick="openAddrSearch('ret')">🔍 주소 찾기</button>
+          </div>
+          <input class="field-input addr-detail" id="ret-addr1" placeholder="기본 주소" readonly>
+          <input class="field-input addr-detail" id="ret-addr2" placeholder="상세 주소 입력" oninput="markDirty()">
+        </div>
+
+        <!-- 택배사 + 배송비 -->
+        <div class="form-2col">
+          <div class="form-row">
+            <label>반품 · 교환 택배사</label>
+            <select class="field-select" onchange="markDirty()">
+              <option>CJ대한통운</option>
+              <option>한진택배</option>
+              <option>로젠택배</option>
+              <option>우체국택배</option>
+              <option>롯데택배</option>
+              <option>경동택배</option>
+            </select>
+          </div>
+          <div></div>
+        </div>
+
+        <div class="form-2col">
+          <div class="form-row">
+            <label>반품 배송비 <span style="color:#aaa;font-weight:400">(편도)</span></label>
+            <div class="cond-row" style="margin:0">
+              <input class="field-input" placeholder="예: 3,000" oninput="markDirty()">
+              <span style="flex-shrink:0">원</span>
+            </div>
+            <div class="field-hint">고객 귀책 반품 시 고객 부담 금액</div>
+          </div>
+          <div class="form-row">
+            <label>교환 배송비 <span style="color:#aaa;font-weight:400">(왕복)</span></label>
+            <div class="cond-row" style="margin:0">
+              <input class="field-input" placeholder="예: 6,000" oninput="markDirty()">
+              <span style="flex-shrink:0">원</span>
+            </div>
+            <div class="field-hint">왕복 배송비 (편도 × 2 기준)</div>
+          </div>
+        </div>
+
+      </div>
+      <div class="section-footer">
+        <button class="btn btn-outline btn-sm" onclick="resetSection('card-return')">초기화</button>
+        <button class="btn btn-primary btn-sm" onclick="saveSection('반품·교환 설정')">저장</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════
+         3. CS 연락처
+    ════════════════════════════════════ -->
+    <div class="section-card" id="card-cs">
+      <div class="section-head">
+        <div>
+          <div class="section-title"><span class="si">📞</span> CS 연락처</div>
+          <div class="section-desc">고객이 문의할 수 있는 채널 정보를 입력합니다.</div>
+        </div>
+      </div>
+      <div class="section-body">
+
+        <div class="form-2col">
+          <div class="form-row">
+            <label>고객센터 전화번호 <span class="req">*</span></label>
+            <input class="field-input" placeholder="예: 02-1234-5678" oninput="markDirty()">
+          </div>
+          <div class="form-row">
+            <label>고객센터 이메일</label>
+            <input class="field-input" type="email" placeholder="예: cs@brand.com" oninput="markDirty()">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>CS 운영 시간</label>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <select class="field-select" style="width:100px" onchange="markDirty()">
+              <option>평일</option>
+              <option>평일+토요일</option>
+              <option>매일</option>
+            </select>
+            <input type="time" class="field-input" value="09:00" style="width:120px" oninput="markDirty()">
+            <span style="color:#888;font-size:13px">~</span>
+            <input type="time" class="field-input" value="18:00" style="width:120px" oninput="markDirty()">
+          </div>
+          <div class="field-hint">점심시간 등 특수 운영 사항은 공지사항 프리셋에 등록하세요.</div>
+        </div>
+
+        <div class="form-row">
+          <label>CS 안내 문구 <span style="color:#aaa;font-weight:400">(선택)</span></label>
+          <textarea class="field-textarea" placeholder="예: 문의 접수 후 1영업일 이내 답변드립니다. 주말·공휴일 접수 건은 다음 영업일에 처리됩니다." oninput="markDirty()"></textarea>
+        </div>
+
+      </div>
+      <div class="section-footer">
+        <button class="btn btn-outline btn-sm" onclick="resetSection('card-cs')">초기화</button>
+        <button class="btn btn-primary btn-sm" onclick="saveSection('CS 연락처')">저장</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════
+         4. 셀러 휴일 설정
+    ════════════════════════════════════ -->
+    <div class="section-card" id="card-holiday">
+      <div class="section-head">
+        <div>
+          <div class="section-title"><span class="si">🏖️</span> 셀러 휴일 설정</div>
+          <div class="section-desc">휴일에는 주문 처리가 지연될 수 있습니다. 구매자에게 자동으로 안내됩니다.</div>
+        </div>
+      </div>
+      <div class="section-body">
+
+        <!-- 정기 휴무 -->
+        <div class="form-row">
+          <label>정기 휴무일</label>
+          <div class="day-selector" id="day-selector">
+            <button class="day-btn" onclick="toggleDay(this)">월</button>
+            <button class="day-btn" onclick="toggleDay(this)">화</button>
+            <button class="day-btn" onclick="toggleDay(this)">수</button>
+            <button class="day-btn" onclick="toggleDay(this)">목</button>
+            <button class="day-btn" onclick="toggleDay(this)">금</button>
+            <button class="day-btn weekend on" onclick="toggleDay(this)">토</button>
+            <button class="day-btn weekend on" onclick="toggleDay(this)">일</button>
+          </div>
+          <div class="field-hint">선택한 요일은 매주 휴무로 처리됩니다.</div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- 연간 휴일 -->
+        <div class="form-row">
+          <label>연간 특별 휴무일</label>
+          <div class="holiday-add-row">
+            <input type="date" class="field-input" id="holiday-date-input" style="max-width:180px">
+            <input class="field-input" id="holiday-label-input" placeholder="휴무 사유 (예: 추석 연휴)" style="max-width:220px">
+            <button class="btn-add" onclick="addHoliday()">+ 추가</button>
+          </div>
+          <div class="holiday-list" id="holiday-list">
+            <div class="holiday-chip">
+              <span><span class="hc-date">2026.01.01</span><span class="hc-label">신정</span></span>
+              <button class="hc-del" onclick="delHoliday(this)">✕</button>
+            </div>
+            <div class="holiday-chip">
+              <span><span class="hc-date">2026.01.28 ~ 01.30</span><span class="hc-label">설 연휴</span></span>
+              <button class="hc-del" onclick="delHoliday(this)">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- 휴일 처리 방식 -->
+        <div class="form-row">
+          <label>휴일 주문 처리 방식</label>
+          <div class="radio-group" id="holiday-mode-group" style="flex-direction:column">
+            <label class="radio-item on" onclick="selectHolidayMode(this)" style="flex:none">
+              <input type="radio" name="holiday-mode" checked>
+              <div>
+                <div class="radio-item-label">주문은 받되 다음 영업일에 처리</div>
+                <div class="radio-item-sub">구매자에게 처리 지연 안내 문구가 자동 표시됩니다</div>
+              </div>
+            </label>
+            <label class="radio-item" onclick="selectHolidayMode(this)" style="flex:none">
+              <input type="radio" name="holiday-mode">
+              <div>
+                <div class="radio-item-label">휴일 중 주문 접수 중단</div>
+                <div class="radio-item-sub">상품 구매 버튼이 비활성화되고 재개 일정이 안내됩니다</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label>휴일 안내 문구 <span style="color:#aaa;font-weight:400">(구매자에게 표시)</span></label>
+          <textarea class="field-textarea" placeholder="예: 현재 주문하신 상품은 휴무로 인해 다음 영업일(평일)에 발송됩니다. 불편을 드려 죄송합니다." oninput="markDirty()">현재 주문하신 상품은 휴무로 인해 다음 영업일(평일)에 발송됩니다. 불편을 드려 죄송합니다.</textarea>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <!-- 챗봇 문의 자동 비활성화 -->
+        <div class="form-row">
+          <label>챗봇 문의 자동 비활성화</label>
+
+          <div class="chatbot-toggle-row">
+            <div class="chatbot-toggle-info">
+              <div class="chatbot-toggle-title">휴일 중 챗봇 문의 자동 비활성화</div>
+              <div class="chatbot-toggle-sub">설정된 정기 휴무일 및 특별 휴무일에 구매자의 셀러 챗봇 문의가 자동으로 차단됩니다</div>
+            </div>
+            <div class="toggle on" id="chatbot-disable-toggle" onclick="toggleChatbotDisable(this)"></div>
+          </div>
+
+          <!-- 현재 상태 미리보기 -->
+          <div class="chatbot-status-preview" id="chatbot-status-preview">
+            <div class="chatbot-status-dot" id="chatbot-status-dot"></div>
+            <div class="chatbot-status-text" id="chatbot-status-text"></div>
+            <span class="chatbot-status-badge" id="chatbot-status-badge"></span>
+          </div>
+
+          <!-- 비활성화 설정 (토글 on 상태에서만 표시) -->
+          <div class="chatbot-disable-wrap" id="chatbot-disable-wrap">
+
+            <!-- 요일별 현황 요약 -->
+            <div>
+              <label>요일별 챗봇 운영 현황</label>
+              <div class="chatbot-schedule-grid" id="chatbot-schedule-grid"></div>
+            </div>
+
+            <!-- 비활성화 안내 문구 -->
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <label>챗봇 비활성화 안내 문구 <span style="color:#aaa;font-weight:400">(구매자에게 표시)</span></label>
+              <textarea class="field-textarea" id="chatbot-msg" style="min-height:72px" oninput="markDirty()">현재 셀러가 휴일 중입니다. 문의는 다음 영업일(평일)부터 순차적으로 답변드립니다.</textarea>
+              <div class="field-hint">챗봇 문의 버튼 클릭 시 이 메시지가 표시됩니다.</div>
+            </div>
+
+            <!-- 예외 설정 -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fffbeb;border-radius:8px;border:1px solid #fde68a">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:12px;font-weight:600;color:#92400e">긴급 문의 채널 유지</span>
+                <span style="font-size:11px;color:#b45309">비활성화 중에도 전화번호·이메일은 표시됩니다</span>
+              </div>
+              <div class="toggle on" id="chatbot-emergency-toggle" onclick="toggleEl(this);markDirty()"></div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+      <div class="section-footer">
+        <button class="btn btn-outline btn-sm" onclick="resetSection('card-holiday')">초기화</button>
+        <button class="btn btn-primary btn-sm" onclick="saveSection('셀러 휴일')">저장</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════
+         5. 공지사항 / 배송안내 프리셋
+    ════════════════════════════════════ -->
+    <div class="section-card" id="card-preset">
+      <div class="section-head">
+        <div>
+          <div class="section-title"><span class="si">📋</span> 공지사항 · 배송안내 프리셋</div>
+          <div class="section-desc">자주 사용하는 안내 문구를 미리 저장해두고 라이브 방송 중 빠르게 게시합니다.</div>
+        </div>
+        <button class="btn-add" onclick="addPreset()">+ 프리셋 추가</button>
+      </div>
+      <div class="section-body">
+
+        <div class="preset-list" id="preset-list">
+
+          <!-- 프리셋 1 -->
+          <div class="preset-item active" onclick="togglePreset(this)">
+            <div class="preset-head">
+              <span class="preset-type-badge pt-delivery">배송안내</span>
+              <span class="preset-title-text">기본 배송 안내</span>
+              <span class="preset-default-badge">✓ 기본값</span>
+              <div class="preset-actions" onclick="event.stopPropagation()">
+                <button class="p-btn" onclick="setDefault(this)">기본값 설정</button>
+                <button class="p-btn del" onclick="deletePreset(this)">삭제</button>
+              </div>
+            </div>
+            <div class="preset-body">
+              <div class="form-2col" style="margin-bottom:10px">
+                <div class="form-row">
+                  <label>유형</label>
+                  <select class="field-select" onchange="markDirty()">
+                    <option selected>배송안내</option>
+                    <option>반품안내</option>
+                    <option>이벤트</option>
+                    <option>공지사항</option>
+                    <option>기타</option>
+                  </select>
+                </div>
+                <div class="form-row">
+                  <label>제목</label>
+                  <input class="field-input" value="기본 배송 안내" oninput="markDirty()">
+                </div>
+              </div>
+              <div class="form-row">
+                <label>내용</label>
+                <textarea class="field-textarea" oninput="markDirty()">📦 배송 안내
+- 주문 확인 후 1~2 영업일 이내 출고됩니다.
+- CJ대한통운으로 발송되며 배송 완료까지 평균 2~3일 소요됩니다.
+- 제주 및 도서산간 지역은 추가 배송비(3,000원)가 발생합니다.</textarea>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+                <div class="toggle on" id="preset-auto-1" onclick="toggleEl(this)"></div>
+                <span style="font-size:12px;color:#6b7280">방송 시작 시 자동 게시</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 프리셋 2 -->
+          <div class="preset-item" onclick="togglePreset(this)">
+            <div class="preset-head">
+              <span class="preset-type-badge pt-return">반품안내</span>
+              <span class="preset-title-text">반품 · 교환 안내</span>
+              <div class="preset-actions" onclick="event.stopPropagation()">
+                <button class="p-btn" onclick="setDefault(this)">기본값 설정</button>
+                <button class="p-btn del" onclick="deletePreset(this)">삭제</button>
+              </div>
+            </div>
+            <div class="preset-body">
+              <div class="form-2col" style="margin-bottom:10px">
+                <div class="form-row">
+                  <label>유형</label>
+                  <select class="field-select" onchange="markDirty()">
+                    <option>배송안내</option>
+                    <option selected>반품안내</option>
+                    <option>이벤트</option>
+                    <option>공지사항</option>
+                    <option>기타</option>
+                  </select>
+                </div>
+                <div class="form-row">
+                  <label>제목</label>
+                  <input class="field-input" value="반품 · 교환 안내" oninput="markDirty()">
+                </div>
+              </div>
+              <div class="form-row">
+                <label>내용</label>
+                <textarea class="field-textarea" oninput="markDirty()">↩️ 반품 · 교환 안내
+- 상품 수령 후 7일 이내 신청 가능합니다.
+- 단순 변심 반품 시 왕복 배송비(6,000원) 고객 부담입니다.
+- 불량·오발송 시 배송비 무료로 처리해드립니다.
+- 반품 신청: CS 전화 또는 앱 내 1:1 문의</textarea>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+                <div class="toggle" id="preset-auto-2" onclick="toggleEl(this)"></div>
+                <span style="font-size:12px;color:#6b7280">방송 시작 시 자동 게시</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 프리셋 3 -->
+          <div class="preset-item" onclick="togglePreset(this)">
+            <div class="preset-head">
+              <span class="preset-type-badge pt-event">이벤트</span>
+              <span class="preset-title-text">봄 시즌 한정 이벤트</span>
+              <div class="preset-actions" onclick="event.stopPropagation()">
+                <button class="p-btn" onclick="setDefault(this)">기본값 설정</button>
+                <button class="p-btn del" onclick="deletePreset(this)">삭제</button>
+              </div>
+            </div>
+            <div class="preset-body">
+              <div class="form-2col" style="margin-bottom:10px">
+                <div class="form-row">
+                  <label>유형</label>
+                  <select class="field-select" onchange="markDirty()">
+                    <option>배송안내</option>
+                    <option>반품안내</option>
+                    <option selected>이벤트</option>
+                    <option>공지사항</option>
+                    <option>기타</option>
+                  </select>
+                </div>
+                <div class="form-row">
+                  <label>제목</label>
+                  <input class="field-input" value="봄 시즌 한정 이벤트" oninput="markDirty()">
+                </div>
+              </div>
+              <div class="form-row">
+                <label>내용</label>
+                <textarea class="field-textarea" oninput="markDirty()">🌸 봄 시즌 특가 이벤트
+오늘 방송에서만! 전 상품 10% 추가 할인
+💜 3만원 이상 구매 시 무료배송
+⏰ 방송 종료 시 혜택도 함께 종료됩니다.</textarea>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+                <div class="toggle" id="preset-auto-3" onclick="toggleEl(this)"></div>
+                <span style="font-size:12px;color:#6b7280">방송 시작 시 자동 게시</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+      <div class="section-footer">
+        <button class="btn btn-primary btn-sm" onclick="saveSection('프리셋')">전체 저장</button>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- 변경사항 저장 바 -->
+<div class="save-bar" id="save-bar">
+  <div class="save-bar-msg">저장하지 않은 변경사항이 있습니다</div>
+  <div class="save-bar-btns">
+    <button class="btn btn-outline btn-sm" onclick="discardAll()">되돌리기</button>
+    <button class="btn btn-primary btn-sm" onclick="saveAll()">전체 저장</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Init ──────────────────────────────────────────
+(function(){
+  const d = new Date();
+  const days = ['일','월','화','수','목','금','토'];
+  const fmt = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+  const el = document.getElementById('topbarDate');
+  if(el) el.textContent = fmt;
+})();
+
+// 샘플 주소 세팅
+document.getElementById('ship-zipcode').value = '04539';
+document.getElementById('ship-addr1').value = '서울특별시 중구 세종대로 110';
+
+// 챗봇 비활성화 상태 초기화
+updateChatbotStatus();
+
+// ── Dirty state ──────────────────────────────────
+let _dirty = false;
+function markDirty(){
+  if(_dirty) return;
+  _dirty = true;
+  document.getElementById('save-bar').classList.add('show');
+}
+function discardAll(){
+  _dirty = false;
+  document.getElementById('save-bar').classList.remove('show');
+  showToast('변경사항을 되돌렸습니다');
+}
+function saveAll(){
+  _dirty = false;
+  document.getElementById('save-bar').classList.remove('show');
+  showToast('모든 변경사항이 저장됐습니다 ✓');
+}
+
+// ── Section save ─────────────────────────────────
+function saveSection(name){
+  showToast(`${name} 설정이 저장됐습니다 ✓`);
+}
+function resetSection(id){
+  if(!confirm('이 섹션의 변경사항을 초기화할까요?')) return;
+  showToast('초기화됐습니다');
+}
+
+// ── Address search (mock) ─────────────────────────
+function openAddrSearch(type){
+  const zip  = type==='ship' ? 'ship-zipcode' : 'ret-zipcode';
+  const addr = type==='ship' ? 'ship-addr1'   : 'ret-addr1';
+  // 실제 환경에서는 카카오 주소 API 연동
+  document.getElementById(zip).value  = '04539';
+  document.getElementById(addr).value = '서울특별시 중구 세종대로 110';
+  markDirty();
+}
+function copySameAddr(){
+  const same = document.getElementById('same-as-ship').checked;
+  if(same){
+    document.getElementById('ret-zipcode').value = document.getElementById('ship-zipcode').value;
+    document.getElementById('ret-addr1').value   = document.getElementById('ship-addr1').value;
+    document.getElementById('ret-addr2').value   = document.getElementById('ship-addr2').value;
+  } else {
+    document.getElementById('ret-zipcode').value = '';
+    document.getElementById('ret-addr1').value   = '';
+    document.getElementById('ret-addr2').value   = '';
+  }
+  markDirty();
+}
+
+// ── Delivery method toggle ─────────────────────────
+function toggleMethod(btn, type){
+  btn.classList.toggle('on');
+  markDirty();
+}
+
+// ── Fee type ──────────────────────────────────────
+function selectFeeType(type, el){
+  document.querySelectorAll('#fee-type-group .radio-item').forEach(r=>r.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('cond-fee-wrap').style.display = type==='cond' ? 'flex' : 'none';
+  document.getElementById('paid-fee-wrap').style.display = type==='paid' ? 'flex' : 'none';
+  markDirty();
+}
+
+// ── Island fee toggle ─────────────────────────────
+function toggleIsland(){
+  const t = document.getElementById('island-toggle');
+  t.classList.toggle('on');
+  document.getElementById('island-fee-wrap').style.display = t.classList.contains('on') ? 'flex' : 'none';
+  markDirty();
+}
+
+// ── Day selector ──────────────────────────────────
+function toggleDay(btn){
+  btn.classList.toggle('on');
+  updateChatbotStatus();
+  markDirty();
+}
+
+// ── Holiday list ──────────────────────────────────
+function addHoliday(){
+  const dateEl  = document.getElementById('holiday-date-input');
+  const labelEl = document.getElementById('holiday-label-input');
+  if(!dateEl.value){ showToast('날짜를 선택하세요'); return; }
+  const d = new Date(dateEl.value);
+  const fmt = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+  const list = document.getElementById('holiday-list');
+  const item = document.createElement('div');
+  item.className = 'holiday-chip';
+  item.innerHTML = `<span><span class="hc-date">${fmt}</span><span class="hc-label">${labelEl.value||'휴무'}</span></span><button class="hc-del" onclick="delHoliday(this)">✕</button>`;
+  list.appendChild(item);
+  dateEl.value = ''; labelEl.value = '';
+  updateChatbotStatus();
+  markDirty();
+}
+function delHoliday(btn){
+  btn.closest('.holiday-chip').remove();
+  updateChatbotStatus();
+  markDirty();
+}
+
+// ── Holiday mode ──────────────────────────────────
+function selectHolidayMode(el){
+  document.querySelectorAll('#holiday-mode-group .radio-item').forEach(r=>r.classList.remove('on'));
+  el.classList.add('on');
+  markDirty();
+}
+
+// ── Toggle helper ─────────────────────────────────
+function toggleEl(el){ el.classList.toggle('on'); markDirty(); }
+
+// ── Chatbot disable ───────────────────────────────
+const DAY_NAMES = ['일','월','화','수','목','금','토'];
+
+function getHolidayDays(){
+  // 정기 휴무 요일 수집 (0=일 ~ 6=토 기준으로 맞추기)
+  // day-selector 버튼 순서: 월화수목금토일 → JS 요일: 1,2,3,4,5,6,0
+  const dayMap = [1,2,3,4,5,6,0];
+  const holidayDays = new Set();
+  document.querySelectorAll('#day-selector .day-btn').forEach((btn, i)=>{
+    if(btn.classList.contains('on')) holidayDays.add(dayMap[i]);
+  });
+  return holidayDays;
+}
+
+function getSpecialHolidayDates(){
+  // 연간 특별 휴무일 날짜 문자열 수집 (YYYY.MM.DD 형식)
+  const dates = new Set();
+  document.querySelectorAll('#holiday-list .holiday-chip').forEach(chip=>{
+    const dateStr = chip.querySelector('.hc-date')?.textContent || '';
+    // "2026.01.01" 또는 "2026.01.28 ~ 01.30" 형태 처리
+    const parts = dateStr.split('~');
+    if(parts.length === 1){
+      dates.add(dateStr.trim());
+    } else {
+      // 범위 처리: 시작일 ~ 종료일
+      const startStr = parts[0].trim(); // "2026.01.28"
+      const endStr   = parts[1].trim(); // "01.30" (연도 없을 수 있음)
+      const year = startStr.split('.')[0];
+      const endFull = endStr.includes('.') && endStr.split('.').length === 3
+        ? endStr : year + '.' + endStr;
+      const start = new Date(startStr.replace(/\./g,'-'));
+      const end   = new Date(endFull.replace(/\./g,'-'));
+      for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+        const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+        dates.add(`${y}.${m}.${day}`);
+      }
+    }
+  });
+  return dates;
+}
+
+function isTodayHoliday(){
+  const today = new Date();
+  const dow = today.getDay(); // 0=일 ~ 6=토
+  const y=today.getFullYear(), m=String(today.getMonth()+1).padStart(2,'0'), d=String(today.getDate()).padStart(2,'0');
+  const todayStr = `${y}.${m}.${d}`;
+  return getHolidayDays().has(dow) || getSpecialHolidayDates().has(todayStr);
+}
+
+function updateChatbotStatus(){
+  const enabled = document.getElementById('chatbot-disable-toggle').classList.contains('on');
+  const wrap   = document.getElementById('chatbot-disable-wrap');
+  const dot    = document.getElementById('chatbot-status-dot');
+  const text   = document.getElementById('chatbot-status-text');
+  const badge  = document.getElementById('chatbot-status-badge');
+  const grid   = document.getElementById('chatbot-schedule-grid');
+
+  wrap.style.display = enabled ? 'flex' : 'none';
+
+  if(!enabled){
+    dot.className  = 'chatbot-status-dot active';
+    text.innerHTML = '자동 비활성화 <strong>미사용</strong> — 챗봇이 항상 활성화됩니다';
+    badge.textContent = '항상 ON';
+    badge.className = 'chatbot-status-badge on';
+    grid.innerHTML = '';
+    return;
+  }
+
+  // 오늘 상태
+  const todayHoliday = isTodayHoliday();
+  const today = new Date();
+  const todayDow = today.getDay();
+  const todayDowName = DAY_NAMES[todayDow];
+
+  if(todayHoliday){
+    dot.className  = 'chatbot-status-dot inactive';
+    text.innerHTML = `오늘(${todayDowName}) 은 <strong>휴일</strong>로 설정되어 있습니다 — 챗봇이 현재 <strong>비활성화</strong>됩니다`;
+    badge.textContent = '현재 OFF';
+    badge.className = 'chatbot-status-badge off';
+  } else {
+    dot.className  = 'chatbot-status-dot active';
+    text.innerHTML = `오늘(${todayDowName}) 은 <strong>영업일</strong>입니다 — 챗봇이 현재 <strong>활성화</strong>됩니다`;
+    badge.textContent = '현재 ON';
+    badge.className = 'chatbot-status-badge on';
+  }
+
+  // 요일별 현황 그리드 렌더
+  // 버튼 순서: 월화수목금토일 → 출력도 같은 순서
+  const displayOrder = ['월','화','수','목','금','토','일'];
+  const holidayDays  = getHolidayDays();
+  const dowDisplayMap = {'월':1,'화':2,'수':3,'목':4,'금':5,'토':6,'일':0};
+  grid.innerHTML = displayOrder.map(name=>{
+    const dow = dowDisplayMap[name];
+    const isHol = holidayDays.has(dow);
+    return `<div class="chatbot-day-chip ${isHol?'holiday':'workday'}">${name}<br><span style="font-size:9px;font-weight:700">${isHol?'OFF':'ON'}</span></div>`;
+  }).join('');
+}
+
+function toggleChatbotDisable(el){
+  el.classList.toggle('on');
+  updateChatbotStatus();
+  markDirty();
+}
+
+// ── Preset ───────────────────────────────────────
+function togglePreset(item){
+  const isActive = item.classList.contains('active');
+  document.querySelectorAll('.preset-item').forEach(p=>p.classList.remove('active'));
+  if(!isActive) item.classList.add('active');
+}
+function deletePreset(btn){
+  if(!confirm('이 프리셋을 삭제할까요?')) return;
+  btn.closest('.preset-item').remove();
+  markDirty();
+}
+function setDefault(btn){
+  document.querySelectorAll('.preset-default-badge').forEach(b=>b.remove());
+  const head = btn.closest('.preset-head');
+  const badge = document.createElement('span');
+  badge.className = 'preset-default-badge';
+  badge.textContent = '✓ 기본값';
+  head.insertBefore(badge, head.querySelector('.preset-actions'));
+  showToast('기본값으로 설정됐습니다');
+  markDirty();
+}
+let _presetCount = 4;
+function addPreset(){
+  const list = document.getElementById('preset-list');
+  const id = 'preset-auto-' + _presetCount++;
+  const item = document.createElement('div');
+  item.className = 'preset-item active';
+  item.innerHTML = `
+    <div class="preset-head" onclick="event.currentTarget.closest('.preset-item') && togglePreset(event.currentTarget.closest('.preset-item'))">
+      <span class="preset-type-badge pt-etc">기타</span>
+      <span class="preset-title-text">새 프리셋</span>
+      <div class="preset-actions" onclick="event.stopPropagation()">
+        <button class="p-btn" onclick="setDefault(this)">기본값 설정</button>
+        <button class="p-btn del" onclick="deletePreset(this)">삭제</button>
+      </div>
+    </div>
+    <div class="preset-body">
+      <div class="form-2col" style="margin-bottom:10px">
+        <div class="form-row">
+          <label>유형</label>
+          <select class="field-select" onchange="markDirty()">
+            <option>배송안내</option><option>반품안내</option><option>이벤트</option><option>공지사항</option><option selected>기타</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>제목</label>
+          <input class="field-input" placeholder="프리셋 제목 입력" oninput="markDirty()">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>내용</label>
+        <textarea class="field-textarea" placeholder="방송 중 게시할 내용을 입력하세요..." oninput="markDirty()"></textarea>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+        <div class="toggle" id="${id}" onclick="toggleEl(this)"></div>
+        <span style="font-size:12px;color:#6b7280">방송 시작 시 자동 게시</span>
+      </div>
+    </div>`;
+  list.appendChild(item);
+  document.querySelectorAll('.preset-item').forEach(p=>p.classList.remove('active'));
+  item.classList.add('active');
+  markDirty();
+  item.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// ── Toast ────────────────────────────────────────
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
