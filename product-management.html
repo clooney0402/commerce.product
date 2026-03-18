@@ -584,6 +584,80 @@
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+
+    /* ── Image Bulk Upload ──────────────────────────────── */
+    .img-rule-box {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px;
+      padding: 12px 16px; font-size: 12px; color: #1e40af; line-height: 1.7;
+    }
+    .img-rule-box strong { font-weight: 700; color: #1d4ed8; }
+    .img-rule-eg {
+      display: inline-block; background: #dbeafe; border-radius: 4px;
+      padding: 1px 8px; font-weight: 600; font-size: 11px; margin: 0 2px;
+    }
+    .img-drop-zone {
+      border: 2px dashed #a78bfa; border-radius: 12px;
+      padding: 32px 24px; text-align: center; background: #faf5ff;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .img-drop-zone:hover, .img-drop-zone.dragover {
+      border-color: #7c3aed; background: #f0ebff;
+    }
+    .img-drop-icon { font-size: 36px; margin-bottom: 10px; }
+    .img-drop-text { font-size: 14px; font-weight: 700; color: #374151; margin-bottom: 4px; }
+    .img-drop-sub { font-size: 12px; color: #9ca3af; }
+    .img-summary-row {
+      display: flex; gap: 12px; align-items: stretch; flex-wrap: wrap;
+    }
+    .img-summary-card {
+      border-radius: 10px; padding: 14px 20px; text-align: center; min-width: 100px;
+    }
+    .img-sc-val { font-size: 22px; font-weight: 800; color: #374151; }
+    .img-sc-label { font-size: 11px; font-weight: 600; color: #6b7280; margin-top: 3px; }
+    .img-preview-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px;
+      max-height: 380px; overflow-y: auto; padding: 4px;
+    }
+    .img-preview-grid::-webkit-scrollbar { width: 4px; }
+    .img-thumb-outer { display: flex; flex-direction: column; align-items: center; }
+    .img-thumb-wrap {
+      position: relative; border-radius: 10px; overflow: hidden;
+      border: 1.5px solid #e5e7eb; background: #f9fafb;
+      width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s;
+    }
+    .img-thumb-wrap:hover { border-color: #7c3aed; }
+    .img-preview { width: 100%; height: 100%; object-fit: cover; }
+    .img-match-badge {
+      position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);
+      font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
+      white-space: nowrap; max-width: 90%; overflow: hidden; text-overflow: ellipsis;
+      backdrop-filter: blur(4px);
+    }
+    .img-match-ok  { background: rgba(209,250,229,0.9); color: #059669; }
+    .img-match-no  { background: rgba(254,243,199,0.9); color: #d97706; }
+    .img-filename {
+      font-size: 10px; color: #9ca3af; margin-top: 5px; text-align: center;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%;
+    }
+    .img-remove-btn {
+      position: absolute; top: 5px; right: 5px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(0,0,0,0.45); color: #fff; border: none;
+      cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.15s;
+    }
+    .img-thumb-wrap:hover .img-remove-btn { opacity: 1; }
+    .img-guide-rule {
+      background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px;
+      padding: 14px 16px; margin-bottom: 12px;
+    }
+    .img-guide-rule-title { font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .img-guide-eg-row { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-top: 6px; }
+    .img-guide-eg-file { background: #ede9fe; color: #7c3aed; padding: 2px 9px; border-radius: 5px; font-weight: 600; font-family: monospace; }
+    .img-guide-arrow { color: #9ca3af; }
+    .img-guide-eg-prod { background: #d1fae5; color: #059669; padding: 2px 9px; border-radius: 5px; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -808,6 +882,89 @@
             <span class="history-status status-success">✓ 완료</span>
             <button class="btn btn-outline btn-sm">재다운로드</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ Image Bulk Upload ══════ -->
+    <div class="section-card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">🖼️ 이미지 일괄 업로드</div>
+          <div class="section-desc">상품 이미지를 한 번에 등록합니다 · 파일명을 상품코드로 저장하면 자동 매칭</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="openImgGuideModal()">📌 파일명 규칙 안내</button>
+      </div>
+
+      <!-- naming rule hint -->
+      <div style="padding:0 24px 16px">
+        <div class="img-rule-box">
+          <span style="font-size:16px;flex-shrink:0">💡</span>
+          <div>
+            파일명을 <strong>상품코드</strong>로 저장하면 자동으로 상품과 매칭됩니다.
+            <span class="img-rule-eg">예: PRD-1001.jpg → PRD-1001 상품에 자동 연결</span><br>
+            파일명이 상품코드와 다를 경우, 업로드 후 목록에서 상품을 수동으로 지정할 수 있습니다.
+          </div>
+        </div>
+      </div>
+
+      <!-- Drop Zone -->
+      <div style="padding:0 24px 20px">
+        <div class="img-drop-zone" id="imgDropZone" onclick="document.getElementById('imgFileInput').click()">
+          <div class="img-drop-icon">🖼️</div>
+          <div class="img-drop-text">이미지 파일을 여기에 드래그하거나 클릭해서 선택</div>
+          <div class="img-drop-sub">JPG · PNG · WEBP · GIF / 장당 최대 10MB / 최대 100장 동시 업로드</div>
+          <input type="file" id="imgFileInput" accept=".jpg,.jpeg,.png,.webp,.gif" multiple onchange="handleImgFiles(this.files)" style="display:none">
+        </div>
+
+        <!-- Upload summary bar -->
+        <div id="imgUploadSummary" style="display:none;margin-top:14px">
+          <div class="img-summary-row">
+            <div class="img-summary-card" style="background:#f3f4f6">
+              <div class="img-sc-val" id="imgTotal">0</div>
+              <div class="img-sc-label">총 선택</div>
+            </div>
+            <div class="img-summary-card" style="background:#d1fae5">
+              <div class="img-sc-val" style="color:#059669" id="imgMatched">0</div>
+              <div class="img-sc-label" style="color:#065f46">자동 매칭</div>
+            </div>
+            <div class="img-summary-card" style="background:#fef3c7">
+              <div class="img-sc-val" style="color:#d97706" id="imgUnmatched">0</div>
+              <div class="img-sc-label" style="color:#92400e">수동 지정 필요</div>
+            </div>
+            <button class="btn btn-primary btn-sm" id="imgConfirmBtn" onclick="confirmImgUpload()" style="align-self:center;margin-left:auto">✅ 업로드 확정</button>
+          </div>
+
+          <!-- Progress -->
+          <div id="imgProgressWrap" style="display:none;margin-top:10px">
+            <div style="font-size:12px;color:#7c3aed;font-weight:600;margin-bottom:4px" id="imgProgressLabel">업로드 중...</div>
+            <div class="progress-bar-wrap"><div class="progress-bar" id="imgProgressBar"></div></div>
+          </div>
+          <div class="upload-result" id="imgUploadResult" style="margin-top:8px"></div>
+        </div>
+
+        <!-- Image preview grid -->
+        <div class="img-preview-grid" id="imgPreviewGrid" style="display:none;margin-top:16px"></div>
+      </div>
+
+      <!-- Image Upload History -->
+      <div style="padding:0 24px 20px;border-top:1px solid #f3f4f6;padding-top:16px">
+        <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:10px">최근 이미지 업로드 이력</div>
+        <div class="history-item">
+          <div class="history-icon">🖼️</div>
+          <div class="history-info">
+            <div class="history-name">봄_신상품_이미지 (14장)</div>
+            <div class="history-meta">2026.03.14 14:30 · 14장 업로드 · 13 자동 매칭 / 1 수동 지정 · 그립 어드민</div>
+          </div>
+          <span class="history-status status-success">✓ 완료</span>
+        </div>
+        <div class="history-item">
+          <div class="history-icon">🖼️</div>
+          <div class="history-info">
+            <div class="history-name">3월 라이브 상품 이미지 (32장)</div>
+            <div class="history-meta">2026.03.05 17:10 · 32장 업로드 · 30 자동 매칭 / 2 수동 지정 · 그립 어드민</div>
+          </div>
+          <span class="history-status status-success">✓ 완료</span>
         </div>
       </div>
     </div>
@@ -1133,6 +1290,78 @@
       </button>
     </div>
 
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ Image Guide Modal -->
+<div class="modal-overlay" id="imgGuideModal" onclick="if(event.target===this)closeImgGuideModal()">
+  <div class="modal" style="width:560px">
+    <div class="modal-header">
+      <div class="modal-title">📌 이미지 파일명 규칙 안내</div>
+      <button class="modal-close" onclick="closeImgGuideModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="info-box" style="margin-bottom:20px">
+        💡 <strong>파일명 = 상품코드</strong>로 저장하면 업로드 시 자동으로 상품과 매칭됩니다.<br>
+        상품코드는 <strong>상품 목록</strong>에서 확인할 수 있습니다.
+      </div>
+
+      <!-- Rule 1 -->
+      <div class="img-guide-rule">
+        <div class="img-guide-rule-title">
+          <span style="background:#d1fae5;color:#059669;padding:2px 8px;border-radius:4px;font-size:11px">✓ 자동 매칭</span>
+          파일명과 상품코드가 일치하는 경우
+        </div>
+        <div style="font-size:12px;color:#6b7280;line-height:1.7">
+          파일명(확장자 제외)이 상품코드와 정확히 일치하면 자동으로 해당 상품에 대표 이미지가 등록됩니다.<br>
+          대소문자는 구분하지 않습니다.
+        </div>
+        <div class="img-guide-eg-row">
+          <span class="img-guide-eg-file">PRD-1001.jpg</span>
+          <span class="img-guide-arrow">→</span>
+          <span class="img-guide-eg-prod">PRD-1001 · 봄 플라워 니트 스웨터</span>
+        </div>
+        <div class="img-guide-eg-row">
+          <span class="img-guide-eg-file">PRD-1002.png</span>
+          <span class="img-guide-arrow">→</span>
+          <span class="img-guide-eg-prod">PRD-1002 · 린넨 와이드 팬츠</span>
+        </div>
+      </div>
+
+      <!-- Rule 2 -->
+      <div class="img-guide-rule">
+        <div class="img-guide-rule-title">
+          <span style="background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:4px;font-size:11px">⚠ 수동 지정</span>
+          파일명과 상품코드가 다른 경우
+        </div>
+        <div style="font-size:12px;color:#6b7280;line-height:1.7">
+          파일명이 상품코드와 일치하지 않으면 "수동 지정 필요"로 표시됩니다.<br>
+          업로드 확정 후 상품 목록에서 해당 이미지를 원하는 상품에 직접 지정하세요.
+        </div>
+        <div class="img-guide-eg-row">
+          <span class="img-guide-eg-file">봄니트_대표컷.jpg</span>
+          <span class="img-guide-arrow">→</span>
+          <span style="background:#fee2e2;color:#dc2626;padding:2px 9px;border-radius:5px;font-size:12px;font-weight:600">매칭 실패 · 수동 지정 필요</span>
+        </div>
+      </div>
+
+      <!-- Rule 3 -->
+      <div class="img-guide-rule">
+        <div class="img-guide-rule-title">📐 지원 형식 및 권장 사양</div>
+        <div style="font-size:12px;color:#6b7280;line-height:1.8">
+          <div>• 지원 형식: <strong style="color:#374151">JPG · JPEG · PNG · WEBP · GIF</strong></div>
+          <div>• 파일당 최대: <strong style="color:#374151">10MB</strong></div>
+          <div>• 동시 업로드: <strong style="color:#374151">최대 100장</strong></div>
+          <div>• 권장 해상도: <strong style="color:#374151">1000×1000px 이상</strong> (1:1 정방형 권장)</div>
+          <div>• 배경: 흰색 배경 또는 단색 배경 권장</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeImgGuideModal()">확인</button>
+    </div>
   </div>
 </div>
 
@@ -1592,7 +1821,147 @@ document.addEventListener("click", function(e) {
   if (wrap && !wrap.contains(e.target)) closeDatePicker();
 });
 
-/* ── Drag & Drop ── */
+/* ══════════════════════════════════════════
+   Image Bulk Upload
+══════════════════════════════════════════ */
+// Sample product codes for matching simulation
+const productCodes = ["PRD-1001","PRD-1002","PRD-1003","PRD-1004","PRD-1005",
+                      "PRD-1006","PRD-0891","PRD-1008","PRD-1009"];
+
+function handleImgFiles(files) {
+  if (!files || files.length === 0) return;
+  const arr = Array.from(files).slice(0, 100);
+  const grid    = document.getElementById('imgPreviewGrid');
+  const summary = document.getElementById('imgUploadSummary');
+  const result  = document.getElementById('imgUploadResult');
+
+  grid.innerHTML = '';
+  result.classList.remove('show');
+  grid.style.display  = 'grid';
+  summary.style.display = 'block';
+
+  let matched = 0, unmatched = 0;
+
+  arr.forEach(file => {
+    const baseName = file.name.replace(/\.[^/.]+$/, '').toUpperCase().trim();
+    const isMatched = productCodes.some(c => c.toUpperCase() === baseName);
+    if (isMatched) matched++; else unmatched++;
+
+    const outer = document.createElement('div');
+    outer.className = 'img-thumb-outer';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'img-thumb-wrap';
+
+    // image preview
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.createElement('img');
+      img.className = 'img-preview';
+      img.src = e.target.result;
+      wrap.insertBefore(img, wrap.firstChild);
+    };
+    reader.readAsDataURL(file);
+
+    // match badge
+    const badge = document.createElement('span');
+    badge.className = 'img-match-badge ' + (isMatched ? 'img-match-ok' : 'img-match-no');
+    badge.textContent = isMatched ? ('✓ ' + baseName) : '수동 지정 필요';
+    wrap.appendChild(badge);
+
+    // remove btn
+    const rmBtn = document.createElement('button');
+    rmBtn.className = 'img-remove-btn';
+    rmBtn.textContent = '✕';
+    rmBtn.onclick = e => { e.stopPropagation(); outer.remove(); recountImgs(); };
+    wrap.appendChild(rmBtn);
+
+    const fname = document.createElement('div');
+    fname.className = 'img-filename';
+    fname.textContent = file.name;
+    fname.title = file.name;
+
+    outer.appendChild(wrap);
+    outer.appendChild(fname);
+    grid.appendChild(outer);
+  });
+
+  document.getElementById('imgTotal').textContent     = arr.length;
+  document.getElementById('imgMatched').textContent   = matched;
+  document.getElementById('imgUnmatched').textContent = unmatched;
+  // reset file input so same files can be re-added
+  document.getElementById('imgFileInput').value = '';
+}
+
+function recountImgs() {
+  const grid  = document.getElementById('imgPreviewGrid');
+  const items = grid.querySelectorAll('.img-thumb-wrap');
+  let matched = 0, unmatched = 0;
+  items.forEach(w => {
+    const b = w.querySelector('.img-match-badge');
+    if (b && b.classList.contains('img-match-ok')) matched++;
+    else unmatched++;
+  });
+  const total = items.length;
+  document.getElementById('imgTotal').textContent     = total;
+  document.getElementById('imgMatched').textContent   = matched;
+  document.getElementById('imgUnmatched').textContent = unmatched;
+  if (total === 0) {
+    document.getElementById('imgUploadSummary').style.display = 'none';
+    document.getElementById('imgPreviewGrid').style.display   = 'none';
+  }
+}
+
+function confirmImgUpload() {
+  const total = parseInt(document.getElementById('imgTotal').textContent) || 0;
+  if (!total) { alert('업로드할 이미지를 먼저 선택해주세요'); return; }
+
+  const pw  = document.getElementById('imgProgressWrap');
+  const pb  = document.getElementById('imgProgressBar');
+  const pl  = document.getElementById('imgProgressLabel');
+  const res = document.getElementById('imgUploadResult');
+  const btn = document.getElementById('imgConfirmBtn');
+
+  btn.disabled = true;
+  pw.style.display = 'block';
+  res.classList.remove('show');
+  pb.style.width = '0%';
+  pl.textContent = `이미지 ${total}장 업로드 중...`;
+
+  let w = 0;
+  const t = setInterval(() => {
+    w += Math.random() * 14 + 4;
+    if (w >= 100) {
+      w = 100; clearInterval(t);
+      setTimeout(() => {
+        pw.style.display = 'none';
+        res.classList.add('show');
+        const m = document.getElementById('imgMatched').textContent;
+        const u = document.getElementById('imgUnmatched').textContent;
+        res.textContent = `✅ ${total}장 업로드 완료 · ${m}장 자동 매칭 / ${u}장 수동 지정 대기`;
+        document.getElementById('imgPreviewGrid').innerHTML = '';
+        document.getElementById('imgPreviewGrid').style.display = 'none';
+        document.getElementById('imgUploadSummary').style.display = 'none';
+        btn.disabled = false;
+      }, 400);
+    }
+    pb.style.width = w + '%';
+  }, 100);
+}
+
+function openImgGuideModal()  { document.getElementById('imgGuideModal').classList.add('show'); }
+function closeImgGuideModal() { document.getElementById('imgGuideModal').classList.remove('show'); }
+
+/* Image drop zone drag & drop */
+const imgDz = document.getElementById('imgDropZone');
+imgDz.addEventListener('dragover',  e => { e.preventDefault(); imgDz.classList.add('dragover'); });
+imgDz.addEventListener('dragleave', () => imgDz.classList.remove('dragover'));
+imgDz.addEventListener('drop', e => {
+  e.preventDefault(); imgDz.classList.remove('dragover');
+  handleImgFiles(e.dataTransfer.files);
+});
+
+/* ── Drag & Drop (Excel) ── */
 const dz = document.getElementById("dropZone");
 dz.addEventListener("dragover",e=>{e.preventDefault();dz.classList.add("dragover")});
 dz.addEventListener("dragleave",()=>dz.classList.remove("dragover"));
