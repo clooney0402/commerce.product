@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Grip SE · 주문 관리</title>
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard', Arial, sans-serif; background: #f4f5f7; color: #111; display: flex; height: 100vh; overflow: hidden; font-size: 13px; }
+
+  /* ── Sidebar ── */
+  .sidebar { width: 220px; background: #0d0f14; color: #ccc; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; overflow-y: auto; }
+  .sidebar-logo { padding: 22px 20px 18px; border-bottom: 1px solid #1f2230; }
+  .logo-badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    border-radius: 8px; padding: 7px 12px;
+  }
+  .logo-badge .brand { font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  .logo-badge .tag {
+    background: #7c3aed; color: #fff; font-size: 9px; font-weight: 700;
+    padding: 2px 5px; border-radius: 4px; letter-spacing: 0.5px;
+  }
+  .nav-section { padding: 14px 0 6px; }
+  .nav-label { font-size: 9px; font-weight: 700; color: #555; letter-spacing: 1px; padding: 0 20px 6px; text-transform: uppercase; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px; font-size: 13px; color: #aaa; cursor: pointer;
+    border-left: 3px solid transparent; transition: all .15s;
+    text-decoration: none;
+  }
+  .nav-item:hover { background: #1e2330; color: #e5e7eb; }
+  .nav-item.active { background: #1a1260; color: #a78bfa; border-left-color: #7c3aed; font-weight: 600; }
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  /* ── Main Layout ── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* ── Topbar ── */
+  .topbar {
+    background: #fff; border-bottom: 1px solid #e8eaee;
+    padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .topbar-title { font-size: 17px; font-weight: 700; color: #111; }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .topbar-date { font-size: 12px; color: #888; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg,#7c3aed,#4f46e5); color:#fff; display:flex;align-items:center;justify-content:center; font-size:13px;font-weight:700; cursor:pointer; }
+
+  /* ── Content ── */
+  .content { flex: 1; overflow-y: auto; padding: 24px 28px; display: flex; flex-direction: column; gap: 18px; }
+
+  /* ── Stats Header ── */
+  .stats-header { display: flex; align-items: center; gap: 10px; }
+  .stats-title { font-size: 13px; font-weight: 700; color: #111; }
+  .stats-period {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; color: #888;
+    background: #f4f5f7; border: 1px solid #e8eaee;
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .stats-period::before {
+    content: '';
+    display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; background: #7c3aed; flex-shrink: 0;
+  }
+
+  /* ── Stats Row ── */
+  .stats-row { display: flex; gap: 14px; }
+  .stat-card {
+    flex: 1; background: #fff; border-radius: 10px; padding: 16px 20px;
+    border: 1px solid #e8eaee; display: flex; flex-direction: column; gap: 4px;
+  }
+  .stat-label { font-size: 11px; color: #888; font-weight: 500; }
+  .stat-value { font-size: 22px; font-weight: 800; color: #111; }
+  .stat-sub { font-size: 11px; color: #aaa; }
+  .stat-card.accent .stat-value { color: #7c3aed; }
+
+  /* ── Filter Card ── */
+  .filter-card { background: #fff; border-radius: 10px; border: 1px solid #e8eaee; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+  .filter-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .filter-label { font-size: 12px; font-weight: 600; color: #555; min-width: 60px; }
+
+  /* Date Range Picker */
+  .drp-wrapper { position: relative; display: inline-flex; align-items: center; }
+  .drp-display {
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid #d1d5db; border-radius: 7px; padding: 7px 12px;
+    background: #fff; cursor: pointer; font-size: 12px; color: #333; white-space: nowrap;
+    transition: border-color .15s;
+  }
+  .drp-display:hover { border-color: #7c3aed; }
+  .drp-display .cal-icon { color: #7c3aed; font-size: 14px; }
+  .drp-display .drp-text { font-size: 12px; color: #333; min-width: 160px; }
+  .drp-display .clear-btn { font-size: 14px; color: #bbb; cursor: pointer; padding: 0 2px; }
+  .drp-display .clear-btn:hover { color: #666; }
+
+  .drp-popup {
+    display: none; position: absolute; top: calc(100% + 6px); left: 0;
+    background: #fff; border: 1px solid #e0e0e0; border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.12); z-index: 9999; padding: 16px;
+    min-width: 560px;
+  }
+  .drp-popup.open { display: block; }
+
+  .drp-shortcuts { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .drp-shortcut {
+    padding: 4px 10px; border-radius: 20px; border: 1px solid #e0e0e0;
+    font-size: 11px; color: #555; cursor: pointer; background: #fff; transition: all .15s;
+  }
+  .drp-shortcut:hover, .drp-shortcut.active { background: #ede9fe; border-color: #c4b5fd; color: #7c3aed; font-weight: 600; }
+
+  .drp-cals { display: flex; gap: 20px; }
+  .cal-block { flex: 1; }
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .cal-nav-btn { background: none; border: none; cursor: pointer; color: #888; font-size: 16px; padding: 2px 6px; border-radius: 4px; }
+  .cal-nav-btn:hover { background: #f3f4f6; }
+  .cal-month-label { font-size: 13px; font-weight: 700; color: #222; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+  .cal-dow { text-align: center; font-size: 10px; font-weight: 600; color: #aaa; padding: 4px 0; }
+  .cal-day {
+    text-align: center; padding: 6px 0; font-size: 12px; border-radius: 6px;
+    cursor: pointer; color: #333; transition: background .1s;
+  }
+  .cal-day:hover:not(.empty):not(.disabled) { background: #ede9fe; color: #7c3aed; }
+  .cal-day.disabled { color: #ddd; cursor: default; }
+  .cal-day.empty { cursor: default; }
+  .cal-day.today { font-weight: 700; color: #7c3aed; }
+  .cal-day.selected-start, .cal-day.selected-end {
+    background: #7c3aed !important; color: #fff !important; font-weight: 700;
+  }
+  .cal-day.in-range { background: #ede9fe; color: #5b21b6; border-radius: 0; }
+  .cal-day.selected-start { border-radius: 6px 0 0 6px; }
+  .cal-day.selected-end { border-radius: 0 6px 6px 0; }
+  .cal-day.selected-start.selected-end { border-radius: 6px; }
+
+  .drp-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; border-top: 1px solid #f0f0f0; padding-top: 10px; }
+  .drp-btn { padding: 6px 16px; border-radius: 7px; font-size: 12px; cursor: pointer; border: 1px solid #e0e0e0; background: #fff; color: #555; transition: all .15s; }
+  .drp-btn:hover { border-color: #7c3aed; color: #7c3aed; }
+  .drp-btn.primary { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+  .drp-btn.primary:hover { background: #6d28d9; border-color: #6d28d9; }
+
+  /* Search & Filter Controls */
+  .search-group { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .search-type-select {
+    padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 7px;
+    font-size: 12px; color: #333; background: #fff; cursor: pointer;
+    outline: none; transition: border-color .15s;
+  }
+  .search-type-select:focus { border-color: #7c3aed; }
+  .search-input {
+    flex: 1; padding: 7px 12px; border: 1px solid #d1d5db; border-radius: 7px;
+    font-size: 12px; color: #333; outline: none; transition: border-color .15s;
+    max-width: 280px;
+  }
+  .search-input:focus { border-color: #7c3aed; }
+  .btn-search {
+    padding: 7px 18px; background: #7c3aed; color: #fff; border: none;
+    border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s;
+  }
+  .btn-search:hover { background: #6d28d9; }
+  .btn-reset {
+    padding: 7px 14px; background: #fff; color: #666; border: 1px solid #d1d5db;
+    border-radius: 7px; font-size: 12px; cursor: pointer; transition: all .15s;
+  }
+  .btn-reset:hover { border-color: #7c3aed; color: #7c3aed; }
+
+  /* Status filter select */
+  .status-select {
+    padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 7px;
+    font-size: 12px; color: #333; background: #fff; cursor: pointer;
+    outline: none; transition: border-color .15s; min-width: 130px;
+  }
+  .status-select:focus { border-color: #7c3aed; }
+
+  /* ── List Card ── */
+  .list-card { background: #fff; border-radius: 10px; border: 1px solid #e8eaee; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+  .list-toolbar {
+    padding: 14px 20px; border-bottom: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  }
+  .list-count { font-size: 13px; color: #555; }
+  .list-count strong { color: #111; font-weight: 700; }
+  .toolbar-right { display: flex; align-items: center; gap: 8px; }
+
+  .btn-excel {
+    display: flex; align-items: center; gap: 5px;
+    padding: 6px 14px; background: #fff; border: 1px solid #d1d5db; border-radius: 7px;
+    font-size: 12px; color: #555; cursor: pointer; transition: all .15s;
+  }
+  .btn-excel:hover { border-color: #7c3aed; color: #7c3aed; background: #faf5ff; }
+  .excel-icon { color: #16a34a; font-size: 14px; }
+
+  /* Status Tabs */
+  .status-tabs { display: flex; gap: 4px; padding: 0 20px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; overflow-x: auto; }
+  .status-tab {
+    padding: 10px 14px; font-size: 12px; color: #888; cursor: pointer;
+    border-bottom: 2px solid transparent; white-space: nowrap; transition: all .15s;
+  }
+  .status-tab:hover { color: #7c3aed; }
+  .status-tab.active { color: #7c3aed; font-weight: 700; border-bottom-color: #7c3aed; }
+  .status-tab .tab-count { font-size: 10px; font-weight: 700; margin-left: 4px;
+    background: #ede9fe; color: #7c3aed; padding: 1px 5px; border-radius: 10px; }
+  .status-tab.active .tab-count { background: #7c3aed; color: #fff; }
+
+  /* ── Table ── */
+  .table-wrap { overflow-x: auto; overflow-y: auto; flex: 1; }
+  table { width: max-content; min-width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th {
+    background: #f8f9fb; color: #555; font-weight: 600; font-size: 11px;
+    padding: 10px 12px; border-bottom: 1px solid #e8eaee; white-space: nowrap;
+    position: sticky; top: 0; z-index: 2; text-align: center;
+  }
+  /* Sticky first 2 columns */
+  thead th:nth-child(1) {
+    position: sticky; left: 0; z-index: 3; background: #f0eeff; width: 130px;
+  }
+  thead th:nth-child(2) {
+    position: sticky; left: 130px; z-index: 3; background: #f0eeff;
+  }
+
+  tbody td {
+    padding: 11px 12px; border-bottom: 1px solid #f3f4f6; color: #333; vertical-align: middle;
+    text-align: center; white-space: nowrap;
+  }
+  tbody tr:hover td { background: #faf8ff; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* Sticky body cells */
+  tbody td:nth-child(1),
+  tbody td:nth-child(2) {
+    position: sticky; background: #fff; z-index: 1;
+  }
+  tbody td:nth-child(1) { left: 0; width: 130px; }
+  tbody td:nth-child(2) { left: 130px; }
+  tbody tr:hover td:nth-child(1),
+  tbody tr:hover td:nth-child(2) { background: #faf8ff; }
+
+  /* Sticky column separator */
+  thead th:nth-child(2), tbody td:nth-child(2) { border-right: 2px solid #e0d9f7; }
+
+  /* Order number link style */
+  .order-link { color: #7c3aed; font-weight: 700; font-size: 11px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  .order-link:hover { color: #6d28d9; }
+  .sub-id { font-size: 11px; color: #888; }
+
+  /* Status badges */
+  .badge {
+    display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; white-space: nowrap;
+  }
+  .badge-waiting  { background: #fef3c7; color: #92400e; }   /* 입금대기중 */
+  .badge-pay      { background: #dbeafe; color: #1e40af; }   /* 결제완료 */
+  .badge-ready    { background: #ede9fe; color: #6d28d9; }   /* 배송준비중 */
+  .badge-ship     { background: #e0f2fe; color: #0369a1; }   /* 배송중 */
+  .badge-done     { background: #dcfce7; color: #15803d; }   /* 배송완료 */
+  .badge-delay    { background: #fee2e2; color: #b91c1c; }   /* 발송지연 */
+  .badge-confirm  { background: #d1fae5; color: #065f46; }   /* 구매확정완료 */
+  .badge-void     { background: #f1f5f9; color: #64748b; }   /* 주문취소 */
+  .badge-return   { background: #ffedd5; color: #9a3412; }   /* 반품/교환 */
+  .badge-refund   { background: #fff7ed; color: #c2410c; }   /* 환불 */
+
+  /* Product image */
+  .prod-img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; background: #f0eeff; border: 1px solid #e8eaee; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; }
+
+  /* Number cells */
+  .num-cell { text-align: right; font-variant-numeric: tabular-nums; }
+  .money { font-weight: 600; }
+  .discount { color: #7c3aed; }
+  .zero { color: #ccc; }
+
+  /* Option cell */
+  .option-cell { font-size: 11px; color: #666; max-width: 140px; white-space: normal; line-height: 1.4; text-align: left; }
+
+  /* Name cell */
+  .name-cell { font-weight: 600; color: #111; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; }
+
+  /* Address cell */
+  .addr-cell { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; }
+
+  /* ── Pagination ── */
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 14px 20px; border-top: 1px solid #f0f0f0; flex-shrink: 0; }
+  .pg-btn {
+    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+    border: 1px solid #e0e0e0; border-radius: 6px; font-size: 12px; cursor: pointer;
+    background: #fff; color: #555; transition: all .15s;
+  }
+  .pg-btn:hover, .pg-btn.active { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+  .pg-btn.nav-pg { color: #888; }
+  .pg-btn.nav-pg:hover { background: #f3f4f6; color: #333; border-color: #d1d5db; }
+  .pg-info { font-size: 11px; color: #999; margin: 0 8px; }
+
+  /* ── Empty state ── */
+  .empty-state { text-align: center; padding: 60px 20px; color: #bbb; }
+  .empty-icon { font-size: 36px; margin-bottom: 10px; }
+  .empty-text { font-size: 14px; font-weight: 600; color: #aaa; }
+  .empty-sub { font-size: 12px; color: #ccc; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ══ Sidebar ══ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">
+      <span class="brand">Grip</span>
+      <span class="tag">SE</span>
+    </div>
+  </div>
+  <nav class="nav-section">
+    <div class="nav-label">메뉴</div>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>홈
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>기본정보
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.069A1 1 0 0121 8.914V15.086a1 1 0 01-1.447.893L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>라이브 콘솔
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>상품 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>쿠폰 관리
+    </a>
+    <a class="nav-item active" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>주문 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>발주 / 배송 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>팔로우(회원) 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>1:1문의
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>정산관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>통계
+    </a>
+  </nav>
+</aside>
+
+<!-- ══ Main ══ -->
+<div class="main">
+  <!-- Topbar -->
+  <div class="topbar">
+    <span class="topbar-title">주문 관리</span>
+    <div class="topbar-right">
+      <span class="topbar-date" id="todayLabel"></span>
+      <div class="avatar">S</div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- Stats Row -->
+    <div class="stats-header">
+      <span class="stats-title">주문 현황</span>
+      <span class="stats-period" id="statsPeriodLabel"></span>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">전체 주문</div>
+        <div class="stat-value" id="sc-total">-</div>
+        <div class="stat-sub">전체 집계</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">입금대기중</div>
+        <div class="stat-value" id="sc-waiting" style="color:#d97706">-</div>
+        <div class="stat-sub">결제 미완료</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">결제완료</div>
+        <div class="stat-value" id="sc-pay">-</div>
+        <div class="stat-sub">발주 대기</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">배송준비중</div>
+        <div class="stat-value" id="sc-ready">-</div>
+        <div class="stat-sub">처리 필요</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">배송중 · 발송지연</div>
+        <div class="stat-value" id="sc-ship">-</div>
+        <div class="stat-sub">진행중</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">취소 · 반품 · 환불</div>
+        <div class="stat-value" id="sc-issue" style="color:#b91c1c">-</div>
+        <div class="stat-sub">처리 대기</div>
+      </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-card">
+      <div class="filter-row">
+        <span class="filter-label">주문일자</span>
+        <div class="drp-wrapper" id="drpWrapper">
+          <div class="drp-display" id="drpDisplay" onclick="toggleDRP(event)">
+            <span class="cal-icon">📅</span>
+            <span class="drp-text" id="drpText">날짜를 선택하세요</span>
+            <span class="clear-btn" id="drpClear" style="display:none" onclick="clearDRP(event)">✕</span>
+          </div>
+          <div class="drp-popup" id="drpPopup">
+            <div class="drp-shortcuts">
+              <button class="drp-shortcut" onclick="setShortcut(0)">오늘</button>
+              <button class="drp-shortcut" onclick="setShortcut(7)">최근 7일</button>
+              <button class="drp-shortcut" onclick="setShortcut(30)">최근 30일</button>
+              <button class="drp-shortcut" onclick="setShortcut('month')">이번달</button>
+              <button class="drp-shortcut" onclick="setShortcut(90)">최근 3개월</button>
+            </div>
+            <div class="drp-cals">
+              <div class="cal-block" id="calLeft"></div>
+              <div class="cal-block" id="calRight"></div>
+            </div>
+            <div class="drp-footer">
+              <button class="drp-btn" onclick="closeDRP()">취소</button>
+              <button class="drp-btn primary" onclick="applyDRP()">적용</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">주문상태</span>
+        <select class="status-select" id="statusFilter">
+          <option value="">전체 상태</option>
+          <option value="입금대기중">입금대기중</option>
+          <option value="결제완료">결제완료</option>
+          <option value="배송준비중">배송준비중</option>
+          <option value="배송중">배송중</option>
+          <option value="배송완료">배송완료</option>
+          <option value="발송지연">발송지연</option>
+          <option value="구매확정완료">구매확정완료</option>
+          <option value="주문취소">주문취소</option>
+          <option value="반품/교환">반품/교환</option>
+          <option value="환불">환불</option>
+        </select>
+        <div class="search-group">
+          <select class="search-type-select" id="searchType">
+            <option value="주문번호">주문번호</option>
+            <option value="주문상품번호">주문상품번호</option>
+            <option value="상품명">상품명</option>
+            <option value="상품코드">상품코드</option>
+            <option value="구매자닉네임">구매자 닉네임</option>
+            <option value="수령인">수령인</option>
+          </select>
+          <input type="text" class="search-input" id="searchInput" placeholder="검색어를 입력하세요" />
+          <button class="btn-search" onclick="doSearch()">검색</button>
+          <button class="btn-reset" onclick="resetSearch()">초기화</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- List Card -->
+    <div class="list-card">
+      <!-- Status Tabs -->
+      <div class="status-tabs" id="statusTabs">
+        <div class="status-tab active" data-status="" onclick="setTab(this,'')">
+          전체 <span class="tab-count" id="tc-all">-</span>
+        </div>
+        <div class="status-tab" data-status="입금대기중" onclick="setTab(this,'입금대기중')">
+          입금대기중 <span class="tab-count" id="tc-입금대기중">-</span>
+        </div>
+        <div class="status-tab" data-status="결제완료" onclick="setTab(this,'결제완료')">
+          결제완료 <span class="tab-count" id="tc-결제완료">-</span>
+        </div>
+        <div class="status-tab" data-status="배송준비중" onclick="setTab(this,'배송준비중')">
+          배송준비중 <span class="tab-count" id="tc-배송준비중">-</span>
+        </div>
+        <div class="status-tab" data-status="배송중" onclick="setTab(this,'배송중')">
+          배송중 <span class="tab-count" id="tc-배송중">-</span>
+        </div>
+        <div class="status-tab" data-status="배송완료" onclick="setTab(this,'배송완료')">
+          배송완료 <span class="tab-count" id="tc-배송완료">-</span>
+        </div>
+        <div class="status-tab" data-status="발송지연" onclick="setTab(this,'발송지연')">
+          발송지연 <span class="tab-count" id="tc-발송지연">-</span>
+        </div>
+        <div class="status-tab" data-status="구매확정완료" onclick="setTab(this,'구매확정완료')">
+          구매확정완료 <span class="tab-count" id="tc-구매확정완료">-</span>
+        </div>
+        <div class="status-tab" data-status="주문취소" onclick="setTab(this,'주문취소')">
+          주문취소 <span class="tab-count" id="tc-주문취소">-</span>
+        </div>
+        <div class="status-tab" data-status="반품/교환" onclick="setTab(this,'반품/교환')">
+          반품/교환 <span class="tab-count" id="tc-반품/교환">-</span>
+        </div>
+        <div class="status-tab" data-status="환불" onclick="setTab(this,'환불')">
+          환불 <span class="tab-count" id="tc-환불">-</span>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="list-toolbar">
+        <span class="list-count">총 <strong id="totalCount">1,284</strong>건</span>
+        <div class="toolbar-right">
+          <button class="btn-excel" onclick="alert('엑셀 다운로드 기능은 개발 예정입니다.')">
+            <span class="excel-icon">📊</span> 엑셀 다운로드
+          </button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table id="orderTable">
+          <thead>
+            <tr>
+              <th style="min-width:130px">주문번호</th>
+              <th style="min-width:130px">주문상품번호</th>
+              <th style="min-width:60px">상품이미지</th>
+              <th style="min-width:180px;text-align:left;padding-left:10px">상품명</th>
+              <th style="min-width:140px">주문 / 결제일시</th>
+              <th style="min-width:100px">주문상태</th>
+              <th style="min-width:100px">구매자 닉네임</th>
+              <th style="min-width:100px">상품코드</th>
+              <th style="min-width:160px;text-align:left;padding-left:10px">옵션</th>
+              <th style="min-width:90px">구매가</th>
+              <th style="min-width:50px">수량</th>
+              <th style="min-width:100px">상품구매금액</th>
+              <th style="min-width:80px">배송비</th>
+              <th style="min-width:110px">제주/도서<br>산간 배송비</th>
+              <th style="min-width:100px">상품주문금액</th>
+              <th style="min-width:100px">셀러쿠폰금액</th>
+              <th style="min-width:90px">수령인</th>
+              <th style="min-width:110px">수령인 연락처</th>
+              <th style="min-width:90px">수령인 우편번호</th>
+              <th style="min-width:220px;text-align:left;padding-left:10px">수령인 주소</th>
+            </tr>
+          </thead>
+          <tbody id="orderBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   MOCK DATA
+═══════════════════════════════════════ */
+const STATUSES = ['입금대기중','결제완료','배송준비중','배송중','배송완료','발송지연','구매확정완료','주문취소','반품/교환','환불'];
+const STATUS_BADGE = {
+  '입금대기중':'badge-waiting',
+  '결제완료':'badge-pay',
+  '배송준비중':'badge-ready',
+  '배송중':'badge-ship',
+  '배송완료':'badge-done',
+  '발송지연':'badge-delay',
+  '구매확정완료':'badge-confirm',
+  '주문취소':'badge-void',
+  '반품/교환':'badge-return',
+  '환불':'badge-refund',
+};
+const PRODUCTS = [
+  {name:'[단독] 제주 한라봉 5kg 특품', code:'PRD-0012', img:'🍊', price:35000, options:['없음']},
+  {name:'프리미엄 유기농 쌀 10kg', code:'PRD-0023', img:'🌾', price:48000, options:['10kg','20kg']},
+  {name:'국내산 갈비세트 선물용', code:'PRD-0031', img:'🥩', price:85000, options:['1.5kg / 양념','1.5kg / 간장','2kg / 양념']},
+  {name:'제주 흑돼지 삼겹살 1kg', code:'PRD-0045', img:'🐷', price:29800, options:['없음']},
+  {name:'수제 들기름 400ml 2병', code:'PRD-0057', img:'🫙', price:22000, options:['2병','4병','6병']},
+  {name:'유기농 표고버섯 건조 200g', code:'PRD-0063', img:'🍄', price:18500, options:['200g','400g']},
+  {name:'제주 감귤 10kg (가정용)', code:'PRD-0071', img:'🍋', price:26000, options:['10kg (L)','10kg (M)','15kg (L)']},
+  {name:'국내산 참깨 500g', code:'PRD-0088', img:'🌿', price:12000, options:['없음']},
+];
+const NICKNAMES = ['감자맘','라이브팬','구매왕','먹방러버','살림고수','쇼핑중독','뷰티퀸','다이어터','살림왕','육아맘'];
+const RECIPIENTS = ['김지수','이민준','박수연','최재원','정예진','한도윤','윤서아','강민호','조미래','오태양'];
+const PHONES = ['010-1234-5678','010-2345-6789','010-3456-7890','010-4567-8901','010-5678-9012'];
+const ZIPS = ['06542','04523','16488','34109','48058','61469','02878'];
+const ADDRS = [
+  '서울시 강남구 테헤란로 123, 456동 789호','경기도 성남시 분당구 판교로 88','부산시 해운대구 센텀시티로 45, 201호',
+  '대전시 서구 둔산로 99','인천시 연수구 컨벤시아대로 100','광주시 북구 첨단과기로 208','제주시 애월읍 애월로 55',
+  '경기도 수원시 영통구 광교중앙로 145','서울시 마포구 양화로 45, 홍대빌딩 3층','대구시 수성구 범어로 77'
+];
+
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function randItem(arr) { return arr[randInt(0, arr.length - 1)]; }
+function pad2(n) { return String(n).padStart(2,'0'); }
+function fmtDate(d) {
+  return `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+function fmtMoney(n) { return n === 0 ? '<span class="zero">-</span>' : n.toLocaleString(); }
+
+// Generate 120 mock orders
+const allOrders = [];
+for (let i = 1; i <= 120; i++) {
+  const prod = randItem(PRODUCTS);
+  const opt  = randItem(prod.options);
+  const optAdd = opt === '없음' ? 0 : randItem([0, 1000, 2000, 3000, 5000]);
+  const price = prod.price + optAdd;
+  const qty   = randInt(1, 3);
+  const purAmt = price * qty;
+  const delivery = randItem([0, 3000, 3000, 3000, 5000]);
+  const jeju  = randItem([0, 0, 0, 3000, 5000]);
+  const coupon = randItem([0, 0, 0, 1000, 2000, 3000]);
+  const total = purAmt + delivery + jeju - coupon;
+  const daysAgo = randInt(0, 89);
+  const orderDate = new Date(Date.now() - daysAgo * 86400000 - randInt(0, 86400000));
+
+  // Status distribution (현실적 비율)
+  let status;
+  const r = randInt(1, 100);
+  if      (r <=  5) status = '입금대기중';
+  else if (r <= 20) status = '결제완료';
+  else if (r <= 45) status = '배송준비중';
+  else if (r <= 62) status = '배송중';
+  else if (r <= 74) status = '배송완료';
+  else if (r <= 77) status = '발송지연';
+  else if (r <= 84) status = '구매확정완료';
+  else if (r <= 89) status = '주문취소';
+  else if (r <= 95) status = '반품/교환';
+  else              status = '환불';
+
+  const ordNo  = `ORD-2026${String(10000 + i).slice(1)}`;
+  const prodOrdNo = `PO-2026${String(20000 + i * 3).slice(1)}`;
+
+  allOrders.push({
+    id: i, ordNo, prodOrdNo, orderDate, status, prod,
+    opt: opt === '없음' ? '' : opt, optAdd,
+    price, qty, purAmt, delivery, jeju, coupon, total,
+    nickname: randItem(NICKNAMES),
+    recipient: randItem(RECIPIENTS),
+    phone: randItem(PHONES),
+    zip: randItem(ZIPS),
+    addr: randItem(ADDRS),
+  });
+}
+allOrders.sort((a,b) => b.orderDate - a.orderDate);
+
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
+let filteredOrders = [...allOrders];
+let currentTab = '';
+let currentPage = 1;
+const PAGE_SIZE = 15;
+
+/* ═══════════════════════════════════════
+   RENDER
+═══════════════════════════════════════ */
+function renderTable() {
+  const body = document.getElementById('orderBody');
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const rows  = filteredOrders.slice(start, start + PAGE_SIZE);
+
+  if (rows.length === 0) {
+    body.innerHTML = `<tr><td colspan="20">
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-text">검색 결과가 없습니다</div>
+        <div class="empty-sub">조건을 변경하거나 초기화 후 다시 시도해 주세요</div>
+      </div>
+    </td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows.map(o => `
+    <tr>
+      <td><span class="order-link">${o.ordNo}</span></td>
+      <td><span class="sub-id">${o.prodOrdNo}</span></td>
+      <td><div class="prod-img">${o.prod.img}</div></td>
+      <td class="name-cell" title="${o.prod.name}">${o.prod.name}</td>
+      <td style="font-size:11px;color:#555">${fmtDate(o.orderDate)}</td>
+      <td><span class="badge ${STATUS_BADGE[o.status]}">${o.status}</span></td>
+      <td>${o.nickname}</td>
+      <td style="font-size:11px;color:#888">${o.prod.code}</td>
+      <td class="option-cell">${o.opt || '<span style="color:#ccc">-</span>'}</td>
+      <td class="num-cell money">${o.price.toLocaleString()}원</td>
+      <td style="font-weight:600">${o.qty}</td>
+      <td class="num-cell money">${o.purAmt.toLocaleString()}원</td>
+      <td class="num-cell">${fmtMoney(o.delivery)}${o.delivery ? '원' : ''}</td>
+      <td class="num-cell">${fmtMoney(o.jeju)}${o.jeju ? '원' : ''}</td>
+      <td class="num-cell money">${o.total.toLocaleString()}원</td>
+      <td class="num-cell discount">${o.coupon > 0 ? '-' + o.coupon.toLocaleString() + '원' : '<span class="zero">-</span>'}</td>
+      <td>${o.recipient}</td>
+      <td style="font-size:11px">${o.phone}</td>
+      <td style="font-size:11px">${o.zip}</td>
+      <td class="addr-cell" title="${o.addr}">${o.addr}</td>
+    </tr>
+  `).join('');
+}
+
+function renderPagination() {
+  const total = filteredOrders.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const pg = document.getElementById('pagination');
+
+  document.getElementById('totalCount').textContent = total.toLocaleString();
+
+  let html = `<button class="pg-btn nav-pg" onclick="goPage(1)">«</button>`;
+  html += `<button class="pg-btn nav-pg" onclick="goPage(${Math.max(1, currentPage-1)})">‹</button>`;
+
+  const startP = Math.max(1, currentPage - 2);
+  const endP   = Math.min(totalPages, currentPage + 2);
+  for (let p = startP; p <= endP; p++) {
+    html += `<button class="pg-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
+  }
+
+  html += `<button class="pg-btn nav-pg" onclick="goPage(${Math.min(totalPages, currentPage+1)})">›</button>`;
+  html += `<button class="pg-btn nav-pg" onclick="goPage(${totalPages})">»</button>`;
+  html += `<span class="pg-info">${currentPage} / ${totalPages} 페이지</span>`;
+  pg.innerHTML = html;
+}
+
+function goPage(p) {
+  currentPage = p;
+  renderTable();
+  renderPagination();
+}
+
+/* ═══════════════════════════════════════
+   FILTER / SEARCH
+═══════════════════════════════════════ */
+function applyFilters() {
+  const status  = document.getElementById('statusFilter').value;
+  const type    = document.getElementById('searchType').value;
+  const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+
+  filteredOrders = allOrders.filter(o => {
+    // Tab filter
+    if (currentTab && o.status !== currentTab) return false;
+    // Status dropdown
+    if (status && o.status !== status) return false;
+    // Date range
+    if (drpState.applied.start && drpState.applied.end) {
+      const d = o.orderDate;
+      if (d < drpState.applied.start || d > drpState.applied.end) return false;
+    }
+    // Keyword
+    if (keyword) {
+      const map = {
+        '주문번호': o.ordNo.toLowerCase(),
+        '주문상품번호': o.prodOrdNo.toLowerCase(),
+        '상품명': o.prod.name.toLowerCase(),
+        '상품코드': o.prod.code.toLowerCase(),
+        '구매자닉네임': o.nickname.toLowerCase(),
+        '수령인': o.recipient.toLowerCase(),
+      };
+      if (!(map[type] || '').includes(keyword)) return false;
+    }
+    return true;
+  });
+  currentPage = 1;
+  renderTable();
+  renderPagination();
+}
+
+/* ═══════════════════════════════════════
+   TAB COUNTS & STAT CARDS
+═══════════════════════════════════════ */
+function updateTabCounts() {
+  const counts = {};
+  STATUSES.forEach(s => counts[s] = 0);
+  allOrders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
+
+  const tcAll = document.getElementById('tc-all');
+  if (tcAll) tcAll.textContent = allOrders.length.toLocaleString();
+  STATUSES.forEach(s => {
+    const el = document.getElementById('tc-' + s);
+    if (el) el.textContent = counts[s].toLocaleString();
+  });
+}
+
+function updateStatCards() {
+  const counts = {};
+  STATUSES.forEach(s => counts[s] = 0);
+  allOrders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val.toLocaleString(); };
+  set('sc-total',   allOrders.length);
+  set('sc-waiting', counts['입금대기중']);
+  set('sc-pay',     counts['결제완료']);
+  set('sc-ready',   counts['배송준비중']);
+  set('sc-ship',    counts['배송중'] + counts['발송지연']);
+  set('sc-issue',   counts['주문취소'] + counts['반품/교환'] + counts['환불']);
+}
+
+function doSearch()  { applyFilters(); }
+function resetSearch() {
+  document.getElementById('statusFilter').value = '';
+  document.getElementById('searchType').value = '주문번호';
+  document.getElementById('searchInput').value = '';
+  clearDRP();
+  filteredOrders = currentTab ? allOrders.filter(o => o.status === currentTab) : [...allOrders];
+  currentPage = 1;
+  renderTable();
+  renderPagination();
+}
+
+function setTab(el, status) {
+  document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentTab = status;
+  applyFilters();
+}
+
+/* ═══════════════════════════════════════
+   DATE RANGE PICKER
+═══════════════════════════════════════ */
+const drpState = {
+  viewYear: new Date().getFullYear(),
+  viewMonth: new Date().getMonth(), // 0-indexed
+  start: null, end: null,
+  hovered: null,
+  applied: { start: null, end: null },
+  open: false,
+};
+
+function toggleDRP(e) {
+  e.stopPropagation();
+  if (!drpState.open) { openDRP(); } else { closeDRP(); }
+}
+function openDRP() {
+  drpState.open = true;
+  document.getElementById('drpPopup').classList.add('open');
+  renderBothCals();
+}
+function closeDRP() {
+  drpState.open = false;
+  document.getElementById('drpPopup').classList.remove('open');
+}
+function applyDRP() {
+  if (drpState.start) {
+    drpState.applied.start = new Date(drpState.start); drpState.applied.start.setHours(0,0,0,0);
+  }
+  if (drpState.end) {
+    drpState.applied.end = new Date(drpState.end); drpState.applied.end.setHours(23,59,59,999);
+  }
+  updateDisplay();
+  document.getElementById('drpClear').style.display = drpState.start ? 'inline' : 'none';
+  closeDRP();
+  applyFilters();
+}
+function clearDRP(e) {
+  if (e) e.stopPropagation();
+  drpState.start = drpState.end = drpState.hovered = null;
+  drpState.applied.start = drpState.applied.end = null;
+  document.getElementById('drpText').textContent = '날짜를 선택하세요';
+  document.getElementById('drpClear').style.display = 'none';
+  applyFilters();
+}
+function updateDisplay() {
+  const s = drpState.start, en = drpState.end;
+  if (!s) { document.getElementById('drpText').textContent = '날짜를 선택하세요'; return; }
+  const fmt = d => `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
+  document.getElementById('drpText').textContent = en ? `${fmt(s)} ~ ${fmt(en)}` : `${fmt(s)} ~ 종료일 선택`;
+}
+function setShortcut(val) {
+  const now = new Date(); now.setHours(0,0,0,0);
+  const end = new Date(); end.setHours(23,59,59,999);
+  if (val === 'month') {
+    drpState.start = new Date(now.getFullYear(), now.getMonth(), 1);
+    drpState.end   = end;
+  } else {
+    drpState.start = new Date(now - (val - 1) * 86400000);
+    drpState.end   = end;
+  }
+  drpState.viewYear  = drpState.start.getFullYear();
+  drpState.viewMonth = drpState.start.getMonth();
+  renderBothCals();
+  updateDisplay();
+}
+function navCal(delta) {
+  drpState.viewMonth += delta;
+  if (drpState.viewMonth > 11) { drpState.viewMonth = 0; drpState.viewYear++; }
+  if (drpState.viewMonth < 0)  { drpState.viewMonth = 11; drpState.viewYear--; }
+  renderBothCals();
+}
+function calHtml(year, month, showPrev, showNext) {
+  const DAYS = ['일','월','화','수','목','금','토'];
+  const today = new Date(); today.setHours(0,0,0,0);
+  const first = new Date(year, month, 1).getDay();
+  const total = new Date(year, month+1, 0).getDate();
+  const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  let html = `<div class="cal-header">`;
+  html += showPrev ? `<button class="cal-nav-btn" onclick="navCal(-1)">‹</button>` : `<span style="width:26px"></span>`;
+  html += `<span class="cal-month-label">${year}년 ${monthNames[month]}</span>`;
+  html += showNext ? `<button class="cal-nav-btn" onclick="navCal(1)">›</button>` : `<span style="width:26px"></span>`;
+  html += `</div><div class="cal-grid">`;
+  DAYS.forEach(d => html += `<div class="cal-dow">${d}</div>`);
+  for (let i = 0; i < first; i++) html += `<div class="cal-day empty"></div>`;
+  for (let d = 1; d <= total; d++) {
+    const dt = new Date(year, month, d);
+    const ts = dt.getTime();
+    const isToday = dt.getTime() === today.getTime();
+    const future  = dt > today;
+    html += `<div class="cal-day${future?' disabled':''}${isToday?' today':''}" data-ts="${ts}" data-y="${year}" data-m="${month}" data-d="${d}">${d}</div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+function renderBothCals() {
+  const ry = drpState.viewYear, rm = drpState.viewMonth;
+  let ry2 = ry, rm2 = rm + 1;
+  if (rm2 > 11) { rm2 = 0; ry2++; }
+  document.getElementById('calLeft').innerHTML  = calHtml(ry,  rm,  true,  false);
+  document.getElementById('calRight').innerHTML = calHtml(ry2, rm2, false, true);
+  refreshDayClasses();
+}
+function refreshDayClasses() {
+  const s = drpState.start ? drpState.start.getTime() : null;
+  const e = drpState.end   ? drpState.end.getTime()   : (drpState.hovered ? drpState.hovered.getTime() : null);
+  const rangeStart = s ? Math.min(s, e || s) : null;
+  const rangeEnd   = s ? Math.max(s, e || s) : null;
+  document.querySelectorAll('#drpPopup .cal-day[data-ts]').forEach(el => {
+    el.classList.remove('selected-start','selected-end','in-range');
+    const ts = +el.dataset.ts;
+    if (!s) return;
+    if (ts === rangeStart) el.classList.add('selected-start');
+    if (ts === rangeEnd)   el.classList.add('selected-end');
+    if (rangeStart < ts && ts < rangeEnd) el.classList.add('in-range');
+  });
+}
+
+// Event delegation for calendar
+document.addEventListener('click', function(e) {
+  const popup = document.getElementById('drpPopup');
+  if (!popup) return;
+  const day = e.target.closest('.cal-day[data-ts]');
+  if (day && popup.contains(day)) {
+    if (day.classList.contains('disabled') || day.classList.contains('empty')) return;
+    const dt = new Date(+day.dataset.ts);
+    if (!drpState.start || (drpState.start && drpState.end)) {
+      drpState.start = dt; drpState.end = null; drpState.hovered = null;
+    } else {
+      if (dt < drpState.start) { drpState.end = drpState.start; drpState.start = dt; }
+      else { drpState.end = dt; }
+      drpState.hovered = null;
+    }
+    refreshDayClasses();
+    updateDisplay();
+    return;
+  }
+  // Close on outside click
+  if (drpState.open && !document.getElementById('drpWrapper').contains(e.target)) {
+    closeDRP();
+  }
+});
+document.addEventListener('mouseover', function(e) {
+  if (!drpState.open || !drpState.start || drpState.end) return;
+  const popup = document.getElementById('drpPopup');
+  const day = e.target.closest('.cal-day[data-ts]');
+  if (day && popup && popup.contains(day) && !day.classList.contains('disabled')) {
+    drpState.hovered = new Date(+day.dataset.ts);
+    refreshDayClasses();
+  }
+});
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+  const now = new Date();
+  document.getElementById('todayLabel').textContent =
+    `${now.getFullYear()}.${pad2(now.getMonth()+1)}.${pad2(now.getDate())} (${['일','월','화','수','목','금','토'][now.getDay()]})`;
+
+  // Stats period label — 최근 30일 기준
+  const end30  = new Date(now);
+  const start30 = new Date(now); start30.setDate(now.getDate() - 29);
+  const fmt30 = d => `${d.getFullYear()}.${pad2(d.getMonth()+1)}.${pad2(d.getDate())}`;
+  document.getElementById('statsPeriodLabel').textContent =
+    `최근 30일 기준 (${fmt30(start30)} ~ ${fmt30(end30)})`;
+
+  // 탭 카운트 & 통계 카드 초기화
+  updateTabCounts();
+  updateStatCards();
+  renderTable();
+  renderPagination();
+});
+</script>
+</body>
+</html>
