@@ -191,6 +191,61 @@ select.sel{padding:7px 10px;border-radius:7px;border:1px solid #e0e2ea;font-size
 .divider{height:1px;background:#f4f5f7;margin:2px 0}
 .info-box{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:10px 12px;font-size:12px;color:#6d28d9;line-height:1.7}
 
+/* ── Issue policy sections (modal) ── */
+.policy-section{display:flex;flex-direction:column;gap:14px}
+.policy-divider{height:1px;background:#f0f0f0;margin:2px 0}
+.policy-label{font-size:12px;font-weight:600;color:#6d28d9;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:6px;padding:5px 10px;display:inline-flex;align-items:center;gap:5px;margin-bottom:2px}
+/* 상시 발행 */
+.nick-search-row{display:flex;gap:6px}
+.nick-search-row input{flex:1;padding:8px 10px;border:1px solid #e0e2ea;border-radius:7px;font-size:13px;color:#111;background:#fff;outline:none;font-family:inherit}
+.nick-search-row input:focus{border-color:#7c3aed}
+.nick-search-row button{padding:8px 14px;background:#7c3aed;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit}
+.nick-search-row button:hover{background:#6d28d9}
+.nick-result-list{border:1px solid #e8eaee;border-radius:8px;overflow:hidden;max-height:160px;overflow-y:auto}
+.nick-result-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #f4f5f7;cursor:pointer;transition:background .12s}
+.nick-result-item:last-child{border-bottom:none}
+.nick-result-item:hover{background:#faf8ff}
+.nick-result-item input[type=checkbox]{width:15px;height:15px;accent-color:#7c3aed;cursor:pointer;flex-shrink:0}
+.nick-av{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0}
+.nick-info{flex:1}
+.nick-name{font-size:13px;font-weight:600;color:#111}
+.nick-meta{font-size:11px;color:#aaa;margin-top:1px}
+.nick-selected-bar{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:7px;padding:8px 12px;font-size:12px;color:#6d28d9;display:flex;align-items:center;justify-content:space-between}
+.nick-selected-bar strong{font-size:14px}
+/* 자동 발행 */
+.trigger-list{display:flex;flex-direction:column;gap:6px}
+.trigger-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px solid #e8eaee;border-radius:8px;cursor:pointer;transition:all .15s;font-size:13px;color:#374151}
+.trigger-item:hover{border-color:#c4b5fd;background:#faf8ff}
+.trigger-item.selected{border-color:#7c3aed;background:#f5f3ff;color:#6d28d9;font-weight:600}
+.trigger-item input[type=radio]{accent-color:#7c3aed;width:15px;height:15px;flex-shrink:0;cursor:pointer}
+.trigger-item .t-icon{font-size:18px;flex-shrink:0}
+.trigger-item .t-label{flex:1}
+.trigger-item .t-sub{font-size:11px;color:#aaa;font-weight:400;margin-top:1px}
+.trigger-item .t-input{display:flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0}
+.trigger-item .t-input input{width:56px;padding:4px 7px;border:1px solid #e0e2ea;border-radius:5px;font-size:12px;text-align:center;outline:none;font-family:inherit}
+.trigger-item.selected .t-input input{border-color:#c4b5fd}
+.trigger-item .t-input span{font-size:12px;color:#888;white-space:nowrap}
+.dedup-row{display:flex;gap:7px}
+.dedup-btn{flex:1;padding:8px;border-radius:7px;border:1.5px solid #e0e2ea;background:#fff;font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;color:#666}
+.dedup-btn.on{border-color:#7c3aed;background:#f5f3ff;color:#7c3aed}
+/* CRM 발행 */
+.crm-seg-list{display:flex;flex-direction:column;gap:6px}
+.crm-seg-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px solid #e8eaee;border-radius:8px;cursor:pointer;transition:all .15s}
+.crm-seg-item:hover{border-color:#c4b5fd;background:#faf8ff}
+.crm-seg-item.selected{border-color:#7c3aed;background:#f5f3ff}
+.crm-seg-item input[type=checkbox]{accent-color:#7c3aed;width:15px;height:15px;flex-shrink:0;cursor:pointer}
+.crm-seg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.crm-seg-body{flex:1}
+.crm-seg-name{font-size:13px;font-weight:600;color:#111}
+.crm-seg-item.selected .crm-seg-name{color:#6d28d9}
+.crm-seg-desc{font-size:11px;color:#aaa;margin-top:1px}
+.crm-seg-cnt{font-size:12px;font-weight:700;color:#6d28d9;background:#ede9fe;padding:2px 8px;border-radius:20px;white-space:nowrap;margin-left:auto;flex-shrink:0}
+.crm-preview-box{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.crm-preview-box span{font-size:12px;color:#888}
+.crm-preview-box strong{font-size:16px;font-weight:700;color:#6d28d9}
+.reserve-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.info-box-warn{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px 12px;font-size:12px;color:#92400e;line-height:1.7}
+
 /* ── Empty state ── */
 .empty{text-align:center;padding:48px 20px;color:#aaa}
 .empty svg{margin-bottom:10px;opacity:.4}
@@ -771,10 +826,10 @@ select.sel{padding:7px 10px;border-radius:7px;border:1px solid #e0e2ea;font-size
 
       <div class="mrow">
         <label>발행 방식 <span style="color:#ef4444">*</span></label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">
-          <div class="type-btn on" onclick="selectType(this,'issue')">상시 발행</div>
-          <div class="type-btn" onclick="selectType(this,'issue')">자동 발행</div>
-          <div class="type-btn" onclick="selectType(this,'issue')">CRM 발행</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px" id="issue-type-btns">
+          <div class="type-btn on" data-type="quick" onclick="selectType(this)">상시 발행</div>
+          <div class="type-btn" data-type="auto" onclick="selectType(this)">자동 발행</div>
+          <div class="type-btn" data-type="crm" onclick="selectType(this)">CRM 발행</div>
         </div>
       </div>
 
@@ -852,8 +907,188 @@ select.sel{padding:7px 10px;border-radius:7px;border:1px solid #e0e2ea;font-size
         <div class="mrow-hint">설정 시 해당 수량 소진 후 자동 비활성화됩니다.</div>
       </div>
 
-      <div class="info-box">
-        💡 쿠폰 생성 후 <strong>자동 발행</strong>에서 트리거를 연결하거나, <strong>CRM 발행</strong>에서 세그먼트를 선택해 즉시 배포할 수 있습니다.
+      <!-- ══ 상시 발행 정책 ══ -->
+      <div id="policy-quick" class="policy-section">
+        <div class="divider"></div>
+        <div style="font-size:11px;font-weight:700;color:#7c3aed;letter-spacing:.5px;text-transform:uppercase">📢 발급 대상 설정</div>
+
+        <div class="mrow">
+          <label>발급 대상</label>
+          <div class="type-toggle">
+            <div class="type-btn on" id="qt-all-btn" onclick="selectQuickTarget('all')">전체 팔로워</div>
+            <div class="type-btn" id="qt-specific-btn" onclick="selectQuickTarget('specific')">특정 회원 지정</div>
+          </div>
+        </div>
+
+        <div id="qt-specific-wrap" style="display:none;flex-direction:column;gap:8px">
+          <div class="mrow">
+            <label>닉네임 검색</label>
+            <div class="nick-search-row">
+              <input type="text" id="qt-nick-input" placeholder="닉네임 입력 후 검색 (예: 달빛감성)">
+              <button onclick="searchNick()">검색</button>
+            </div>
+          </div>
+          <div id="qt-nick-results" class="nick-result-list" style="display:none">
+            <div class="nick-result-item">
+              <input type="checkbox" onchange="updateNickCount()">
+              <div class="nick-av">달</div>
+              <div class="nick-info"><div class="nick-name">달빛감성</div><div class="nick-meta">누적구매 4회 · ₩312,000</div></div>
+            </div>
+            <div class="nick-result-item">
+              <input type="checkbox" onchange="updateNickCount()">
+              <div class="nick-av">눈</div>
+              <div class="nick-info"><div class="nick-name">눈꽃마을</div><div class="nick-meta">누적구매 2회 · ₩189,000</div></div>
+            </div>
+            <div class="nick-result-item">
+              <input type="checkbox" onchange="updateNickCount()">
+              <div class="nick-av">루</div>
+              <div class="nick-info"><div class="nick-name">루시아87</div><div class="nick-meta">누적구매 7회 · ₩891,000</div></div>
+            </div>
+          </div>
+          <div class="nick-selected-bar">
+            <span>선택된 회원</span>
+            <strong id="qt-selected-count">0명</strong>
+          </div>
+        </div>
+
+        <div class="mrow">
+          <label>발행 시점</label>
+          <div class="type-toggle">
+            <div class="type-btn on" id="qt-now-btn" onclick="selectQuickTime('now')">즉시 발행</div>
+            <div class="type-btn" id="qt-reserve-btn" onclick="selectQuickTime('reserve')">예약 발행</div>
+          </div>
+        </div>
+        <div id="qt-reserve-wrap" class="reserve-wrap" style="display:none">
+          <div class="mrow"><label>예약 날짜</label><input type="date"></div>
+          <div class="mrow"><label>예약 시간</label><input type="time"></div>
+        </div>
+      </div>
+
+      <!-- ══ 자동 발행 정책 ══ -->
+      <div id="policy-auto" class="policy-section" style="display:none">
+        <div class="divider"></div>
+        <div style="font-size:11px;font-weight:700;color:#7c3aed;letter-spacing:.5px;text-transform:uppercase">⚡ 트리거 조건 설정</div>
+
+        <div class="mrow">
+          <label>자동 발행 트리거 <span style="color:#ef4444">*</span></label>
+          <div class="trigger-list" id="trigger-list">
+            <div class="trigger-item" onclick="selectTrigger(this,'follow')">
+              <input type="radio" name="auto-trigger" value="follow">
+              <span class="t-icon">👥</span>
+              <div style="flex:1"><div class="t-label">신규 팔로우 시</div><div class="t-sub">셀러를 팔로우하는 순간 즉시 지급</div></div>
+            </div>
+            <div class="trigger-item" onclick="selectTrigger(this,'first-buy')">
+              <input type="radio" name="auto-trigger" value="first-buy">
+              <span class="t-icon">🛒</span>
+              <div style="flex:1"><div class="t-label">첫 구매 시</div><div class="t-sub">생애 첫 주문 완료 시 자동 지급</div></div>
+            </div>
+            <div class="trigger-item" onclick="selectTrigger(this,'buy-count')" id="trigger-buy-count">
+              <input type="radio" name="auto-trigger" value="buy-count">
+              <span class="t-icon">🔁</span>
+              <div style="flex:1"><div class="t-label">누적 구매 횟수 달성 시</div><div class="t-sub">설정 횟수 도달 시 자동 지급</div></div>
+              <div class="t-input"><input type="number" value="3" min="1" onclick="event.stopPropagation()"><span>회 이상</span></div>
+            </div>
+            <div class="trigger-item" onclick="selectTrigger(this,'buy-amount')" id="trigger-buy-amount">
+              <input type="radio" name="auto-trigger" value="buy-amount">
+              <span class="t-icon">💰</span>
+              <div style="flex:1"><div class="t-label">누적 구매금액 달성 시</div><div class="t-sub">설정 금액 도달 시 자동 지급</div></div>
+              <div class="t-input"><input type="text" value="50,000" onclick="event.stopPropagation()" style="width:70px"><span>원 이상</span></div>
+            </div>
+            <div class="trigger-item" onclick="selectTrigger(this,'watch')" id="trigger-watch">
+              <input type="radio" name="auto-trigger" value="watch">
+              <span class="t-icon">📺</span>
+              <div style="flex:1"><div class="t-label">방송 시청 시간 달성 시</div><div class="t-sub">해당 회차 방송에서 N분 이상 시청 시 지급</div></div>
+              <div class="t-input"><input type="number" value="5" min="1" onclick="event.stopPropagation()"><span>분 이상</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mrow">
+          <label>동일 회원 중복 발급</label>
+          <div class="dedup-row">
+            <div class="dedup-btn on" id="dedup-once" onclick="selectDedup('once')">1회만 발급</div>
+            <div class="dedup-btn" id="dedup-every" onclick="selectDedup('every')">트리거마다 발급</div>
+          </div>
+        </div>
+
+        <div class="reserve-wrap">
+          <div class="mrow"><label>자동 발행 시작일</label><input type="date"></div>
+          <div class="mrow"><label>종료일 <span style="color:#aaa;font-weight:400">(선택, 미설정 시 무기한)</span></label><input type="date"></div>
+        </div>
+      </div>
+
+      <!-- ══ CRM 발행 정책 ══ -->
+      <div id="policy-crm" class="policy-section" style="display:none">
+        <div class="divider"></div>
+        <div style="font-size:11px;font-weight:700;color:#7c3aed;letter-spacing:.5px;text-transform:uppercase">🎯 CRM 세그먼트 설정</div>
+
+        <div class="mrow">
+          <label>대상 세그먼트 <span style="color:#ef4444">*</span> <span style="color:#aaa;font-weight:400">(복수 선택 가능)</span></label>
+          <div class="crm-seg-list">
+            <div class="crm-seg-item" onclick="toggleCrmSeg(this,243)">
+              <input type="checkbox" onchange="event.stopPropagation()">
+              <div class="crm-seg-dot" style="background:#ef4444"></div>
+              <div class="crm-seg-body"><div class="crm-seg-name">이탈 위험 고객</div><div class="crm-seg-desc">30일 이상 미접속</div></div>
+              <div class="crm-seg-cnt">243명</div>
+            </div>
+            <div class="crm-seg-item" onclick="toggleCrmSeg(this,187)">
+              <input type="checkbox" onchange="event.stopPropagation()">
+              <div class="crm-seg-dot" style="background:#f59e0b"></div>
+              <div class="crm-seg-body"><div class="crm-seg-name">장기 미구매 고객</div><div class="crm-seg-desc">60일 이상 미구매</div></div>
+              <div class="crm-seg-cnt">187명</div>
+            </div>
+            <div class="crm-seg-item" onclick="toggleCrmSeg(this,312)">
+              <input type="checkbox" onchange="event.stopPropagation()">
+              <div class="crm-seg-dot" style="background:#7c3aed"></div>
+              <div class="crm-seg-body"><div class="crm-seg-name">단골 고객</div><div class="crm-seg-desc">구매 5회 이상</div></div>
+              <div class="crm-seg-cnt">312명</div>
+            </div>
+            <div class="crm-seg-item" onclick="toggleCrmSeg(this,89)">
+              <input type="checkbox" onchange="event.stopPropagation()">
+              <div class="crm-seg-dot" style="background:#059669"></div>
+              <div class="crm-seg-body"><div class="crm-seg-name">우수 고객</div><div class="crm-seg-desc">누적 구매금액 상위 10%</div></div>
+              <div class="crm-seg-cnt">89명</div>
+            </div>
+            <div class="crm-seg-item" onclick="toggleCrmSeg(this,56)">
+              <input type="checkbox" onchange="event.stopPropagation()">
+              <div class="crm-seg-dot" style="background:#3b82f6"></div>
+              <div class="crm-seg-body"><div class="crm-seg-name">신규 가입 고객</div><div class="crm-seg-desc">가입 7일 이내</div></div>
+              <div class="crm-seg-cnt">56명</div>
+            </div>
+            <div class="crm-seg-item" onclick="toggleCrmSeg(this,1248)">
+              <input type="checkbox" onchange="event.stopPropagation()">
+              <div class="crm-seg-dot" style="background:#6b7280"></div>
+              <div class="crm-seg-body"><div class="crm-seg-name">전체 팔로워</div><div class="crm-seg-desc">모든 구독자</div></div>
+              <div class="crm-seg-cnt">1,248명</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="crm-preview-box">
+          <span>예상 발급 인원</span>
+          <strong id="crm-preview-count">0명</strong>
+        </div>
+
+        <div class="mrow">
+          <label>발행 시점</label>
+          <div class="type-toggle">
+            <div class="type-btn on" id="ct-now-btn" onclick="selectCrmTime('now')">즉시 발행</div>
+            <div class="type-btn" id="ct-reserve-btn" onclick="selectCrmTime('reserve')">예약 발행</div>
+          </div>
+        </div>
+        <div id="ct-reserve-wrap" class="reserve-wrap" style="display:none">
+          <div class="mrow"><label>예약 날짜</label><input type="date"></div>
+          <div class="mrow"><label>예약 시간</label><input type="time"></div>
+        </div>
+
+        <div class="mrow">
+          <label>발송 메모 (선택)</label>
+          <textarea rows="2" placeholder="예: 3월 감사 이벤트 쿠폰 발송" style="resize:none;padding:8px 10px;border:1px solid #e0e2ea;border-radius:7px;font-size:13px;font-family:inherit;outline:none;color:#111" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e0e2ea'"></textarea>
+        </div>
+
+        <div class="info-box-warn">
+          ⚠️ CRM 발행은 선택한 세그먼트에 일괄 지급됩니다. 동일 쿠폰은 회원당 1회만 발급됩니다.
+        </div>
       </div>
 
     </div>
@@ -896,8 +1131,57 @@ function toggleChip(el){
 
 // Type toggles in modal
 function selectType(el){
-  el.closest('div').querySelectorAll('.type-btn').forEach(b=>b.classList.remove('on'));
+  el.parentElement.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
+  const type = el.dataset.type;
+  document.getElementById('policy-quick').style.display = type==='quick' ? 'flex' : 'none';
+  document.getElementById('policy-auto').style.display  = type==='auto'  ? 'flex' : 'none';
+  document.getElementById('policy-crm').style.display   = type==='crm'   ? 'flex' : 'none';
+}
+/* ── 상시 발행 helpers ── */
+function selectQuickTarget(t){
+  document.getElementById('qt-all-btn').classList.toggle('on', t==='all');
+  document.getElementById('qt-specific-btn').classList.toggle('on', t==='specific');
+  const wrap = document.getElementById('qt-specific-wrap');
+  wrap.style.display = t==='specific' ? 'flex' : 'none';
+}
+function searchNick(){
+  const v = document.getElementById('qt-nick-input').value.trim();
+  if(!v){ showToast('닉네임을 입력하세요'); return; }
+  document.getElementById('qt-nick-results').style.display = 'block';
+}
+function updateNickCount(){
+  const n = document.querySelectorAll('#qt-nick-results input[type=checkbox]:checked').length;
+  document.getElementById('qt-selected-count').textContent = n+'명';
+}
+function selectQuickTime(t){
+  document.getElementById('qt-now-btn').classList.toggle('on', t==='now');
+  document.getElementById('qt-reserve-btn').classList.toggle('on', t==='reserve');
+  document.getElementById('qt-reserve-wrap').style.display = t==='reserve' ? 'grid' : 'none';
+}
+/* ── 자동 발행 helpers ── */
+function selectTrigger(item, val){
+  document.querySelectorAll('.trigger-item').forEach(t=>t.classList.remove('selected'));
+  item.classList.add('selected');
+  item.querySelector('input[type=radio]').checked = true;
+}
+function selectDedup(t){
+  document.getElementById('dedup-once').classList.toggle('on', t==='once');
+  document.getElementById('dedup-every').classList.toggle('on', t==='every');
+}
+/* ── CRM helpers ── */
+let _crmTotal = 0;
+function toggleCrmSeg(item, cnt){
+  const cb = item.querySelector('input[type=checkbox]');
+  cb.checked = !cb.checked;
+  item.classList.toggle('selected', cb.checked);
+  _crmTotal += cb.checked ? cnt : -cnt;
+  document.getElementById('crm-preview-count').textContent = _crmTotal.toLocaleString()+'명';
+}
+function selectCrmTime(t){
+  document.getElementById('ct-now-btn').classList.toggle('on', t==='now');
+  document.getElementById('ct-reserve-btn').classList.toggle('on', t==='reserve');
+  document.getElementById('ct-reserve-wrap').style.display = t==='reserve' ? 'grid' : 'none';
 }
 function selectDiscType(t){
   document.getElementById('t-pct').classList.toggle('on',t==='pct');
