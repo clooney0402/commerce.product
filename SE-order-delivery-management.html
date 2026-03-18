@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grip SE · 발주 / 배송 관리</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: #f4f5f7;
+    color: #1a1d23;
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0;
+    width: 220px; background: #0d0f14;
+    display: flex; flex-direction: column; z-index: 100;
+  }
+  .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid #1e2330; }
+  .logo-mark { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 14px;
+  }
+  .logo-text-name { color: #fff; font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+  .logo-badge {
+    background: #7c3aed; color: #fff; font-size: 9px; font-weight: 700;
+    padding: 1px 5px; border-radius: 4px; margin-left: 4px; letter-spacing: 0.5px;
+  }
+  .logo-sub { font-size: 10px; color: #6b7280; margin-top: 2px; }
+  .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 20px; font-size: 13px; color: #9ca3af;
+    cursor: pointer; transition: all 0.15s; border-left: 3px solid transparent;
+    text-decoration: none;
+  }
+  .nav-item:hover { background: #1e2330; color: #e5e7eb; }
+  .nav-item.active { background: #1a1260; color: #a78bfa; border-left-color: #7c3aed; }
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .sidebar-footer { padding: 16px 20px; border-top: 1px solid #1e2330; }
+  .user-chip { display: flex; align-items: center; gap: 10px; }
+  .user-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 12px; font-weight: 700;
+  }
+  .user-name { color: #d1d5db; font-size: 12px; font-weight: 500; }
+  .user-role { color: #6b7280; font-size: 11px; }
+
+  /* ── Main ── */
+  .main { margin-left: 220px; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── Topbar ── */
+  .topbar {
+    background: #fff; border-bottom: 1px solid #e5e7eb;
+    padding: 0 32px; height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .topbar-left { display: flex; align-items: center; }
+  .topbar-title { font-size: 17px; font-weight: 700; color: #111827; }
+  .topbar-sub { font-size: 12px; color: #9ca3af; margin-left: 10px; }
+  .topbar-badge {
+    background: #ede9fe; color: #7c3aed; font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px; border: 1px solid #ddd6fe;
+  }
+
+  /* ── Content ── */
+  .content { padding: 32px; flex: 1; overflow-y: auto; }
+
+  /* ── Stats ── */
+  .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: #fff; border-radius: 12px; padding: 20px 22px;
+    border: 1px solid #e5e7eb;
+  }
+  .stat-label { font-size: 12px; color: #6b7280; font-weight: 500; margin-bottom: 6px; }
+  .stat-value { font-size: 26px; font-weight: 800; color: #111827; letter-spacing: -0.5px; }
+  .stat-value span { font-size: 13px; color: #6b7280; font-weight: 500; margin-left: 3px; }
+  .stat-sub { font-size: 11px; color: #9ca3af; margin-top: 6px; }
+  .stat-sub.green { color: #10b981; font-weight: 600; }
+
+  /* ── Filter Bar ── */
+  .filter-bar {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .filter-input {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 8px 14px; font-size: 13px; color: #374151; outline: none;
+    width: 230px; font-family: inherit; transition: border 0.15s;
+  }
+  .filter-input:focus { border-color: #7c3aed; }
+  .filter-input::placeholder { color: #9ca3af; }
+  .filter-select {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 8px 12px; font-size: 12px; color: #374151; font-family: inherit;
+    outline: none; cursor: pointer; transition: border 0.15s;
+  }
+  .filter-select:focus { border-color: #7c3aed; }
+  .btn-excel {
+    margin-left: auto; background: #fff; border: 1px solid #e5e7eb;
+    color: #9ca3af; padding: 8px 16px; border-radius: 8px;
+    font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn-excel:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-excel:not(:disabled):hover { border-color: #7c3aed; color: #7c3aed; background: #faf5ff; }
+  .btn-excel.active { background: #f5f3ff; color: #7c3aed; border-color: #c4b5fd; }
+
+  /* ── Section Label ── */
+  .section-label {
+    font-size: 11px; font-weight: 600; color: #9ca3af; letter-spacing: 0.8px;
+    text-transform: uppercase; margin-bottom: 14px;
+  }
+
+  /* ── Cards Grid ── */
+  .cards-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+
+  .broadcast-card {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 14px;
+    padding: 20px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .broadcast-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+  .broadcast-card.ended::before    { background: #9ca3af; }
+  .broadcast-card.live::before     { background: #ef4444; }
+  .broadcast-card.scheduled::before{ background: #f59e0b; }
+  .broadcast-card:hover {
+    border-color: #c4b5fd;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(124,58,237,0.1);
+  }
+  .broadcast-card.checked {
+    border-color: #a78bfa; background: #faf5ff;
+    box-shadow: 0 0 0 2px rgba(124,58,237,0.15);
+  }
+  .card-check-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .card-checkbox { width: 15px; height: 15px; accent-color: #7c3aed; cursor: pointer; flex-shrink: 0; }
+  .card-bcast-num { font-size: 11px; color: #9ca3af; font-weight: 500; }
+  .card-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; color: #111827; }
+  .card-date { font-size: 12px; color: #9ca3af; margin-bottom: 16px; }
+  .card-date span { color: #374151; }
+  .card-metrics { display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid #f3f4f6; }
+  .metric-label { font-size: 10px; color: #9ca3af; font-weight: 500; margin-bottom: 2px; }
+  .metric-value { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+  .metric-value.green { color: #10b981; }
+  .card-footer { margin-top: 14px; padding-top: 12px; border-top: 1px solid #f3f4f6; }
+  .fulfillment-label {
+    font-size: 10px; color: #9ca3af; margin-bottom: 5px;
+    display: flex; justify-content: space-between;
+  }
+  .fulfillment-bar { height: 4px; background: #f3f4f6; border-radius: 4px; overflow: hidden; }
+  .fulfillment-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+
+  /* ── Detail View ── */
+  .detail-view { display: none; }
+  .detail-view.active { display: block; }
+  .card-list-view.hidden { display: none; }
+
+  .detail-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid #e5e7eb;
+  }
+  .back-btn {
+    background: #f9fafb; border: 1px solid #e5e7eb; color: #374151;
+    padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 500;
+    cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px;
+    transition: all 0.15s;
+  }
+  .back-btn:hover { border-color: #7c3aed; color: #7c3aed; }
+  .detail-bcast-info { flex: 1; }
+  .detail-bcast-id { font-size: 12px; color: #9ca3af; margin-bottom: 3px; }
+  .detail-bcast-title { font-size: 18px; font-weight: 700; color: #111827; }
+  .detail-bcast-date { font-size: 12px; color: #9ca3af; margin-top: 3px; }
+  .detail-actions { display: flex; gap: 8px; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; border: none; font-family: inherit;
+  }
+  .btn-outline { background: #fff; color: #374151; border: 1.5px solid #e5e7eb; }
+  .btn-outline:hover { border-color: #7c3aed; color: #7c3aed; background: #faf5ff; }
+  .btn-primary { background: #7c3aed; color: #fff; }
+  .btn-primary:hover { background: #6d28d9; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  /* ── Detail Stats ── */
+  .detail-stats { display: grid; grid-template-columns: repeat(6,1fr); gap: 12px; margin-bottom: 24px; }
+  .detail-stat {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px;
+  }
+  .detail-stat-label { font-size: 10px; color: #9ca3af; font-weight: 500; margin-bottom: 6px; line-height: 1.4; }
+  .detail-stat-value { font-size: 18px; font-weight: 800; }
+
+  /* ── Table ── */
+  .table-wrap { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; overflow: hidden; }
+  .table-toolbar {
+    padding: 14px 20px; border-bottom: 1px solid #f3f4f6;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .table-tabs { display: flex; gap: 4px; }
+  .tab-btn {
+    padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid transparent; color: #6b7280;
+    background: transparent; font-family: inherit; transition: all 0.15s;
+  }
+  .tab-btn.active { background: #ede9fe; color: #7c3aed; border-color: #c4b5fd; }
+  .tab-btn:hover:not(.active) { color: #374151; background: #f9fafb; }
+  .table-search {
+    margin-left: auto; background: #f9fafb; border: 1px solid #e5e7eb;
+    color: #374151; padding: 7px 12px; border-radius: 8px; font-size: 12px;
+    font-family: inherit; outline: none; width: 190px;
+  }
+  .table-search:focus { border-color: #7c3aed; }
+  .table-search::placeholder { color: #9ca3af; }
+
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table thead tr { border-bottom: 1px solid #f3f4f6; background: #f9fafb; }
+  .data-table th {
+    padding: 10px 14px; text-align: left; font-size: 10px; font-weight: 600;
+    color: #6b7280; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap;
+  }
+  .data-table td {
+    padding: 11px 14px; font-size: 12px; color: #374151;
+    border-bottom: 1px solid #f9fafb; vertical-align: middle; white-space: nowrap;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tbody tr:hover td { background: #faf5ff; }
+
+  .order-num { font-weight: 600; color: #7c3aed !important; font-size: 11px !important; }
+  .prod-name { color: #111827 !important; font-weight: 500; max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
+  .amount { font-weight: 700; color: #111827 !important; }
+
+  /* ── Status Badges ── */
+  .delivery-status {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 20px; font-size: 10px; font-weight: 600;
+  }
+  .ds-ordered    { background: #f5f3ff; color: #6941c6; border: 1px solid #e9d5ff; }
+  .ds-confirmed  { background: #fef9c3; color: #92400e; border: 1px solid #fde68a; }
+  .ds-shipping   { background: #ede9fe; color: #6d28d9; border: 1px solid #c4b5fd; }
+  .ds-delivered  { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+  .ds-delayed    { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+
+  /* ── Bulk Bar ── */
+  .bulk-shipping-bar {
+    border-top: 1px solid #f3f4f6; border-bottom: 1px solid #f3f4f6;
+    background: #f9fafb; padding: 14px 20px; display: none;
+  }
+  .bulk-shipping-bar.visible { display: block; }
+  .bulk-shipping-top {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .bulk-label { font-size: 13px; font-weight: 700; color: #111827; white-space: nowrap; margin-right: 4px; }
+  .bulk-controls { display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap; }
+  .bulk-select-wrap { position: relative; display: inline-flex; align-items: center; }
+  .bulk-select {
+    appearance: none; background: #fff; border: 1px solid #e5e7eb;
+    color: #374151; padding: 7px 28px 7px 12px; border-radius: 8px;
+    font-size: 13px; font-family: inherit; outline: none; cursor: pointer; min-width: 140px;
+    transition: border 0.15s;
+  }
+  .bulk-select:focus { border-color: #7c3aed; }
+  .bulk-select-arrow { position: absolute; right: 10px; font-size: 11px; color: #9ca3af; pointer-events: none; }
+  .bulk-tracking-input {
+    flex: 1; min-width: 200px; background: #fff; border: 1px solid #e5e7eb;
+    color: #111827; padding: 7px 12px; border-radius: 8px; font-size: 13px;
+    font-family: inherit; outline: none; transition: border 0.15s;
+  }
+  .bulk-tracking-input:focus { border-color: #7c3aed; }
+  .bulk-tracking-input::placeholder { color: #9ca3af; }
+  .bulk-apply-btn {
+    background: #7c3aed; color: #fff; border: none; padding: 8px 20px;
+    border-radius: 8px; font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: inherit; white-space: nowrap; transition: background 0.15s;
+  }
+  .bulk-apply-btn:hover { background: #6d28d9; }
+  .bulk-guide { display: flex; flex-direction: column; gap: 4px; }
+  .bulk-guide p { font-size: 12px; color: #10b981; line-height: 1.6; }
+  .bulk-guide p strong { font-weight: 700; }
+
+  /* ── Action Buttons in Table ── */
+  .action-btn {
+    background: #f9fafb; border: 1px solid #e5e7eb; color: #374151;
+    padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 500;
+    cursor: pointer; font-family: inherit; transition: all 0.12s;
+  }
+  .action-btn:hover          { border-color: #7c3aed; color: #7c3aed; }
+  .dispatch-btn              { background: #7c3aed !important; color: #fff !important; border-color: #7c3aed !important; font-weight: 700 !important; }
+  .dispatch-btn:hover        { background: #6d28d9 !important; }
+  .confirm-btn               { background: #ede9fe !important; color: #7c3aed !important; border-color: #c4b5fd !important; font-weight: 700 !important; }
+  .confirm-btn:hover         { background: #ddd6fe !important; }
+  .delay-btn                 { background: #fff !important; color: #ef4444 !important; border-color: #fecaca !important; font-weight: 600 !important; }
+  .delay-btn:hover           { background: #fef2f2 !important; }
+  .cancel-tracking-btn       { background: #fff !important; color: #374151 !important; border-color: #e5e7eb !important; font-weight: 500 !important; }
+  .cancel-tracking-btn:hover { border-color: #9ca3af !important; }
+
+  /* ── Tag ── */
+  .tag-purple {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 600; background: #ede9fe; color: #7c3aed;
+  }
+
+  /* ── Inline Inputs (in table) ── */
+  .inline-select {
+    appearance: none; background: #fff; border: 1px solid #e5e7eb;
+    color: #374151; padding: 5px 24px 5px 8px; border-radius: 6px;
+    font-size: 11px; font-family: inherit; outline: none; cursor: pointer;
+    min-width: 110px; transition: border 0.15s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239ca3af'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center;
+  }
+  .inline-select:focus { border-color: #7c3aed; }
+  .inline-input-track {
+    background: #fff; border: 1px solid #e5e7eb; color: #111827;
+    padding: 5px 8px; border-radius: 6px; font-size: 11px;
+    font-family: inherit; outline: none; width: 130px; transition: border 0.15s;
+  }
+  .inline-input-track:focus { border-color: #7c3aed; }
+  .inline-input-track::placeholder { color: #9ca3af; }
+
+  /* ── Popup ── */
+  .popup-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 900;
+  }
+  .popup-overlay.show { display: block; }
+  .popup-modal {
+    display: none; position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%,-50%) scale(0.96);
+    background: #fff; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    width: 460px; z-index: 901; transition: transform 0.18s, opacity 0.18s; opacity: 0;
+  }
+  .popup-modal.show { display: block; transform: translate(-50%,-50%) scale(1); opacity: 1; }
+  .popup-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px 16px; border-bottom: 1px solid #f3f4f6;
+  }
+  .popup-title { font-size: 15px; font-weight: 700; color: #111827; }
+  .popup-close {
+    background: #f3f4f6; border: none; font-size: 14px; color: #6b7280;
+    cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background 0.12s;
+  }
+  .popup-close:hover { background: #e5e7eb; }
+  .popup-body { padding: 20px 24px; }
+  .popup-field-label { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px; }
+  .popup-select-wrap { position: relative; display: flex; align-items: center; }
+  .popup-select {
+    appearance: none; width: 100%; background: #fff; border: 1px solid #e5e7eb;
+    color: #374151; padding: 10px 36px 10px 14px; border-radius: 8px;
+    font-size: 13px; font-family: inherit; outline: none; cursor: pointer; transition: border 0.15s;
+  }
+  .popup-select:focus { border-color: #7c3aed; }
+  .popup-select-arrow { position: absolute; right: 14px; font-size: 11px; color: #9ca3af; pointer-events: none; }
+  .popup-input {
+    width: 100%; background: #fff; border: 1px solid #e5e7eb;
+    color: #111827; padding: 10px 14px; border-radius: 8px;
+    font-size: 13px; font-family: inherit; outline: none; transition: border 0.15s;
+  }
+  .popup-input:focus { border-color: #7c3aed; }
+  .popup-input::placeholder { color: #9ca3af; }
+  .popup-footer {
+    display: flex; justify-content: flex-end; gap: 8px;
+    padding: 16px 24px 20px; border-top: 1px solid #f3f4f6;
+  }
+  .popup-btn-cancel {
+    background: #fff; border: 1.5px solid #e5e7eb; color: #374151;
+    padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: inherit; transition: all 0.15s;
+  }
+  .popup-btn-cancel:hover { border-color: #9ca3af; }
+  .popup-btn-confirm {
+    background: #ef4444; border: none; color: #fff;
+    padding: 9px 24px; border-radius: 8px; font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: inherit; transition: background 0.15s;
+  }
+  .popup-btn-confirm:hover { background: #dc2626; }
+
+  .empty-state { text-align: center; padding: 48px; color: #9ca3af; font-size: 13px; }
+
+  /* ── Live dot ── */
+  .live-dot {
+    display: inline-block; width: 6px; height: 6px;
+    background: #ef4444; border-radius: 50%; margin-right: 5px;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+  .checkbox-cell input[type="checkbox"] { accent-color: #7c3aed; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">G</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <span class="logo-text-name">Grip</span>
+          <span class="logo-badge">SE</span>
+        </div>
+        <div class="logo-sub">Simple Edition</div>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar-nav">
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>홈
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>기본정보
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.069A1 1 0 0121 8.914V15.086a1 1 0 01-1.447.893L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>라이브 콘솔
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>상품 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>쿠폰 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>주문 관리
+    </a>
+    <a class="nav-item active" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>발주 / 배송 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>팔로우(회원) 관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>1:1문의
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>정산관리
+    </a>
+    <a class="nav-item" href="#">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>통계
+    </a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-chip">
+      <div class="user-avatar">G</div>
+      <div>
+        <div class="user-name">그립 어드민</div>
+        <div class="user-role">파트너 관리자</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Main ── -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-title">발주 / 배송 관리</span>
+      <span class="topbar-sub">방송별 주문 현황 및 배송 처리</span>
+    </div>
+    <span class="topbar-badge">📦 방송 기반 관리</span>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ LIST VIEW ══ -->
+    <div class="card-list-view" id="listView">
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">전체 방송 수</div>
+          <div class="stat-value" style="color:#7c3aed">24<span>개</span></div>
+          <div class="stat-sub">이번 달 기준</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">총 주문 건수</div>
+          <div class="stat-value" style="color:#10b981">1,847<span>건</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">총 주문 금액</div>
+          <div class="stat-value">₩142.6M</div>
+          <div class="stat-sub green">▲ 전월 대비 +18.3%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">배송 완료율</div>
+          <div class="stat-value" style="color:#10b981">78.4<span>%</span></div>
+          <div class="stat-sub">반품·취소 제외</div>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <input class="filter-input" type="text" placeholder="🔍  방송명 또는 방송번호 검색">
+        <select class="filter-select">
+          <option>전체 기간</option><option>최근 7일</option><option>최근 30일</option><option>직접 입력</option>
+        </select>
+        <select class="filter-select">
+          <option>배송 상태 전체</option><option>주문완료</option><option>발주 확인</option><option>발송</option><option>배송중</option><option>배송완료</option><option>발송지연</option>
+        </select>
+        <button class="btn-excel" id="excelDownloadBtn" onclick="handleExcelDownload()" disabled>📥 엑셀 다운로드</button>
+      </div>
+
+      <div class="section-label">방송별 주문 현황 — 종료된 방송 5개</div>
+
+      <!-- Cards -->
+      <div class="cards-grid" id="cardsGrid">
+
+        <div class="broadcast-card ended" id="card-BC-2024-0180">
+          <div class="card-check-row">
+            <input type="checkbox" class="card-checkbox" id="chk-BC-2024-0180" onclick="event.stopPropagation();toggleCardCheck('BC-2024-0180')">
+            <label for="chk-BC-2024-0180" class="card-bcast-num" onclick="event.stopPropagation()">BC-2024-0180</label>
+          </div>
+          <div onclick="showDetail('BC-2024-0180')" style="cursor:pointer">
+            <div class="card-title">👗 겨울 패딩 &amp; 니트 기획전</div>
+            <div class="card-date">📅 2024.12.17 &nbsp;<span>오후 7:00</span></div>
+            <div class="card-metrics">
+              <div><div class="metric-label">주문 건수</div><div class="metric-value green">583건</div></div>
+              <div><div class="metric-label">주문 금액</div><div class="metric-value">₩31,200,000</div></div>
+            </div>
+            <div class="card-footer">
+              <div class="fulfillment-label"><span>배송 처리율</span><span style="color:#10b981;font-weight:700">91%</span></div>
+              <div class="fulfillment-bar"><div class="fulfillment-fill" style="width:91%;background:#10b981"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="broadcast-card ended" id="card-BC-2024-0179">
+          <div class="card-check-row">
+            <input type="checkbox" class="card-checkbox" id="chk-BC-2024-0179" onclick="event.stopPropagation();toggleCardCheck('BC-2024-0179')">
+            <label for="chk-BC-2024-0179" class="card-bcast-num" onclick="event.stopPropagation()">BC-2024-0179</label>
+          </div>
+          <div onclick="showDetail('BC-2024-0179')" style="cursor:pointer">
+            <div class="card-title">🏠 리빙 &amp; 주방 인기템 모음</div>
+            <div class="card-date">📅 2024.12.15 &nbsp;<span>오후 2:00</span></div>
+            <div class="card-metrics">
+              <div><div class="metric-label">주문 건수</div><div class="metric-value green">312건</div></div>
+              <div><div class="metric-label">주문 금액</div><div class="metric-value">₩14,800,000</div></div>
+            </div>
+            <div class="card-footer">
+              <div class="fulfillment-label"><span>배송 처리율</span><span style="color:#10b981;font-weight:700">100%</span></div>
+              <div class="fulfillment-bar"><div class="fulfillment-fill" style="width:100%;background:#10b981"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="broadcast-card ended" id="card-BC-2024-0178">
+          <div class="card-check-row">
+            <input type="checkbox" class="card-checkbox" id="chk-BC-2024-0178" onclick="event.stopPropagation();toggleCardCheck('BC-2024-0178')">
+            <label for="chk-BC-2024-0178" class="card-bcast-num" onclick="event.stopPropagation()">BC-2024-0178</label>
+          </div>
+          <div onclick="showDetail('BC-2024-0178')" style="cursor:pointer">
+            <div class="card-title">💄 뷰티 &amp; 스킨케어 연말 특가</div>
+            <div class="card-date">📅 2024.12.14 &nbsp;<span>오후 9:00</span></div>
+            <div class="card-metrics">
+              <div><div class="metric-label">주문 건수</div><div class="metric-value green">421건</div></div>
+              <div><div class="metric-label">주문 금액</div><div class="metric-value">₩19,300,000</div></div>
+            </div>
+            <div class="card-footer">
+              <div class="fulfillment-label"><span>배송 처리율</span><span style="color:#7c3aed;font-weight:700">65%</span></div>
+              <div class="fulfillment-bar"><div class="fulfillment-fill" style="width:65%;background:#7c3aed"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="broadcast-card ended" id="card-BC-2024-0177">
+          <div class="card-check-row">
+            <input type="checkbox" class="card-checkbox" id="chk-BC-2024-0177" onclick="event.stopPropagation();toggleCardCheck('BC-2024-0177')">
+            <label for="chk-BC-2024-0177" class="card-bcast-num" onclick="event.stopPropagation()">BC-2024-0177</label>
+          </div>
+          <div onclick="showDetail('BC-2024-0177')" style="cursor:pointer">
+            <div class="card-title">🍖 명절 선물세트 사전 기획전</div>
+            <div class="card-date">📅 2024.12.12 &nbsp;<span>오전 11:00</span></div>
+            <div class="card-metrics">
+              <div><div class="metric-label">주문 건수</div><div class="metric-value green">198건</div></div>
+              <div><div class="metric-label">주문 금액</div><div class="metric-value">₩22,100,000</div></div>
+            </div>
+            <div class="card-footer">
+              <div class="fulfillment-label"><span>배송 처리율</span><span style="color:#10b981;font-weight:700">100%</span></div>
+              <div class="fulfillment-bar"><div class="fulfillment-fill" style="width:100%;background:#10b981"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="broadcast-card ended" id="card-BC-2024-0176">
+          <div class="card-check-row">
+            <input type="checkbox" class="card-checkbox" id="chk-BC-2024-0176" onclick="event.stopPropagation();toggleCardCheck('BC-2024-0176')">
+            <label for="chk-BC-2024-0176" class="card-bcast-num" onclick="event.stopPropagation()">BC-2024-0176</label>
+          </div>
+          <div onclick="showDetail('BC-2024-0176')" style="cursor:pointer">
+            <div class="card-title">👟 스포츠 &amp; 아웃도어 기획전</div>
+            <div class="card-date">📅 2024.12.10 &nbsp;<span>오후 5:00</span></div>
+            <div class="card-metrics">
+              <div><div class="metric-label">주문 건수</div><div class="metric-value green">276건</div></div>
+              <div><div class="metric-label">주문 금액</div><div class="metric-value">₩18,900,000</div></div>
+            </div>
+            <div class="card-footer">
+              <div class="fulfillment-label"><span>배송 처리율</span><span style="color:#10b981;font-weight:700">83%</span></div>
+              <div class="fulfillment-bar"><div class="fulfillment-fill" style="width:83%;background:#10b981"></div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /listView -->
+
+    <!-- ══ DETAIL VIEW ══ -->
+    <div class="detail-view" id="detailView">
+
+      <div class="detail-header">
+        <button class="back-btn" onclick="showList()">← 목록으로</button>
+        <div class="detail-bcast-info">
+          <div class="detail-bcast-id" id="detailBcastId">BC-2024-0180</div>
+          <div class="detail-bcast-title" id="detailBcastTitle">겨울 패딩 &amp; 니트 기획전</div>
+          <div class="detail-bcast-date" id="detailBcastDate">📅 2024.12.17 오후 7:00 · 방송 종료</div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn btn-outline">📥 엑셀 다운로드</button>
+          <button class="btn btn-outline">🚚 송장 일괄 등록</button>
+          <button class="btn btn-primary">발주 확인 일괄처리</button>
+        </div>
+      </div>
+
+      <!-- Detail Stats -->
+      <div class="detail-stats">
+        <div class="detail-stat"><div class="detail-stat-label">전체 주문</div><div class="detail-stat-value" style="color:#111827">522건</div></div>
+        <div class="detail-stat"><div class="detail-stat-label">주문완료</div><div class="detail-stat-value" style="color:#6941c6">48건</div></div>
+        <div class="detail-stat"><div class="detail-stat-label">발주 확인<br><span style="font-size:9px;color:#9ca3af;font-weight:400">(고객: 상품준비중)</span></div><div class="detail-stat-value" style="color:#d97706">52건</div></div>
+        <div class="detail-stat"><div class="detail-stat-label">배송중</div><div class="detail-stat-value" style="color:#7c3aed">257건</div></div>
+        <div class="detail-stat"><div class="detail-stat-label">배송완료</div><div class="detail-stat-value" style="color:#10b981">135건</div></div>
+        <div class="detail-stat"><div class="detail-stat-label">발송지연</div><div class="detail-stat-value" style="color:#ef4444">30건</div></div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <div class="table-tabs">
+            <button class="tab-btn active" onclick="switchTab(this,'all')">전체 (522)</button>
+            <button class="tab-btn" onclick="switchTab(this,'ordered')">주문완료 (48)</button>
+            <button class="tab-btn" onclick="switchTab(this,'confirmed')">발주확인 (52)</button>
+            <button class="tab-btn" onclick="switchTab(this,'shipping')">배송중 (257)</button>
+            <button class="tab-btn" onclick="switchTab(this,'delivered')">배송완료 (135)</button>
+            <button class="tab-btn" onclick="switchTab(this,'delayed')">발송지연 (30)</button>
+          </div>
+          <input type="text" class="table-search" placeholder="주문번호·주문자 검색">
+        </div>
+
+        <!-- Bulk Bar -->
+        <div class="bulk-shipping-bar" id="bulkShippingBar">
+          <div class="bulk-shipping-top">
+            <span class="bulk-label" id="bulkBarTitle">배송정보 한번에 입력하기</span>
+            <div class="bulk-controls">
+              <div class="bulk-select-wrap">
+                <select class="bulk-select" id="bulkCourier" onchange="onBulkCourierChange()">
+                  <option value="">택배사 선택</option>
+                  <option>CJ대한통운</option><option>한진택배</option><option>롯데택배</option>
+                  <option>로젠택배</option><option>우체국택배</option><option>쿠팡로지스틱스</option><option>SSG배송</option>
+                </select>
+                <span class="bulk-select-arrow">▾</span>
+              </div>
+              <input class="bulk-tracking-input" id="bulkTracking" type="text" placeholder="송장번호를 입력하세요." onclick="onBulkTrackingClick()">
+              <button class="bulk-apply-btn" id="bulkApplyBtn" onclick="applyBulkShipping()">선택건 적용</button>
+            </div>
+          </div>
+          <div class="bulk-guide" id="bulkGuide">
+            <p>· 배송정보(택배사/송장번호)가 동일한 주문 건의 경우 한 번에 정보를 입력할 수 있습니다.</p>
+            <p>· 배송정보를 입력 후 주문 목록에서 체크 선택 후 <strong>[선택건 적용]</strong> 버튼을 누르셔야 최종 처리가 진행됩니다.</p>
+          </div>
+        </div>
+
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="checkbox-cell"><input type="checkbox"></th>
+                <th>방송번호</th><th>방송일자</th><th>주문일시</th><th>라이브주문서번호</th>
+                <th>주문상품번호</th><th>주문상품명</th><th>옵션</th><th>수량</th><th>주문금액</th>
+                <th>주문자 닉네임</th><th>주문자명</th><th>연락처</th><th>배송지 주소</th>
+                <th>배송사</th><th>운송장번호</th><th>배송상태</th><th>처리</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div><!-- /table-wrap -->
+    </div><!-- /detailView -->
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ── Delay Popup ── -->
+<div class="popup-overlay" id="delayPopupOverlay" onclick="closeDelayPopup()"></div>
+<div class="popup-modal" id="delayPopupModal">
+  <div class="popup-header">
+    <span class="popup-title">⚠️ 배송 지연 사유 입력</span>
+    <button class="popup-close" onclick="closeDelayPopup()">✕</button>
+  </div>
+  <div class="popup-body">
+    <div class="popup-field-label">지연 사유 선택</div>
+    <div class="popup-select-wrap">
+      <select class="popup-select" id="delayReason" onchange="onDelayReasonChange()">
+        <option value="">사유를 선택해 주세요</option>
+        <option value="재고 부족으로 인한 출고 지연">재고 부족으로 인한 출고 지연</option>
+        <option value="택배사 물량 과다로 인한 지연">택배사 물량 과다로 인한 지연</option>
+        <option value="천재지변 (폭설·태풍 등)">천재지변 (폭설·태풍 등)</option>
+        <option value="상품 검수 중 품질 이슈 발생">상품 검수 중 품질 이슈 발생</option>
+        <option value="주문 정보 확인 필요">주문 정보 확인 필요</option>
+        <option value="other">기타 (직접 입력)</option>
+      </select>
+      <span class="popup-select-arrow">▾</span>
+    </div>
+    <div id="delayEtcWrap" style="display:none;margin-top:10px">
+      <div class="popup-field-label" style="margin-top:2px">기타 사유 직접 입력</div>
+      <input class="popup-input" id="delayEtcInput" type="text" placeholder="배송 지연 사유를 직접 입력해 주세요.">
+    </div>
+  </div>
+  <div class="popup-footer">
+    <button class="popup-btn-cancel" onclick="closeDelayPopup()">취소</button>
+    <button class="popup-btn-confirm" onclick="confirmDelay()">확인</button>
+  </div>
+</div>
+
+<script>
+  let ROWS = [
+    {id:'R001',bcastId:'BC-2024-0180',bcastDate:'2024.12.17',orderDt:'2024.12.17 19:02',orderId:'LO-20241217-00001',prodId:'P-88142',prodName:'울 혼방 오버핏 니트',option:'아이보리 / L',qty:1,amount:'62,000',nick:'달빛감성',name:'김지수',tel:'010-****-1423',addr:'서울 마포구 합정동 123-4, 101호',courier:'CJ대한통운',tracking:'612345678901',status:'shipping'},
+    {id:'R002',bcastId:'BC-2024-0180',bcastDate:'2024.12.17',orderDt:'2024.12.17 19:05',orderId:'LO-20241217-00002',prodId:'P-88143',prodName:'롱 패딩 (덕다운 90%)',option:'블랙 / M',qty:1,amount:'189,000',nick:'눈꽃마을',name:'이민준',tel:'010-****-2211',addr:'경기 성남시 분당구 서현동 456, 302호',courier:'한진택배',tracking:'5543211234567',status:'delivered'},
+    {id:'R003',bcastId:'BC-2024-0180',bcastDate:'2024.12.17',orderDt:'2024.12.17 19:08',orderId:'LO-20241217-00003',prodId:'P-88142',prodName:'울 혼방 오버핏 니트',option:'카멜 / S',qty:2,amount:'124,000',nick:'루시아87',name:'박서연',tel:'010-****-9987',addr:'서울 강남구 역삼동 789-1, 5층',courier:'',tracking:'',status:'ordered'},
+    {id:'R004',bcastId:'BC-2024-0180',bcastDate:'2024.12.17',orderDt:'2024.12.17 19:12',orderId:'LO-20241217-00004',prodId:'P-88145',prodName:'숏 패딩 점퍼 (폴리)',option:'네이비 / XL',qty:1,amount:'98,000',nick:'winter_ha',name:'최하늘',tel:'010-****-3345',addr:'인천 연수구 송도동 1234, 801호',courier:'로젠택배',tracking:'9991234567',status:'shipping'},
+    {id:'R005',bcastId:'BC-2024-0180',bcastDate:'2024.12.17',orderDt:'2024.12.17 19:15',orderId:'LO-20241217-00005',prodId:'P-88144',prodName:'캐시미어 터틀넥 니트',option:'그레이 / Free',qty:1,amount:'142,000',nick:'솜사탕구름',name:'정소희',tel:'010-****-7712',addr:'부산 해운대구 우동 567, 1202호',courier:'CJ대한통운',tracking:'612987654321',status:'shipping'},
+    {id:'R006',bcastId:'BC-2024-0180',bcastDate:'2024.12.17',orderDt:'2024.12.17 19:21',orderId:'LO-20241217-00006',prodId:'P-88145',prodName:'숏 패딩 점퍼 (폴리)',option:'베이지 / M',qty:1,amount:'98,000',nick:'가을아침',name:'한도윤',tel:'010-****-4456',addr:'서울 서초구 방배동 321, 401호',courier:'',tracking:'',status:'delayed'},
+    {id:'R007',bcastId:'BC-2024-0180',bcastDate:'2024.12.17',orderDt:'2024.12.17 19:29',orderId:'LO-20241217-00007',prodId:'P-88146',prodName:'헤비 니트 카디건',option:'버건디 / L',qty:1,amount:'87,000',nick:'냥이집사',name:'오지민',tel:'010-****-6623',addr:'대전 유성구 봉명동 88, 203호',courier:'',tracking:'',status:'confirmed'},
+    {id:'R008',bcastId:'BC-2024-0180',bcastDate:'2024.12.17',orderDt:'2024.12.17 19:37',orderId:'LO-20241217-00008',prodId:'P-88143',prodName:'롱 패딩 (덕다운 90%)',option:'카키 / M',qty:1,amount:'189,000',nick:'맑은하루',name:'신예진',tel:'010-****-8891',addr:'광주 북구 운암동 234, 1101호',courier:'CJ대한통운',tracking:'612111222333',status:'delivered'},
+    {id:'R009',bcastId:'BC-2024-0180',bcastDate:'2024.12.17',orderDt:'2024.12.17 19:44',orderId:'LO-20241217-00009',prodId:'P-88142',prodName:'울 혼방 오버핏 니트',option:'블랙 / M',qty:1,amount:'62,000',nick:'별빛소나타',name:'윤서준',tel:'010-****-5521',addr:'서울 송파구 잠실동 222, 701호',courier:'',tracking:'',status:'confirmed'},
+    {id:'R010',bcastId:'BC-2024-0180',bcastDate:'2024.12.17',orderDt:'2024.12.17 19:51',orderId:'LO-20241217-00010',prodId:'P-88143',prodName:'롱 패딩 (덕다운 90%)',option:'화이트 / S',qty:1,amount:'189,000',nick:'하늘빛노을',name:'이채원',tel:'010-****-8834',addr:'경기 고양시 일산동구 장항동 1004, 205호',courier:'',tracking:'',status:'confirmed'},
+  ];
+
+  const COURIERS = ['CJ대한통운','한진택배','롯데택배','로젠택배','우체국택배','쿠팡로지스틱스','SSG배송'];
+  const STATUS_MAP = {
+    ordered:   {label:'주문완료',  cls:'ds-ordered'},
+    confirmed: {label:'발주 확인', cls:'ds-confirmed'},
+    shipping:  {label:'배송중',    cls:'ds-shipping'},
+    delivered: {label:'배송완료',  cls:'ds-delivered'},
+    delayed:   {label:'발송지연',  cls:'ds-delayed'},
+  };
+  let currentTab = 'all';
+  let trackingSnapshot = {};
+
+  function renderTable(filter) {
+    const body = document.getElementById('tableBody');
+    if (filter === 'confirmed') {
+      const rows = ROWS.filter(r => r.status === 'confirmed');
+      if (!rows.length) { body.innerHTML = `<tr><td colspan="18"><div class="empty-state">발주 확인 대기 주문이 없습니다.</div></td></tr>`; return; }
+      body.innerHTML = rows.map(r => `
+        <tr id="row-${r.id}">
+          <td class="checkbox-cell"><input type="checkbox" id="chkRow-${r.id}"></td>
+          <td class="order-num">${r.bcastId}</td>
+          <td>${r.bcastDate}</td>
+          <td style="color:#9ca3af;font-size:11px">${r.orderDt}</td>
+          <td class="order-num">${r.orderId}</td>
+          <td style="font-size:11px;color:#9ca3af">${r.prodId}</td>
+          <td class="prod-name">${r.prodName}</td>
+          <td style="font-size:11px;color:#6b7280">${r.option}</td>
+          <td style="text-align:center">${r.qty}</td>
+          <td class="amount">₩${r.amount}</td>
+          <td><span class="tag-purple">${r.nick}</span></td>
+          <td>${r.name}</td>
+          <td style="font-size:11px">${r.tel}</td>
+          <td style="font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis">${r.addr}</td>
+          <td>
+            <select class="inline-select" id="courier-${r.id}">
+              <option value="">택배사 선택</option>
+              ${COURIERS.map(c=>`<option>${c}</option>`).join('')}
+            </select>
+          </td>
+          <td><input class="inline-input-track" id="tracking-${r.id}" type="text" placeholder="운송장번호 입력"></td>
+          <td><span class="delivery-status ds-confirmed">발주 확인</span></td>
+          <td><button class="action-btn dispatch-btn" onclick="dispatchRow('${r.id}')">발송 처리</button></td>
+        </tr>`).join('');
+      return;
+    }
+    const rows = filter === 'all' ? ROWS : ROWS.filter(r => r.status === filter);
+    if (!rows.length) { body.innerHTML = `<tr><td colspan="18"><div class="empty-state">해당 조건의 주문 내역이 없습니다.</div></td></tr>`; return; }
+    body.innerHTML = rows.map(r => {
+      const s = STATUS_MAP[r.status];
+      return `
+        <tr id="row-${r.id}">
+          <td class="checkbox-cell"><input type="checkbox" id="chk-${r.id}" onchange="onRowCheck('${r.id}',this.checked)"></td>
+          <td class="order-num">${r.bcastId}</td>
+          <td>${r.bcastDate}</td>
+          <td style="color:#9ca3af;font-size:11px">${r.orderDt}</td>
+          <td class="order-num">${r.orderId}</td>
+          <td style="font-size:11px;color:#9ca3af">${r.prodId}</td>
+          <td class="prod-name">${r.prodName}</td>
+          <td style="font-size:11px;color:#6b7280">${r.option}</td>
+          <td style="text-align:center">${r.qty}</td>
+          <td class="amount">₩${r.amount}</td>
+          <td><span class="tag-purple">${r.nick}</span></td>
+          <td>${r.name}</td>
+          <td style="font-size:11px">${r.tel}</td>
+          <td style="font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis">${r.addr}</td>
+          <td style="font-size:11px">${r.courier||'—'}</td>
+          <td style="font-size:11px;color:#7c3aed">${r.tracking||'—'}</td>
+          <td><span class="delivery-status ${s.cls}">${s.label}</span></td>
+          <td>
+            ${r.status==='ordered'
+              ? `<div style="display:flex;gap:6px">
+                   <button class="action-btn confirm-btn" onclick="confirmOrder('${r.id}')">발주 확인</button>
+                   <button class="action-btn delay-btn" onclick="openDelayPopup('${r.id}')">배송지연</button>
+                 </div>`
+              : r.status==='shipping'
+              ? `<div id="actions-${r.id}" style="display:flex;gap:6px">
+                   <button class="action-btn" style="color:#9ca3af">상세보기</button>
+                 </div>`
+              : `<button class="action-btn">상세보기</button>`}
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  function dispatchRow(id) {
+    const courier  = document.getElementById('courier-'+id).value;
+    const tracking = document.getElementById('tracking-'+id).value.trim();
+    if (!courier)  { alert('택배사를 선택해 주세요.'); return; }
+    if (!tracking) { alert('운송장번호를 입력해 주세요.'); return; }
+    const row = ROWS.find(r=>r.id===id);
+    if (row) { row.status='shipping'; row.courier=courier; row.tracking=tracking; }
+    const tr = document.getElementById('row-'+id);
+    if (tr) { tr.style.transition='opacity 0.3s'; tr.style.opacity='0'; setTimeout(()=>renderTable('confirmed'),320); }
+  }
+
+  function switchTab(el, tab) {
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    el.classList.add('active');
+    currentTab = tab;
+    renderTable(tab);
+    const bar = document.getElementById('bulkShippingBar');
+    if (tab==='confirmed'||tab==='shipping') { bar.classList.add('visible'); updateBulkBarMode(tab); }
+    else bar.classList.remove('visible');
+  }
+
+  function showDetail(bcastId) {
+    document.getElementById('listView').classList.add('hidden');
+    document.getElementById('detailView').classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelector('.tab-btn').classList.add('active');
+    document.getElementById('bulkShippingBar').classList.remove('visible');
+    currentTab='all'; renderTable('all');
+  }
+  function showList() {
+    document.getElementById('listView').classList.remove('hidden');
+    document.getElementById('detailView').classList.remove('active');
+    document.getElementById('bulkShippingBar').classList.remove('visible');
+  }
+
+  function applyBulkShipping() {
+    const courier  = document.getElementById('bulkCourier').value;
+    const tracking = document.getElementById('bulkTracking').value.trim();
+    const checked  = document.querySelectorAll('#tableBody input[type="checkbox"]:checked');
+    if (!checked.length) { alert('적용할 주문 건을 선택해 주세요.'); return; }
+    if (!courier)  { alert('택배사를 선택해 주세요.'); return; }
+    if (!tracking) { alert('송장번호를 입력해 주세요.'); return; }
+    alert(`선택한 ${checked.length}건에 배송정보가 적용되었습니다.\n택배사: ${courier} / 송장번호: ${tracking}`);
+  }
+
+  function onRowCheck(id, checked) {
+    if (currentTab!=='shipping') return;
+    const row = ROWS.find(r=>r.id===id);
+    if (!row) return;
+    if (checked) {
+      trackingSnapshot[id] = {courier:row.courier, tracking:row.tracking};
+      document.getElementById('bulkCourier').value  = row.courier||'';
+      document.getElementById('bulkTracking').value = row.tracking||'';
+      setShippingActionBtns(id, true);
+    } else {
+      if (trackingSnapshot[id]) { row.courier=trackingSnapshot[id].courier; row.tracking=trackingSnapshot[id].tracking; delete trackingSnapshot[id]; }
+      setShippingActionBtns(id, false);
+      if (!document.querySelectorAll('#tableBody input[type="checkbox"]:checked').length) resetBulkBar();
+    }
+  }
+
+  function setShippingActionBtns(id, editing) {
+    const wrap = document.getElementById('actions-'+id);
+    if (!wrap) return;
+    wrap.innerHTML = editing
+      ? `<button class="action-btn dispatch-btn" onclick="saveTracking('${id}')">송장 수정</button>
+         <button class="action-btn cancel-tracking-btn" onclick="cancelTracking('${id}')">취소</button>`
+      : `<button class="action-btn" style="color:#9ca3af">상세보기</button>`;
+  }
+
+  function saveTracking(id) {
+    const courier  = document.getElementById('bulkCourier').value;
+    const tracking = document.getElementById('bulkTracking').value.trim();
+    if (!courier)  { alert('택배사를 선택해 주세요.'); return; }
+    if (!tracking) { alert('수정할 송장번호를 입력해 주세요.'); return; }
+    const row = ROWS.find(r=>r.id===id);
+    if (row) { row.courier=courier; row.tracking=tracking; }
+    delete trackingSnapshot[id];
+    const tr = document.getElementById('row-'+id);
+    if (tr) { tr.style.background='rgba(16,185,129,0.07)'; }
+    setTimeout(()=>{ renderTable('shipping'); resetBulkBar(); }, 600);
+  }
+
+  function cancelTracking(id) {
+    const row = ROWS.find(r=>r.id===id);
+    if (row&&trackingSnapshot[id]) { row.courier=trackingSnapshot[id].courier; row.tracking=trackingSnapshot[id].tracking; delete trackingSnapshot[id]; }
+    const chk = document.getElementById('chk-'+id);
+    if (chk) chk.checked=false;
+    setShippingActionBtns(id,false);
+    if (!document.querySelectorAll('#tableBody input[type="checkbox"]:checked').length) resetBulkBar();
+  }
+
+  function resetBulkBar() {
+    document.getElementById('bulkCourier').value='';
+    document.getElementById('bulkTracking').value='';
+  }
+  function onBulkCourierChange() { if(currentTab==='shipping') resetBulkBar(); }
+  function onBulkTrackingClick() {
+    if(currentTab==='shipping') { document.getElementById('bulkCourier').value=''; document.getElementById('bulkTracking').value=''; }
+  }
+
+  function updateBulkBarMode(tab) {
+    const isSh = tab==='shipping';
+    document.getElementById('bulkBarTitle').textContent = isSh?'배송정보 수정하기':'배송정보 한번에 입력하기';
+    document.getElementById('bulkApplyBtn').textContent = isSh?'송장 수정':'선택건 적용';
+    document.getElementById('bulkGuide').innerHTML = isSh
+      ? `<p>· 아래 목록에서 수정할 주문을 체크하면 현재 택배사/송장번호가 상단에 자동 입력됩니다.</p>
+         <p>· 택배사 재선택 또는 송장번호 입력란 클릭 시 전체 초기화되어 새로 입력할 수 있습니다.</p>
+         <p>· 송장번호 수정이 필요하신 경우 대상 체크 후 정보 수정 뒤 <strong>[송장 수정]</strong> 버튼을 클릭하세요.</p>`
+      : `<p>· 배송정보(택배사/송장번호)가 동일한 주문 건의 경우 한 번에 정보를 입력할 수 있습니다.</p>
+         <p>· 배송정보를 입력 후 주문 목록에서 체크 선택 후 <strong>[선택건 적용]</strong> 버튼을 누르셔야 최종 처리가 진행됩니다.</p>`;
+  }
+
+  function confirmOrder(id) {
+    const row = ROWS.find(r=>r.id===id);
+    if (!row) return;
+    row.status='confirmed';
+    const tr = document.getElementById('row-'+id);
+    if (tr) { tr.style.transition='opacity 0.3s'; tr.style.opacity='0';
+      setTimeout(()=>{
+        const tabs=document.querySelectorAll('.tab-btn');
+        tabs.forEach(b=>b.classList.remove('active'));
+        tabs.forEach(b=>{ if(b.textContent.includes('발주확인')) b.classList.add('active'); });
+        currentTab='confirmed';
+        document.getElementById('bulkShippingBar').classList.add('visible');
+        updateBulkBarMode('confirmed');
+        renderTable('confirmed');
+      },320);
+    }
+  }
+
+  let delayTargetId = null;
+  function openDelayPopup(id) {
+    delayTargetId=id;
+    document.getElementById('delayReason').value='';
+    document.getElementById('delayEtcWrap').style.display='none';
+    document.getElementById('delayEtcInput').value='';
+    document.getElementById('delayPopupOverlay').classList.add('show');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>document.getElementById('delayPopupModal').classList.add('show')));
+  }
+  function closeDelayPopup() {
+    document.getElementById('delayPopupModal').classList.remove('show');
+    document.getElementById('delayPopupOverlay').classList.remove('show');
+    delayTargetId=null;
+  }
+  function onDelayReasonChange() {
+    document.getElementById('delayEtcWrap').style.display = document.getElementById('delayReason').value==='other'?'block':'none';
+  }
+  function confirmDelay() {
+    const reason=document.getElementById('delayReason').value;
+    if (!reason) { alert('지연 사유를 선택해 주세요.'); return; }
+    if (reason==='other'&&!document.getElementById('delayEtcInput').value.trim()) { alert('기타 사유를 입력해 주세요.'); return; }
+    const row=ROWS.find(r=>r.id===delayTargetId);
+    if (row) row.status='delayed';
+    closeDelayPopup();
+    const tabs=document.querySelectorAll('.tab-btn');
+    tabs.forEach(b=>b.classList.remove('active'));
+    tabs.forEach(b=>{ if(b.textContent.includes('발송지연')) b.classList.add('active'); });
+    currentTab='delayed';
+    document.getElementById('bulkShippingBar').classList.remove('visible');
+    renderTable('delayed');
+  }
+
+  function toggleCardCheck(bcastId) {
+    const card=document.getElementById('card-'+bcastId);
+    const chk=document.getElementById('chk-'+bcastId);
+    chk.checked ? card.classList.add('checked') : card.classList.remove('checked');
+    updateExcelBtn();
+  }
+  function updateExcelBtn() {
+    const checked=document.querySelectorAll('.card-checkbox:checked');
+    const btn=document.getElementById('excelDownloadBtn');
+    if (checked.length>0) { btn.disabled=false; btn.classList.add('active'); btn.textContent=`📥 엑셀 다운로드 (${checked.length}건 선택)`; }
+    else { btn.disabled=true; btn.classList.remove('active'); btn.textContent='📥 엑셀 다운로드'; }
+  }
+  function handleExcelDownload() {
+    const ids=[...document.querySelectorAll('.card-checkbox:checked')].map(c=>c.id.replace('chk-','')).join(', ');
+    alert(`선택한 방송 [${ids}]의 주문 데이터를 엑셀로 다운로드합니다.`);
+  }
+
+  renderTable('all');
+</script>
+</body>
+</html>

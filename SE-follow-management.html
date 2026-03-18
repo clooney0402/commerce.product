@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grip SE · 팔로우(회원) 관리</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',Arial,sans-serif;background:#f4f5f7;color:#111;font-size:13px;display:flex;height:100vh;overflow:hidden}
+
+/* ── Sidebar ── */
+.sidebar{width:220px;background:#0d0f14;color:#ccc;display:flex;flex-direction:column;flex-shrink:0;height:100vh;overflow-y:auto}
+.sidebar-logo{padding:22px 20px 18px;border-bottom:1px solid #1f2230}
+.logo-badge{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:8px;padding:7px 12px}
+.logo-badge .brand{font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.5px}
+.logo-badge .tag{background:rgba(255,255,255,.22);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;letter-spacing:.5px}
+.nav-section{padding:14px 0 6px}
+.nav-label{font-size:9px;font-weight:700;color:#555;letter-spacing:1px;padding:0 20px 6px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:#aaa;cursor:pointer;border-left:3px solid transparent;transition:all .15s;text-decoration:none}
+.nav-item:hover{background:#1e2330;color:#e5e7eb}
+.nav-item.active{background:#1a1260;color:#a78bfa;border-left-color:#7c3aed;font-weight:600}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+
+/* ── Shell ── */
+.shell{display:flex;height:100vh;flex:1;overflow:hidden}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── Topbar ── */
+.topbar{background:#fff;border-bottom:1px solid #e8eaee;padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-title{font-size:17px;font-weight:700;color:#111}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-date{font-size:12px;color:#888}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer}
+
+/* ── Buttons ── */
+.btn{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:#7c3aed;color:#fff}
+.btn-primary:hover{background:#6d28d9}
+.btn-outline{background:#fff;color:#444;border:1px solid #e0e2ea}
+.btn-outline:hover{background:#f4f5f7}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-danger{background:#ef4444;color:#fff;border:none}
+.btn-danger:hover{background:#dc2626}
+
+/* ── Content ── */
+.content{flex:1;overflow-y:auto;padding:24px 28px}
+
+/* ── Summary cards ── */
+.summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.scard{background:#fff;border-radius:10px;border:1px solid #e8eaee;padding:14px 16px}
+.scard-label{font-size:11px;color:#888;margin-bottom:6px}
+.scard-value{font-size:22px;font-weight:700;color:#111}
+.scard-sub{font-size:11px;color:#888;margin-top:3px}
+.scard-value.accent{color:#7c3aed}
+.scard-value.green{color:#16a34a}
+.scard-value.red{color:#ef4444}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:2px;margin-bottom:16px;background:#eef0f7;border-radius:8px;padding:3px}
+.tab{padding:7px 16px;border-radius:6px;font-size:13px;cursor:pointer;color:#666;transition:all .15s}
+.tab.active{background:#fff;color:#111;font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+/* ── Filter bar ── */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search-box{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e0e2ea;border-radius:7px;padding:7px 12px;flex:1;min-width:200px}
+.search-box input{border:none;outline:none;font-size:13px;color:#111;width:100%;background:transparent}
+.search-box input::placeholder{color:#aaa}
+.filter-chip{padding:6px 12px;border-radius:20px;font-size:12px;border:1px solid #e0e2ea;background:#fff;cursor:pointer;color:#555;transition:all .15s}
+.filter-chip.on{background:#7c3aed;color:#fff;border-color:#7c3aed}
+select{padding:7px 10px;border-radius:7px;border:1px solid #e0e2ea;font-size:12px;color:#444;background:#fff;outline:none}
+
+/* ── Table ── */
+.table-wrap{background:#fff;border-radius:10px;border:1px solid #e8eaee;overflow:hidden}
+.table-header{display:grid;grid-template-columns:30px 180px 110px 70px 100px 100px 90px 140px;padding:10px 16px;border-bottom:1px solid #eef0f7;background:#f9fafb}
+.table-header span{font-size:11px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.table-row{display:grid;grid-template-columns:30px 180px 110px 70px 100px 100px 90px 140px;padding:11px 16px;border-bottom:1px solid #f3f4f8;align-items:center;transition:background .1s;cursor:pointer}
+.table-row:last-child{border-bottom:none}
+.table-row:hover{background:#faf8ff}
+.table-row.selected{background:#f5f3ff}
+.checkbox{width:14px;height:14px;border:1px solid #ccc;border-radius:3px;cursor:pointer}
+.user-name{font-size:13px;font-weight:500;color:#111}
+.user-id{font-size:11px;color:#aaa}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-new{background:#ede9fe;color:#7c3aed}
+.badge-active{background:#dcfce7;color:#16a34a}
+.badge-vip{background:#ede9fe;color:#5b21b6}
+.badge-dormant{background:#f1f5f9;color:#64748b}
+.tag{font-size:11px;padding:2px 7px;border-radius:4px;border:1px solid #e8eaee;color:#777;margin-right:3px;display:inline-block}
+.amount{font-size:13px;font-weight:500;color:#111}
+.amount.high{color:#7c3aed}
+.text-sm{font-size:12px;color:#666}
+.text-xs{font-size:11px;color:#aaa}
+
+/* ── Pagination ── */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid #eef0f7;background:#fafafa}
+.page-info{font-size:12px;color:#888}
+.page-btns{display:flex;gap:4px}
+.page-btn{width:28px;height:28px;border-radius:5px;border:1px solid #e0e2ea;background:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555}
+.page-btn.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
+
+/* ── TOP30 ── */
+.top30-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.top30-title{font-size:14px;font-weight:600;color:#111}
+.top30-row{display:grid;grid-template-columns:28px 1fr 90px 80px 70px;gap:8px;padding:9px 14px;border-bottom:1px solid #f3f4f8;align-items:center;background:#fff}
+.top30-row:hover{background:#faf8ff}
+.rank{font-size:13px;font-weight:700;color:#ccc;text-align:center}
+.rank.gold{color:#d97706}
+.rank.silver{color:#6b7280}
+.rank.bronze{color:#92400e}
+.progress-bar{height:4px;background:#f0f0f0;border-radius:2px;margin-top:4px}
+.progress-fill{height:4px;background:#7c3aed;border-radius:2px}
+
+/* ── Bulk bar ── */
+.bulk-bar{display:flex;align-items:center;gap:10px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:10px 14px;margin-bottom:12px}
+.bulk-info{font-size:13px;color:#7c3aed;font-weight:500;flex:1}
+.bulk-actions{display:flex;gap:8px}
+
+/* ── Segment ── */
+.segment-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.seg-card{background:#fff;border-radius:10px;border:1px solid #e8eaee;padding:14px 16px}
+.seg-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.seg-name{font-size:13px;font-weight:500;color:#111}
+.seg-count{font-size:20px;font-weight:700;color:#111}
+.seg-sub{font-size:11px;color:#888;margin-top:2px}
+.seg-bar{height:6px;background:#f0f0f0;border-radius:3px;margin-top:10px}
+.seg-fill{height:6px;border-radius:3px}
+
+/* ── Layout split ── */
+.layout-split{display:flex;gap:16px}
+.panel-left{flex:1;min-width:0}
+.panel-right{width:260px;flex-shrink:0}
+.side-card{background:#fff;border-radius:10px;border:1px solid #e8eaee;padding:14px 16px;margin-bottom:12px}
+.side-title{font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.action-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;cursor:pointer;margin-bottom:2px;transition:background .1s}
+.action-item:hover{background:#f4f5f7}
+.action-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.action-text{font-size:12px;color:#444;font-weight:500}
+.action-sub{font-size:11px;color:#aaa}
+
+/* ── Modals ── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:100}
+.modal{background:#fff;border-radius:14px;width:420px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.modal-title{font-size:15px;font-weight:600;margin-bottom:16px;color:#111}
+.modal-row{margin-bottom:12px}
+.modal-label{font-size:12px;color:#888;margin-bottom:4px}
+.modal-input{width:100%;padding:8px 10px;border:1px solid #e0e2ea;border-radius:7px;font-size:13px;outline:none;font-family:inherit}
+.modal-input:focus{border-color:#7c3aed}
+.modal-footer{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
+.hidden{display:none!important}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">
+      <span class="brand">Grip</span>
+      <span class="tag">SE</span>
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">메뉴</div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      홈
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      기본정보
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      라이브 콘솔
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      상품 관리
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      쿠폰 관리
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      주문 관리
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h6v13a1 1 0 0 1-1 1h-5"/><path d="M1 16h15"/><path d="M5 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M18 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+      발주 / 배송 관리
+    </div>
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      팔로우(회원) 관리
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      1:1문의
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13V5l5-3 5 3v8M2 13h12"/><line x1="3" y1="21" x2="21" y2="21"/></svg>
+      정산관리
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      통계
+    </div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <span class="topbar-title">팔로우(회원) 관리</span>
+    <div class="topbar-right">
+      <span class="topbar-date" id="todayLabel"></span>
+      <button class="btn btn-outline btn-sm" onclick="showModal('export')">내보내기</button>
+      <button class="btn btn-outline btn-sm" onclick="showModal('gradeconfig')">⚙ 등급 기준 설정</button>
+      <button class="btn btn-primary btn-sm" onclick="showModal('msg')">✉ 일괄 메시지 발송</button>
+      <div class="avatar">S</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="summary-row">
+      <div class="scard"><div class="scard-label">전체 팔로워</div><div class="scard-value">4,812</div><div class="scard-sub">지난달 대비 +284 ↑</div></div>
+      <div class="scard"><div class="scard-label">신규 팔로워 (이번달)</div><div class="scard-value green">+312</div><div class="scard-sub">일평균 10.4명</div></div>
+      <div class="scard"><div class="scard-label">언팔로우 (이번달)</div><div class="scard-value red">-28</div><div class="scard-sub">이탈률 0.6%</div></div>
+      <div class="scard"><div class="scard-label">구매전환 팔로워</div><div class="scard-value accent">1,934</div><div class="scard-sub">전환율 40.2%</div></div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(this,'all')">전체 팔로워</div>
+      <div class="tab" onclick="switchTab(this,'top30')">이달의 TOP 30</div>
+      <div class="tab" onclick="switchTab(this,'segment')">세그먼트</div>
+      <div class="tab" onclick="switchTab(this,'dormant')">이탈 위험</div>
+      <div class="tab" onclick="switchTab(this,'blocked')">차단 관리 <span id="blocked-count" style="background:#ef4444;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;margin-left:4px">2</span></div>
+    </div>
+
+    <!-- 전체 팔로워 -->
+    <div id="tab-all">
+      <div class="filter-bar">
+        <div class="search-box" style="flex:1;min-width:200px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="main-search" placeholder="닉네임 또는 회원번호 검색" oninput="scheduleMainSearch()" onkeydown="if(event.key==='Enter')runMainSearch()">
+          <button id="main-search-btn" onclick="runMainSearch()" style="background:#7c3aed;color:#fff;border:none;border-radius:5px;padding:4px 10px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit">검색</button>
+        </div>
+        <select><option>팔로우 날짜 ↓</option><option>구매금액 ↓</option><option>최근 방문 ↓</option></select>
+        <div class="filter-chip on" onclick="toggleChip(this)">전체</div>
+        <div class="filter-chip" onclick="toggleChip(this)">VIP</div>
+        <div class="filter-chip" onclick="toggleChip(this)">신규</div>
+        <div class="filter-chip" onclick="toggleChip(this)">활성</div>
+        <div class="filter-chip" onclick="toggleChip(this)">휴면</div>
+      </div>
+      <div class="bulk-bar hidden" id="bulk-bar">
+        <div class="bulk-info">3명 선택됨</div>
+        <div class="bulk-actions">
+          <button class="btn btn-outline btn-sm" onclick="showModal('tag')">태그 일괄 추가</button>
+          <button class="btn btn-outline btn-sm" onclick="showModal('msg')">메시지 발송</button>
+          <button class="btn btn-sm btn-danger">팔로우 차단</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-header">
+          <span></span><span>고객 정보</span><span>팔로우 일자</span><span>등급</span><span>이달 구매</span><span>누적 구매</span><span>누적 시청수</span><span>차단</span>
+        </div>
+        <div class="table-row" id="r1" onclick="selectRow('r1')">
+          <input type="checkbox" class="checkbox" onclick="handleCheck(event)">
+          <div><div class="user-name">파인애플맛</div><div class="user-id">#U00291</div></div>
+          <div class="text-sm">2025.11.02</div>
+          <div><span class="badge badge-vip">VIP</span></div>
+          <div class="amount high">482,000</div><div class="text-sm">1,820,000</div><div class="text-sm">142회</div>
+          <div><button class="btn btn-outline btn-sm" style="color:#ef4444;border-color:#fecaca" onclick="openBlockModal('파인애플맛','#U00291',event)">차단</button></div>
+        </div>
+        <div class="table-row" id="r2" onclick="selectRow('r2')">
+          <input type="checkbox" class="checkbox" onclick="handleCheck(event)">
+          <div><div class="user-name">그린사과09</div><div class="user-id">#U00304</div></div>
+          <div class="text-sm">2025.12.14</div><div><span class="badge badge-active">활성</span></div>
+          <div class="amount">198,000</div><div class="text-sm">560,000</div><div class="text-sm">58회</div>
+          <div><button class="btn btn-outline btn-sm" style="color:#ef4444;border-color:#fecaca" onclick="openBlockModal('그린사과09','#U00304',event)">차단</button></div>
+        </div>
+        <div class="table-row" id="r3" onclick="selectRow('r3')">
+          <input type="checkbox" class="checkbox" onclick="handleCheck(event)">
+          <div><div class="user-name">별빛쇼핑러</div><div class="user-id">#U00388</div></div>
+          <div class="text-sm">2026.01.07</div><div><span class="badge badge-new">신규</span></div>
+          <div class="amount">89,000</div><div class="text-sm">89,000</div><div class="text-sm">12회</div>
+          <div><button class="btn btn-outline btn-sm" style="color:#ef4444;border-color:#fecaca" onclick="openBlockModal('별빛쇼핑러','#U00388',event)">차단</button></div>
+        </div>
+        <div class="table-row" id="r4" onclick="selectRow('r4')">
+          <input type="checkbox" class="checkbox" onclick="handleCheck(event)">
+          <div><div class="user-name">하늘색원피스</div><div class="user-id">#U00112</div></div>
+          <div class="text-sm">2025.08.22</div><div><span class="badge badge-dormant">휴면</span></div>
+          <div class="amount" style="color:#aaa">—</div><div class="text-sm">320,000</div><div class="text-sm">34회</div>
+          <div><button class="btn btn-outline btn-sm" style="color:#ef4444;border-color:#fecaca" onclick="openBlockModal('하늘색원피스','#U00112',event)">차단</button></div>
+        </div>
+        <div class="table-row" id="r5" onclick="selectRow('r5')">
+          <input type="checkbox" class="checkbox" onclick="handleCheck(event)">
+          <div><div class="user-name">달콤한쇼핑</div><div class="user-id">#U00521</div></div>
+          <div class="text-sm">2026.02.18</div><div><span class="badge badge-active">활성</span></div>
+          <div class="amount">144,000</div><div class="text-sm">144,000</div><div class="text-sm">21회</div>
+          <div><button class="btn btn-outline btn-sm" style="color:#ef4444;border-color:#fecaca" onclick="openBlockModal('달콤한쇼핑','#U00521',event)">차단</button></div>
+        </div>
+      </div>
+      <div id="table-body-note" style="display:none;padding:16px;text-align:center;font-size:13px;color:#aaa">검색 결과가 없습니다.</div>
+      <div class="pagination">
+        <div class="page-info">총 4,812명 중 1 – 20</div>
+        <div class="page-btns">
+          <div class="page-btn">‹</div>
+          <div class="page-btn active">1</div>
+          <div class="page-btn">2</div>
+          <div class="page-btn">3</div>
+          <div class="page-btn">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOP30 -->
+    <div id="tab-top30" class="hidden">
+      <div class="layout-split">
+        <div class="panel-left">
+          <div class="top30-header">
+            <div class="top30-title">한달 내 구매금액 기준 TOP 30</div>
+            <div style="font-size:11px;color:#aaa">2026년 2월 17일 ~ 3월 17일</div>
+          </div>
+          <div class="table-wrap">
+            <div style="display:grid;grid-template-columns:28px 1fr 90px 80px 70px;padding:8px 14px;border-bottom:1px solid #eef0f7;background:#f9fafb">
+              <span style="font-size:11px;color:#888">순위</span>
+              <span style="font-size:11px;color:#888">고객</span>
+              <span style="font-size:11px;color:#888">구매금액</span>
+              <span style="font-size:11px;color:#888">구매횟수</span>
+              <span style="font-size:11px;color:#888">등급</span>
+            </div>
+            <div id="top30-list"></div>
+          </div>
+        </div>
+        <div class="panel-right">
+          <div class="side-card">
+            <div class="side-title">빠른 액션</div>
+            <div class="action-item" onclick="showModal('msg')"><div class="action-icon" style="background:#ede9fe">✉️</div><div><div class="action-text">TOP30 일괄 메시지</div><div class="action-sub">전용 혜택 안내 발송</div></div></div>
+            <div class="action-item" onclick="showModal('coupon')"><div class="action-icon" style="background:#dcfce7">🎟</div><div><div class="action-text">쿠폰 일괄 발행</div><div class="action-sub">VIP 전용 쿠폰 지급</div></div></div>
+            <div class="action-item"><div class="action-icon" style="background:#ede9fe">⭐</div><div><div class="action-text">VIP 등급 일괄 적용</div><div class="action-sub">30명 VIP로 상향</div></div></div>
+            <div class="action-item"><div class="action-icon" style="background:#fef9c3">📋</div><div><div class="action-text">리스트 내보내기</div><div class="action-sub">CSV 다운로드</div></div></div>
+          </div>
+          <div class="side-card">
+            <div class="side-title">TOP30 요약</div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px"><span style="color:#888">총 구매액</span><span style="font-weight:600">24,810,000원</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px"><span style="color:#888">평균 구매액</span><span style="font-weight:600">827,000원</span></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px"><span style="color:#888">VIP 비중</span><span style="font-weight:600;color:#5b21b6">18명 (60%)</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#888">전체 매출 기여</span><span style="font-weight:600;color:#7c3aed">38.4%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 세그먼트 -->
+    <div id="tab-segment" class="hidden">
+      <div class="segment-grid">
+        <div class="seg-card"><div class="seg-top"><div class="seg-name">VIP 팔로워</div><span class="badge badge-vip">VIP</span></div><div class="seg-count">483명</div><div class="seg-sub">누적 구매 100만원 이상</div><div class="seg-bar"><div class="seg-fill" style="background:#7c3aed;width:38%"></div></div></div>
+        <div class="seg-card"><div class="seg-top"><div class="seg-name">활성 팔로워</div><span class="badge badge-active">활성</span></div><div class="seg-count">2,104명</div><div class="seg-sub">최근 30일 내 방문</div><div class="seg-bar"><div class="seg-fill" style="background:#16a34a;width:65%"></div></div></div>
+        <div class="seg-card"><div class="seg-top"><div class="seg-name">신규 팔로워</div><span class="badge badge-new">신규</span></div><div class="seg-count">312명</div><div class="seg-sub">팔로우 30일 이내</div><div class="seg-bar"><div class="seg-fill" style="background:#7c3aed;width:25%"></div></div></div>
+        <div class="seg-card"><div class="seg-top"><div class="seg-name">재구매 팔로워</div><span style="font-size:14px">🔄</span></div><div class="seg-count">1,934명</div><div class="seg-sub">2회 이상 구매 이력</div><div class="seg-bar"><div class="seg-fill" style="background:#3b82f6;width:55%"></div></div></div>
+        <div class="seg-card"><div class="seg-top"><div class="seg-name">미구매 팔로워</div><span style="font-size:14px">👀</span></div><div class="seg-count">2,878명</div><div class="seg-sub">팔로우만, 구매 이력 없음</div><div class="seg-bar"><div class="seg-fill" style="background:#9ca3af;width:45%"></div></div></div>
+        <div class="seg-card"><div class="seg-top"><div class="seg-name">이탈 위험</div><span style="font-size:14px">⚠️</span></div><div class="seg-count">429명</div><div class="seg-sub">60일 이상 미방문</div><div class="seg-bar"><div class="seg-fill" style="background:#f97316;width:18%"></div></div></div>
+      </div>
+      <div class="side-card" style="margin-top:4px">
+        <div class="side-title" style="margin-bottom:10px">세그먼트별 액션 가이드</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="showModal('msg')">미구매 → 첫구매 쿠폰 발송</button>
+          <button class="btn btn-outline btn-sm" onclick="showModal('msg')">이탈위험 → 리텐션 메시지</button>
+          <button class="btn btn-outline btn-sm">신규 → 웰컴 메시지 자동화</button>
+          <button class="btn btn-outline btn-sm">VIP → 전용 라이브 초대</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 차단 관리 -->
+    <div id="tab-blocked" class="hidden">
+      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:16px">🚫</span>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#b91c1c">차단된 팔로워는 라이브 채팅 및 방송 참여가 제한됩니다</div>
+          <div style="font-size:12px;color:#ef4444;margin-top:2px">차단 해제 시 즉시 참여가 복원됩니다.</div>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <div class="search-box" style="flex:1;min-width:200px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="blocked-search" placeholder="닉네임 또는 회원번호 검색" oninput="scheduleBlockedSearch()" onkeydown="if(event.key==='Enter')filterBlocked(this.value)">
+          <button onclick="filterBlocked(document.getElementById('blocked-search').value)" style="background:#7c3aed;color:#fff;border:none;border-radius:5px;padding:4px 10px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit">검색</button>
+        </div>
+        <select onchange="sortBlocked(this.value)">
+          <option value="date">차단일 최신순</option>
+          <option value="name">닉네임순</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <div style="display:grid;grid-template-columns:200px 110px 120px 1fr 110px;padding:10px 16px;border-bottom:1px solid #eef0f7;background:#f9fafb">
+          <span style="font-size:11px;color:#888">고객 정보</span>
+          <span style="font-size:11px;color:#888">차단일</span>
+          <span style="font-size:11px;color:#888">차단 전 등급</span>
+          <span style="font-size:11px;color:#888">차단 사유</span>
+          <span style="font-size:11px;color:#888">액션</span>
+        </div>
+        <div id="blocked-list"></div>
+        <div id="blocked-empty" class="hidden" style="padding:32px;text-align:center;font-size:13px;color:#bbb">차단된 팔로워가 없습니다.</div>
+      </div>
+    </div>
+
+    <!-- 이탈 위험 -->
+    <div id="tab-dormant" class="hidden">
+      <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:16px">⚠️</span>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#9a3412">이탈 위험 팔로워 429명이 감지되었습니다</div>
+          <div style="font-size:12px;color:#ea580c;margin-top:2px">60일 이상 미방문 고객입니다. 리텐션 액션을 취해보세요.</div>
+        </div>
+        <button class="btn btn-sm btn-primary" style="margin-left:auto" onclick="showModal('msg')">일괄 리텐션 발송</button>
+      </div>
+      <div class="table-wrap">
+        <div style="display:grid;grid-template-columns:180px 100px 90px 100px 100px 110px;padding:10px 16px;border-bottom:1px solid #eef0f7;background:#f9fafb">
+          <span style="font-size:11px;color:#888">고객</span><span style="font-size:11px;color:#888">팔로우일</span><span style="font-size:11px;color:#888">누적 구매</span><span style="font-size:11px;color:#888">최근 방문</span><span style="font-size:11px;color:#888">미방문 기간</span><span style="font-size:11px;color:#888">액션</span>
+        </div>
+        <div style="display:grid;grid-template-columns:180px 100px 90px 100px 100px 110px;padding:11px 16px;border-bottom:1px solid #f3f4f8;align-items:center">
+          <div><div class="user-name">하늘색원피스</div><div class="user-id">#U00112</div></div>
+          <div class="text-sm">2025.08.22</div><div class="text-sm">320,000</div><div class="text-sm">2026.01.12</div>
+          <div><span style="background:#fff7ed;color:#9a3412;font-size:11px;padding:2px 8px;border-radius:20px">64일</span></div>
+          <div><button class="btn btn-outline btn-sm" onclick="showModal('msg')">메시지</button></div>
+        </div>
+        <div style="display:grid;grid-template-columns:180px 100px 90px 100px 100px 110px;padding:11px 16px;border-bottom:1px solid #f3f4f8;align-items:center">
+          <div><div class="user-name">지금구매중</div><div class="user-id">#U00205</div></div>
+          <div class="text-sm">2025.09.05</div><div class="text-sm">510,000</div><div class="text-sm">2026.01.06</div>
+          <div><span style="background:#fff7ed;color:#9a3412;font-size:11px;padding:2px 8px;border-radius:20px">70일</span></div>
+          <div><button class="btn btn-outline btn-sm" onclick="showModal('msg')">메시지</button></div>
+        </div>
+        <div style="display:grid;grid-template-columns:180px 100px 90px 100px 100px 110px;padding:11px 16px;align-items:center">
+          <div><div class="user-name">초록색연필</div><div class="user-id">#U00088</div></div>
+          <div class="text-sm">2025.07.14</div><div class="text-sm">88,000</div><div class="text-sm">2025.12.28</div>
+          <div><span style="background:#fef2f2;color:#991b1b;font-size:11px;padding:2px 8px;border-radius:20px">79일</span></div>
+          <div><button class="btn btn-outline btn-sm" onclick="showModal('msg')">메시지</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 메시지 -->
+<div class="modal-backdrop hidden" id="modal-msg">
+  <div class="modal">
+    <div class="modal-title">팔로워 메시지 발송</div>
+    <div class="modal-row"><div class="modal-label">수신 대상</div><div style="font-size:13px;background:#f4f5f7;padding:8px 10px;border-radius:7px;color:#444">TOP 30 팔로워 (30명)</div></div>
+    <div class="modal-row"><div class="modal-label">메시지 제목</div><input class="modal-input" placeholder="예: VIP 고객 감사 혜택 안내"></div>
+    <div class="modal-row"><div class="modal-label">내용</div><textarea class="modal-input" rows="4" placeholder="메시지 내용을 입력하세요. {닉네임} 변수를 사용할 수 있습니다." style="resize:none"></textarea></div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="hideModal('modal-msg')">취소</button><button class="btn btn-primary">발송하기</button></div>
+  </div>
+</div>
+
+<!-- Modal: 상세 -->
+<div class="modal-backdrop hidden" id="modal-detail">
+  <div class="modal" style="width:460px">
+    <div class="modal-title">팔로워 상세 정보</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:14px;background:#f9fafb;border-radius:10px">
+      <div>
+        <div style="font-size:15px;font-weight:600">파인애플맛</div>
+        <div style="font-size:12px;color:#aaa;margin-top:2px">회원번호 #U00291</div>
+      </div>
+      <span class="badge badge-vip">VIP</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div style="background:#f9fafb;padding:10px 12px;border-radius:8px"><div style="font-size:11px;color:#888;margin-bottom:3px">이달 구매금액</div><div style="font-size:16px;font-weight:600;color:#7c3aed">482,000원</div></div>
+      <div style="background:#f9fafb;padding:10px 12px;border-radius:8px"><div style="font-size:11px;color:#888;margin-bottom:3px">누적 구매금액</div><div style="font-size:16px;font-weight:600">1,820,000원</div></div>
+      <div style="background:#f9fafb;padding:10px 12px;border-radius:8px"><div style="font-size:11px;color:#888;margin-bottom:3px">팔로우 일자</div><div style="font-size:13px;font-weight:500">2025.11.02</div></div>
+      <div style="background:#f9fafb;padding:10px 12px;border-radius:8px"><div style="font-size:11px;color:#888;margin-bottom:3px">구매 횟수</div><div style="font-size:13px;font-weight:500">총 14회</div></div>
+    </div>
+    <div class="modal-row"><div class="modal-label">관리 태그</div><div class="chip-row"><span class="tag">단골</span><span class="tag">라이브충성</span><span style="font-size:12px;padding:3px 10px;border-radius:4px;border:1px dashed #ccc;color:#aaa;cursor:pointer">+ 태그 추가</span></div></div>
+    <div class="modal-row"><div class="modal-label">메모</div><textarea class="modal-input" rows="2" placeholder="내부 메모 입력 (고객에게 미노출)" style="resize:none"></textarea></div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="hideModal('modal-detail')">닫기</button><button class="btn btn-outline btn-sm" onclick="showModal('msg')">메시지 발송</button><button class="btn btn-primary">저장</button></div>
+  </div>
+</div>
+
+<!-- Modal: 쿠폰 -->
+<div class="modal-backdrop hidden" id="modal-coupon">
+  <div class="modal">
+    <div class="modal-title">쿠폰 일괄 발행</div>
+    <div class="modal-row"><div class="modal-label">쿠폰명</div><input class="modal-input" placeholder="예: VIP 전용 5% 할인쿠폰"></div>
+    <div class="modal-row"><div class="modal-label">할인 유형</div><select style="width:100%;padding:8px 10px;border:1px solid #e0e2ea;border-radius:7px;font-size:13px;font-family:inherit"><option>정률 할인 (%)</option><option>정액 할인 (원)</option></select></div>
+    <div class="modal-row"><div class="modal-label">할인값</div><input class="modal-input" placeholder="예: 5"></div>
+    <div class="modal-row"><div class="modal-label">유효기간</div><input class="modal-input" type="date"></div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="hideModal('modal-coupon')">취소</button><button class="btn btn-primary">발행하기</button></div>
+  </div>
+</div>
+
+<!-- Modal: 내보내기 -->
+<div class="modal-backdrop hidden" id="modal-export">
+  <div class="modal">
+    <div class="modal-title">팔로워 데이터 내보내기</div>
+    <div class="modal-row"><div class="modal-label">내보낼 대상</div><select style="width:100%;padding:8px 10px;border:1px solid #e0e2ea;border-radius:7px;font-size:13px;font-family:inherit"><option>전체 팔로워 (4,812명)</option><option>TOP 30</option><option>VIP 팔로워</option><option>이탈 위험 팔로워</option></select></div>
+    <div class="modal-row"><div class="modal-label">포함 항목</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;font-size:13px"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" checked> 닉네임 / 회원번호</label><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" checked> 팔로우 일자</label><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" checked> 구매금액</label><label style="display:flex;align-items:center;gap:6px"><input type="checkbox"> 방문 빈도</label><label style="display:flex;align-items:center;gap:6px"><input type="checkbox"> 태그</label></div></div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="hideModal('modal-export')">취소</button><button class="btn btn-primary">CSV 다운로드</button></div>
+  </div>
+</div>
+
+<!-- Modal: 등급 기준 설정 -->
+<div class="modal-backdrop hidden" id="modal-gradeconfig">
+  <div class="modal" style="width:480px">
+    <div class="modal-title">등급 기준 설정</div>
+    <p style="font-size:12px;color:#888;margin-bottom:20px;line-height:1.6">아래 기준을 충족하면 해당 등급이 자동 적용됩니다.<br>기준은 복수 조건 중 <strong style="color:#111;font-weight:500">하나 이상</strong> 충족 시 적용됩니다.</p>
+    <!-- VIP -->
+    <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:16px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <span class="badge badge-vip" style="font-size:12px;padding:3px 10px">VIP</span>
+        <span style="font-size:13px;font-weight:500;color:#111">VIP 등급 기준</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><div class="modal-label">누적 구매금액 이상</div><div style="display:flex;align-items:center;gap:6px"><input class="modal-input" id="vip-amt" value="1,000,000" style="flex:1"><span style="font-size:12px;color:#888;white-space:nowrap">원</span></div></div>
+        <div><div class="modal-label">구매 횟수 이상</div><div style="display:flex;align-items:center;gap:6px"><input class="modal-input" id="vip-cnt" value="10" style="flex:1"><span style="font-size:12px;color:#888;white-space:nowrap">회</span></div></div>
+        <div><div class="modal-label">누적 방문수 이상</div><div style="display:flex;align-items:center;gap:6px"><input class="modal-input" id="vip-visit" value="100" style="flex:1"><span style="font-size:12px;color:#888;white-space:nowrap">회</span></div></div>
+        <div><div class="modal-label">조건 적용 방식</div><select style="width:100%;padding:8px 10px;border:1px solid #e0e2ea;border-radius:7px;font-size:12px;color:#444;background:#fff;font-family:inherit" id="vip-op"><option>조건 중 하나 이상 충족</option><option>조건 모두 충족</option></select></div>
+      </div>
+    </div>
+    <!-- 휴면 -->
+    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:16px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <span class="badge badge-dormant" style="font-size:12px;padding:3px 10px">휴면</span>
+        <span style="font-size:13px;font-weight:500;color:#111">휴면 등급 기준</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><div class="modal-label">마지막 방문 후 경과일</div><div style="display:flex;align-items:center;gap:6px"><input class="modal-input" id="dormant-days" value="60" style="flex:1"><span style="font-size:12px;color:#888;white-space:nowrap">일 이상</span></div></div>
+        <div><div class="modal-label">이탈 위험 알림 기준</div><div style="display:flex;align-items:center;gap:6px"><input class="modal-input" id="dormant-warn" value="30" style="flex:1"><span style="font-size:12px;color:#888;white-space:nowrap">일 이상</span></div></div>
+      </div>
+      <div style="margin-top:10px;background:#fff;border-radius:7px;padding:8px 12px;font-size:11px;color:#9a3412;line-height:1.6">
+        ※ 이탈 위험 알림 기준을 넘으면 <strong style="font-weight:500">이탈 위험</strong> 탭에 표시되며,<br>휴면 기준을 넘으면 등급이 <strong style="font-weight:500">휴면</strong>으로 자동 전환됩니다.
+      </div>
+    </div>
+    <!-- 신규 -->
+    <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:16px;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <span class="badge badge-new" style="font-size:12px;padding:3px 10px">신규</span>
+        <span style="font-size:13px;font-weight:500;color:#111">신규 등급 기준</span>
+      </div>
+      <div><div class="modal-label">팔로우 후 경과일</div><div style="display:flex;align-items:center;gap:6px;max-width:200px"><input class="modal-input" id="new-days" value="30" style="flex:1"><span style="font-size:12px;color:#888;white-space:nowrap">일 이내</span></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="hideModal('modal-gradeconfig')">취소</button>
+      <button class="btn btn-primary" onclick="saveGradeConfig()">저장 및 적용</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 차단 확인 -->
+<div class="modal-backdrop hidden" id="modal-block">
+  <div class="modal" style="width:400px">
+    <div class="modal-title">팔로워 차단</div>
+    <div id="block-target-info" style="background:#f9fafb;border-radius:8px;padding:12px 14px;margin-bottom:14px">
+      <div id="block-target-name" style="font-size:14px;font-weight:500;color:#111"></div>
+      <div id="block-target-id" style="font-size:12px;color:#aaa;margin-top:2px"></div>
+    </div>
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#b91c1c;line-height:1.7">
+      차단된 고객은 라이브 채팅 및 방송 입장이 제한됩니다.<br>차단 후에도 언제든지 해제할 수 있습니다.
+    </div>
+    <div class="modal-row">
+      <div class="modal-label">차단 사유 <span style="color:#aaa">(선택)</span></div>
+      <select id="block-reason-select" style="width:100%;padding:8px 10px;border:1px solid #e0e2ea;border-radius:7px;font-size:13px;color:#444;background:#fff;margin-bottom:8px;font-family:inherit" onchange="toggleBlockEtc(this.value)">
+        <option value="">사유 선택</option>
+        <option value="욕설·비방">욕설·비방</option>
+        <option value="도배·스팸">도배·스팸</option>
+        <option value="허위 리뷰">허위 리뷰</option>
+        <option value="기타">기타 직접 입력</option>
+      </select>
+      <input class="modal-input hidden" id="block-reason-etc" placeholder="직접 입력">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="hideModal('modal-block')">취소</button>
+      <button class="btn btn-danger btn-sm" style="padding:7px 16px;font-size:12px" onclick="confirmBlock()">차단하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 차단 해제 -->
+<div class="modal-backdrop hidden" id="modal-unblock">
+  <div class="modal" style="width:380px">
+    <div class="modal-title">차단 해제</div>
+    <div id="unblock-target-info" style="background:#f9fafb;border-radius:8px;padding:12px 14px;margin-bottom:14px">
+      <div id="unblock-target-name" style="font-size:14px;font-weight:500;color:#111"></div>
+      <div id="unblock-target-id" style="font-size:12px;color:#aaa;margin-top:2px"></div>
+    </div>
+    <div style="font-size:13px;color:#555;line-height:1.7;margin-bottom:6px">차단을 해제하면 해당 고객이 라이브 방송에 <strong style="font-weight:500">즉시 참여</strong>할 수 있게 됩니다.</div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="hideModal('modal-unblock')">취소</button>
+      <button class="btn btn-primary" onclick="confirmUnblock()">해제하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: 태그 -->
+<div class="modal-backdrop hidden" id="modal-tag">
+  <div class="modal">
+    <div class="modal-title">태그 일괄 추가</div>
+    <div class="modal-row"><div class="modal-label">대상</div><div style="font-size:13px;color:#666">선택된 3명에게 적용됩니다</div></div>
+    <div class="modal-row"><div class="modal-label">태그 선택 (복수 선택 가능)</div><div class="chip-row"><div class="filter-chip on" onclick="toggleChip(this)">단골</div><div class="filter-chip" onclick="toggleChip(this)">재구매</div><div class="filter-chip" onclick="toggleChip(this)">VIP후보</div><div class="filter-chip" onclick="toggleChip(this)">관심高</div><div class="filter-chip" onclick="toggleChip(this)">휴면주의</div></div></div>
+    <div class="modal-row"><div class="modal-label">직접 입력</div><input class="modal-input" placeholder="새 태그명 입력 후 Enter"></div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="hideModal('modal-tag')">취소</button><button class="btn btn-primary">적용</button></div>
+  </div>
+</div>
+
+<script>
+// Date label
+(function(){
+  const d=new Date();
+  const days=['일','월','화','수','목','금','토'];
+  const el=document.getElementById('todayLabel');
+  if(el)el.textContent=`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+})();
+
+const tabs=['all','top30','segment','dormant','blocked'];
+function switchTab(el,id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  tabs.forEach(t=>document.getElementById('tab-'+t).classList.add('hidden'));
+  document.getElementById('tab-'+id).classList.remove('hidden');
+  if(id==='blocked')renderBlocked();
+}
+function showModal(id,e){if(e)e.stopPropagation();document.querySelectorAll('.modal-backdrop').forEach(m=>m.classList.add('hidden'));document.getElementById('modal-'+id).classList.remove('hidden')}
+function hideModal(id){document.getElementById(id).classList.add('hidden')}
+document.querySelectorAll('.modal-backdrop').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.add('hidden')}));
+function toggleChip(el){el.classList.toggle('on')}
+let selectedRows=new Set();
+function selectRow(id){const r=document.getElementById(id);if(r.classList.toggle('selected'))selectedRows.add(id);else selectedRows.delete(id);const bb=document.getElementById('bulk-bar');if(selectedRows.size>0){bb.classList.remove('hidden');bb.querySelector('.bulk-info').textContent=selectedRows.size+'명 선택됨'}else bb.classList.add('hidden')}
+function handleCheck(e){e.stopPropagation()}
+function saveGradeConfig(){hideModal('modal-gradeconfig');showToast('등급 기준이 저장되었습니다. 즉시 반영됩니다.');}
+
+// 차단 데이터
+let blockedUsers=[
+  {name:'무례한고객',id:'#U00099',date:'2026.02.10',prevGrade:'활성',reason:'욕설·비방'},
+  {name:'스팸봇123',id:'#U00777',date:'2026.03.01',prevGrade:'신규',reason:'도배·스팸'}
+];
+let blockTarget=null, unblockTarget=null;
+
+function openBlockModal(name,uid,e){
+  if(e)e.stopPropagation();
+  blockTarget={name,uid};
+  document.getElementById('block-target-name').textContent=name;
+  document.getElementById('block-target-id').textContent=uid;
+  document.getElementById('block-reason-select').value='';
+  document.getElementById('block-reason-etc').classList.add('hidden');
+  document.getElementById('block-reason-etc').value='';
+  showModal('block');
+}
+function toggleBlockEtc(v){document.getElementById('block-reason-etc').classList.toggle('hidden',v!=='기타')}
+function confirmBlock(){
+  if(!blockTarget)return;
+  const sel=document.getElementById('block-reason-select').value;
+  const reason=sel==='기타'?document.getElementById('block-reason-etc').value||'기타':sel||'—';
+  const today=new Date();
+  const dateStr=`${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
+  blockedUsers.unshift({name:blockTarget.name,id:blockTarget.uid,date:dateStr,prevGrade:'활성',reason});
+  updateBlockedCount();
+  hideModal('modal-block');
+  showToast(`${blockTarget.name} 님이 차단되었습니다.`);
+  blockTarget=null;
+}
+function openUnblockModal(idx,e){
+  if(e)e.stopPropagation();
+  unblockTarget=idx;
+  const u=blockedUsers[idx];
+  document.getElementById('unblock-target-name').textContent=u.name;
+  document.getElementById('unblock-target-id').textContent=u.id;
+  showModal('unblock');
+}
+function confirmUnblock(){
+  if(unblockTarget===null)return;
+  const name=blockedUsers[unblockTarget].name;
+  blockedUsers.splice(unblockTarget,1);
+  updateBlockedCount();
+  renderBlocked();
+  hideModal('modal-unblock');
+  showToast(`${name} 님의 차단이 해제되었습니다.`);
+  unblockTarget=null;
+}
+function updateBlockedCount(){
+  const el=document.getElementById('blocked-count');
+  el.textContent=blockedUsers.length;
+  el.style.display=blockedUsers.length>0?'':'none';
+}
+function renderBlocked(list){
+  const data=list||blockedUsers;
+  const container=document.getElementById('blocked-list');
+  const empty=document.getElementById('blocked-empty');
+  if(data.length===0){container.innerHTML='';empty.classList.remove('hidden');return;}
+  empty.classList.add('hidden');
+  container.innerHTML=data.map((u,i)=>`
+    <div style="display:grid;grid-template-columns:200px 110px 120px 1fr 110px;padding:11px 16px;border-bottom:1px solid #f3f4f8;align-items:center">
+      <div><div class="user-name">${u.name}</div><div class="user-id">${u.id}</div></div>
+      <div class="text-sm">${u.date}</div>
+      <div><span class="badge badge-dormant">${u.prevGrade}</span></div>
+      <div><span style="font-size:12px;color:#888">${u.reason}</span></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick="openUnblockModal(${i},event)">해제</button>
+      </div>
+    </div>`).join('');
+}
+
+// 검색 debounce
+let mainSearchTimer=null, blockedSearchTimer=null;
+function scheduleMainSearch(){clearTimeout(mainSearchTimer);mainSearchTimer=setTimeout(()=>runMainSearch(),500)}
+function runMainSearch(){
+  clearTimeout(mainSearchTimer);
+  const q=document.getElementById('main-search').value.trim().toLowerCase();
+  document.querySelectorAll('.table-row').forEach(r=>{
+    const name=r.querySelector('.user-name')?.textContent.toLowerCase()||'';
+    const uid=r.querySelector('.user-id')?.textContent.toLowerCase()||'';
+    r.style.display=(!q||name.includes(q)||uid.includes(q))?'':'none';
+  });
+}
+function scheduleBlockedSearch(){clearTimeout(blockedSearchTimer);blockedSearchTimer=setTimeout(()=>{filterBlocked(document.getElementById('blocked-search').value)},500)}
+function filterBlocked(q){const r=q.trim().toLowerCase();renderBlocked(r?blockedUsers.filter(u=>u.name.includes(r)||u.id.includes(r)):blockedUsers)}
+function sortBlocked(v){if(v==='name')blockedUsers.sort((a,b)=>a.name.localeCompare(b.name));else blockedUsers.sort((a,b)=>b.date.localeCompare(a.date));renderBlocked()}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0d0f14;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:200;transition:opacity .4s;font-family:inherit';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),400)},2400);
+}
+
+// TOP30 list
+const names=[['파인애플맛','#U00291',1480000,8,'VIP'],['그린사과09','#U00304',1210000,6,'VIP'],['별빛쇼핑러','#U00388',980000,5,'VIP'],['달콤한쇼핑','#U00521',876000,4,'활성'],['오렌지하우스','#U00174',820000,5,'VIP'],['무지개마켓','#U00633',780000,4,'활성'],['하늘보라77','#U00290',740000,3,'VIP'],['레몬드롭스','#U00415',710000,4,'활성'],['핑크미소','#U00502',680000,3,'VIP'],['골드핑거','#U00188',650000,3,'VIP']];
+const maxAmt=1480000,list=document.getElementById('top30-list');
+names.forEach((n,i)=>{
+  const pct=Math.round((n[2]/maxAmt)*100);
+  const rc=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+  const bg=n[4]==='VIP'?'badge-vip':'badge-active';
+  list.innerHTML+=`<div class="top30-row"><div class="rank ${rc}">${i+1}</div><div><div style="font-size:13px;font-weight:500">${n[0]}</div><div style="font-size:11px;color:#aaa">${n[1]}</div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div><div style="font-size:13px;font-weight:500;color:#7c3aed">${n[2].toLocaleString()}원</div><div style="font-size:13px;color:#444">${n[3]}회</div><div><span class="badge ${bg}">${n[4]}</span></div></div>`;
+});
+</script>
+</body>
+</html>
